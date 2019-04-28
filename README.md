@@ -52,7 +52,7 @@ There are currently two supported sources:
 
 I tried to make it as easy as possible to add new sources of data. The only thing to do is to add a python file in `Scrappers/` and define in it a class deriving from `AbstractScrapper`.
 
-You can start from a copy of [`Cc0texturesScrapper.py`](Scrappers/Cc0texturesScrapper.py) or [`CgbookcaseScrapper.py`](Scrappers/CgbookcaseScrapper.py). The former loads a zip and extracts maps while the second looks for a different URL for each map (base color, normal, etc.).
+You can start from a copy of [`Cc0texturesScrapper.py`](https://github.com/eliemichel/LilySurfaceScrapper/blob/master/blender/LilySurfaceScrapper/Scrappers/Cc0texturesScrapper.py) or [`CgbookcaseScrapper.py`](https://github.com/eliemichel/LilySurfaceScrapper/blob/master/blender/LilySurfaceScrapper/Scrappers/CgbookcaseScrapper.py). The former loads a zip and extracts maps while the second looks for a different URL for each map (base color, normal, etc.).
 
 The following three methods are required:
 
@@ -77,6 +77,8 @@ Scrap the information of the variant numbered `variant_index`, and write it to `
  - `material_data.maps['roughness']`: The path to the roughness map, or None
  - `material_data.maps['metallic']`: The path to the metallic map, or None
 
+## Utility functions
+
 To implement these methods, you can rely on the following utils:
 
 ### self.fetchHtml(url)
@@ -89,7 +91,7 @@ Get an image from the URL `url`, place it in a directory whose name is generated
 
 ### fetchZip(self, url, material_name, zip_name)
 
-Get a zip file from the URL `url`. This works like `fetchImage()`, returning the path to the zip file. You can then use the [zipfile](https://docs.python.org/3/library/zipfile.html) module, like [`Cc0texturesScrapper.py`](Scrappers/Cc0texturesScrapper.py) does.
+Get a zip file from the URL `url`. This works like `fetchImage()`, returning the path to the zip file. You can then use the [zipfile](https://docs.python.org/3/library/zipfile.html) module, like [`Cc0texturesScrapper.py`](https://github.com/eliemichel/LilySurfaceScrapper/blob/master/blender/LilySurfaceScrapper/Scrappers/Cc0texturesScrapper.py) does.
 
 ## TODO
 
