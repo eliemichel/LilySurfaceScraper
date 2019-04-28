@@ -11,7 +11,7 @@ This add-on has been designed to make it very easy to add new sources. You can j
 
 ## Installation
 
-Download the [last release](https://github.com/eliemichel/LilySurfaceScrapper/releases/download/v1.0.0/LilySurfaceScrapper-v1.0.0.zip), then in Blender, go to `Edit > Preferences`, `Add-on`, `Install`, browse to the zip file.
+Download the [last release](https://github.com/eliemichel/LilySurfaceScrapper/releases/download/v1.0.1/LilySurfaceScrapper-v1.0.1.zip), then in Blender, go to `Edit > Preferences`, `Add-on`, `Install`, browse to the zip file.
 
 ![Add-on loaded in the User Preferences](doc/addon.png)
 
@@ -45,8 +45,9 @@ You can then browse the downloaded files next to your blend. Note that they are 
 
 There are currently two supported sources:
 
- - cgbookcase: https://www.cgbookcase.com/
- - CC0Textures: https://cc0textures.com/
+ - cgbookcase: https://www.cgbookcase.com
+ - CC0Textures: https://cc0textures.com
+ - TextureHeaven: https://texturehaven.com
 
 ## Adding new sources
 
@@ -92,6 +93,10 @@ Get an image from the URL `url`, place it in a directory whose name is generated
 ### fetchZip(self, url, material_name, zip_name)
 
 Get a zip file from the URL `url`. This works like `fetchImage()`, returning the path to the zip file. You can then use the [zipfile](https://docs.python.org/3/library/zipfile.html) module, like [`Cc0texturesScrapper.py`](https://github.com/eliemichel/LilySurfaceScrapper/blob/master/blender/LilySurfaceScrapper/Scrappers/Cc0texturesScrapper.py) does.
+
+### self.clearString(s)
+
+Remove non printable characters from s
 
 ## TODO
 
