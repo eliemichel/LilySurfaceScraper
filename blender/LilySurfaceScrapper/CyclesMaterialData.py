@@ -75,6 +75,7 @@ class CyclesMaterialData(MaterialData):
             'normal': 'Normal',
             'roughness': 'Roughness',
             'metallic': 'Metallic',
+            'specular': 'Specular',
             'opacity': '<custom>',
         }
         for input, img in self.maps.items():

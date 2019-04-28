@@ -75,6 +75,7 @@ class MaterialData():
             'opacity': None,
             'roughness': None,
             'metallic': None,
+            'specular': None,
         }
         self._variants = None
         self._scrapper = MaterialData.makeScrapper(url)

@@ -22,6 +22,7 @@
 # from a single URL
 
 import os
+import string
 import bpy
 
 import sys
@@ -96,6 +97,11 @@ class AbstractScrapper():
                 self.error = "URL not found: {}".format(url)
                 return None
         return path
+
+    def clearString(self, s):
+        """Remove non printable characters"""
+        printable = set(string.printable)
+        return ''.join(filter(lambda x: x in printable, s))
 
     def fetchVariantList(self, url):
         """Get a list of available variants.
