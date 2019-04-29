@@ -24,6 +24,7 @@
 import os
 import bpy
 from .CyclesMaterialData import CyclesMaterialData
+from .CyclesWorldData import CyclesWorldData
 
 ## Operators
 
@@ -33,18 +34,9 @@ from .CyclesMaterialData import CyclesMaterialData
 # sharable through regular properties. SO it is shared through this global
 internal_states = {}
 
-class OBJECT_OT_LilySurfaceScrapper(bpy.types.Operator):
-    """Import a material just by typing its URL. See documentation for a list of supported material providers."""
-    bl_idname = "object.lily_surface_import"
-    bl_label = "Import Surface"
+class PopupOperator(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
     
-    url: bpy.props.StringProperty(
-        name="URL",
-        description="Address from which importing the material",
-        default=""
-    )
-
     @classmethod
     def poll(cls, context):
         return context.active_object is not None
@@ -52,6 +44,19 @@ class OBJECT_OT_LilySurfaceScrapper(bpy.types.Operator):
     def invoke(self, context, event):
         wm = context.window_manager
         return wm.invoke_props_dialog(self)
+
+### Material
+
+class OBJECT_OT_LilySurfaceScrapper(PopupOperator):
+    """Import a material just by typing its URL. See documentation for a list of supported material providers."""
+    bl_idname = "object.lily_surface_import"
+    bl_label = "Import Surface"
+    
+    url: bpy.props.StringProperty(
+        name="URL",
+        description="Address from which importing the material",
+        default=""
+    )
 
     def execute(self, context):
         texdir = os.path.dirname(bpy.data.filepath)
@@ -82,7 +87,7 @@ def list_variant_enum(self, context):
     internal_states['kbjfknvglvhn'] = items # keep a reference to avoid a known crash of blander, says the doc
     return items
 
-class OBJECT_OT_LilySurfacePromptVariant(bpy.types.Operator):
+class OBJECT_OT_LilySurfacePromptVariant(PopupOperator):
     """While importing a material, prompt the user for teh texture variant
     if there are several materials provided by the URL"""
     bl_idname = "object.lily_surface_prompt_variant"
@@ -101,14 +106,6 @@ class OBJECT_OT_LilySurfacePromptVariant(bpy.types.Operator):
         update=lambda self, ctx: self.variant
     )
 
-    @classmethod
-    def poll(cls, context):
-        return context.active_object is not None
-
-    def invoke(self, context, event):
-        wm = context.window_manager
-        return wm.invoke_props_dialog(self)
-
     def execute(self, context):
         data = internal_states[self.internal_state]
         data.selectVariant(int(self.variant))
@@ -116,12 +113,81 @@ class OBJECT_OT_LilySurfacePromptVariant(bpy.types.Operator):
         context.object.active_material = mat
         return {'FINISHED'}
 
+### World
+
+class OBJECT_OT_LilyWorldScrapper(PopupOperator):
+    """Import a world just by typing its URL. See documentation for a list of supported world providers."""
+    bl_idname = "object.lily_world_import"
+    bl_label = "Import World"
+    
+    url: bpy.props.StringProperty(
+        name="URL",
+        description="Address from which importing the world",
+        default=""
+    )
+
+    def execute(self, context):
+        texdir = os.path.dirname(bpy.data.filepath)
+        data = CyclesWorldData(self.url, texture_root=texdir)
+        if data.error is not None:
+            self.report({'ERROR_INVALID_INPUT'}, data.error)
+            return {'CANCELLED'}
+        
+        variants = data.getVariantList()
+        if variants and len(variants) > 1:
+            # More than one variant, prompt the user for which one she wants
+            internal_states['zeilult'] = data
+            bpy.ops.object.lily_world_prompt_variant('INVOKE_DEFAULT', internal_state='zeilult')
+        else:
+            data.selectVariant(0)
+            world = data.createWorld()
+            context.scene.world = world
+        return {'FINISHED'}
+        
+
+def list_variant_enum(self, context):
+    """Callback filling enum items for OBJECT_OT_LilySurfacePromptVariant"""
+    global internal_states
+    data = internal_states[self.internal_state]
+    items = []
+    for i, v in enumerate(data.getVariantList()):
+        items.append((str(i), v, v))
+    internal_states['kbjfknvglvhn'] = items # keep a reference to avoid a known crash of blander, says the doc
+    return items
+
+class OBJECT_OT_LilyWorldPromptVariant(PopupOperator):
+    """While importing a world, prompt the user for teh texture variant
+    if there are several worlds provided by the URL"""
+    bl_idname = "object.lily_world_prompt_variant"
+    bl_label = "Select Variant"
+    
+    variant: bpy.props.EnumProperty(
+        name="Variant",
+        description="Name of the world variant to load",
+        items=list_variant_enum,
+    )
+    
+    internal_state: bpy.props.StringProperty(
+        name="Internal State",
+        description="System property used to transfer the state of the operator",
+        options={'HIDDEN', 'SKIP_SAVE'},
+        update=lambda self, ctx: self.variant
+    )
+
+    def execute(self, context):
+        data = internal_states[self.internal_state]
+        data.selectVariant(int(self.variant))
+        world = data.createWorld()
+        context.scene.world = world
+        return {'FINISHED'}
+
+
 ## Panels
 
 class MATERIAL_PT_LilySurfaceScrapper(bpy.types.Panel):
     """Panel with the Lily Scrapper button"""
-    bl_label = "Lily Surface Importer"
-    bl_idname = "SCENE_PT_LilySurfaceImporter"
+    bl_label = "Lily Surface Scrapper"
+    bl_idname = "MATERIAL_PT_LilySurfaceScrapper"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = "material"
@@ -134,14 +200,36 @@ class MATERIAL_PT_LilySurfaceScrapper(bpy.types.Panel):
         else:
             row.operator("object.lily_surface_import")
 
+class WORLD_PT_LilySurfaceScrapper(bpy.types.Panel):
+    """Panel with the Lily Scrapper button"""
+    bl_label = "Lily Surface Scrapper"
+    bl_idname = "WORLD_PT_LilySurfaceScrapper"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "world"
+
+    def draw(self, context):
+        layout = self.layout
+        row = layout.row()
+        if bpy.data.filepath == '':
+            row.label(text="You must save the file to use Lily Surface Scrapper")
+        else:
+            row.operator("object.lily_world_import")
+
 ## Registration
 
 def register():
     bpy.utils.register_class(OBJECT_OT_LilySurfaceScrapper)
     bpy.utils.register_class(OBJECT_OT_LilySurfacePromptVariant)
+    bpy.utils.register_class(OBJECT_OT_LilyWorldScrapper)
+    bpy.utils.register_class(OBJECT_OT_LilyWorldPromptVariant)
     bpy.utils.register_class(MATERIAL_PT_LilySurfaceScrapper)
+    bpy.utils.register_class(WORLD_PT_LilySurfaceScrapper)
 
 def unregister():
     bpy.utils.unregister_class(OBJECT_OT_LilySurfaceScrapper)
     bpy.utils.unregister_class(OBJECT_OT_LilySurfacePromptVariant)
+    bpy.utils.unregister_class(OBJECT_OT_LilyWorldScrapper)
+    bpy.utils.unregister_class(OBJECT_OT_LilyWorldPromptVariant)
     bpy.utils.unregister_class(MATERIAL_PT_LilySurfaceScrapper)
+    bpy.utils.unregister_class(WORLD_PT_LilySurfaceScrapper)

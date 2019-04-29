@@ -21,25 +21,28 @@
 # This file is part of LilySurfaceScrapper, a Blender add-on to import materials
 # from a single URL
 
-bl_info = {
-    "name": "Lily Surface Scrapper",
-    "author": "Élie Michel <elie.michel@exppad.com>",
-    "version": (1, 1, 0),
-    "blender": (2, 80, 0),
-    "location": "Properties > Material",
-    "description": "Import material from a single URL",
-    "warning": "",
-    "wiki_url": "",
-    "category": "Import",
-}
+from .ScrappersManager import ScrappersManager
+from .ScrappedData import ScrappedData
 
-from . import frontend
-
-def register():
-    frontend.register()
+class WorldData(ScrappedData):
+    """Internal representation of world, responsible on one side for
+    scrapping texture providers and on the other side to build blender materials.
+    This class must not use the Blender API. Put Blender related stuff in subclasses
+    like CyclesMaterialData."""
     
-def unregister():
-    frontend.unregister()
+    name: "Name"
+    maps: {
+        'sky': None,
+    }
 
-if __name__ == "__main__":
-    register()
+    @classmethod
+    def makeScrapper(cls, url):
+        for S in ScrappersManager.getScrappersList():
+            if 'WORLD' in S.scrapped_type and S.canHandleUrl(url):
+                return S()
+        return None
+    
+    def createWorld(self):
+        """Implement this in derived classes"""
+        raise NotImplementedError
+    

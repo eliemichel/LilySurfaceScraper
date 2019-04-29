@@ -21,46 +21,12 @@
 # This file is part of LilySurfaceScrapper, a Blender add-on to import materials
 # from a single URL
 
-import os
 import bpy
-from mathutils import Vector
+
 from .MaterialData import MaterialData
+from cycles_utils import getCyclesImage, autoAlignNodes
 
 class CyclesMaterialData(MaterialData):
-    def _getCyclesImage(self, imgpath):
-        """Avoid reloading an image that has already been loaded"""
-        for img in bpy.data.images:
-            if os.path.abspath(img.filepath) == os.path.abspath(imgpath):
-                return img
-        return bpy.data.images.load(imgpath)
-    
-    def _autoAlignNodes(self, root):
-        def makeTree(node):
-            descendentCount = 0
-            children = []
-            for i in node.inputs:
-                for l in i.links:
-                    subtree = makeTree(l.from_node)
-                    children.append(subtree)
-                    descendentCount += subtree[2] + 1
-            return node, children, descendentCount
-
-        tree = makeTree(root)
-
-        def placeNodes(tree, rootLocation, xstep = 400, ystep = 250):
-            root, children, count = tree
-            root.location = rootLocation
-            childLoc = rootLocation + Vector((-xstep, ystep * count / 2.))
-            acc = 0.25
-            for child in children:
-                print(child[0].name, acc)
-                acc += (child[2]+1)/2.
-                placeNodes(child, childLoc + Vector((0, -ystep * acc)))
-                acc += (child[2]+1)/2.
-
-        placeNodes(tree, Vector((0,0)))
-
-
     def createMaterial(self):
         mat = bpy.data.materials.new(name=self.name)
         mat.use_nodes = True
@@ -82,7 +48,7 @@ class CyclesMaterialData(MaterialData):
             if img is None or input not in input_tr:
                 continue
             texture_node = nodes.new(type="ShaderNodeTexImage")
-            texture_node.image = self._getCyclesImage(img)
+            texture_node.image = getCyclesImage(img)
             texture_node.color_space = 'COLOR' if input == 'baseColor' else 'NONE'
             if input == 'opacity':
                 transparence_node = nodes.new(type="ShaderNodeBsdfTransparent")
@@ -98,6 +64,6 @@ class CyclesMaterialData(MaterialData):
             else:
                 links.new(texture_node.outputs[0], principled.inputs[input_tr[input]])
 
-        self._autoAlignNodes(mat.node_tree.nodes['Material Output'])
+        autoAlignNodes(mat_output)
 
         return mat

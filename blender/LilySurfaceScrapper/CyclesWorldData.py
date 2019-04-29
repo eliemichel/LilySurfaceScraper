@@ -21,25 +21,28 @@
 # This file is part of LilySurfaceScrapper, a Blender add-on to import materials
 # from a single URL
 
-bl_info = {
-    "name": "Lily Surface Scrapper",
-    "author": "Élie Michel <elie.michel@exppad.com>",
-    "version": (1, 1, 0),
-    "blender": (2, 80, 0),
-    "location": "Properties > Material",
-    "description": "Import material from a single URL",
-    "warning": "",
-    "wiki_url": "",
-    "category": "Import",
-}
+import bpy
 
-from . import frontend
+from .WorldData import WorldData
+from cycles_utils import getCyclesImage
 
-def register():
-    frontend.register()
-    
-def unregister():
-    frontend.unregister()
+class CyclesWorldData(WorldData):
+    def createWorld(self):
+        world = bpy.data.worlds.new(name=self.name)
+        world.use_nodes = True
+        nodes = world.node_tree.nodes
+        links = world.node_tree.links
+        background = nodes["Background"]
+        world_output = nodes["World Output"]
+        background.inputs["Roughness"].default_value = 1.0
 
-if __name__ == "__main__":
-    register()
+        img = self.maps['sky']
+        if img is not None:
+            texture_node = nodes.new(type="ShaderNodeTexEnvironment")
+            texture_node.image = getCyclesImage(img)
+            texture_node.color_space = 'COLOR'
+            links.new(texture_node.outputs["Color"], background.inputs["Color"])
+        
+        autoAlignNodes(world_output)
+
+        return world

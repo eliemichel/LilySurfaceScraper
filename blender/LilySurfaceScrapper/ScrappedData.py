@@ -21,33 +21,47 @@
 # This file is part of LilySurfaceScrapper, a Blender add-on to import materials
 # from a single URL
 
-from .ScrappersManager import ScrappersManager
-from .ScrappedData import ScrappedData
+from .settings import UNSUPPORTED_PROVIDER_ERR
 
-class MaterialData(ScrappedData):
-    """Internal representation of materials, responsible on one side for
+class ScrappedData():
+    """Internal representation of materials and worlds, responsible on one side for
     scrapping texture providers and on the other side to build blender materials.
     This class must not use the Blender API. Put Blender related stuff in subclasses
     like CyclesMaterialData."""
-    
-    name: "Name"
-    maps: {
-        'baseColor': None,
-        'normal': None,
-        'opacity': None,
-        'roughness': None,
-        'metallic': None,
-        'specular': None,
-    }
 
     @classmethod
     def makeScrapper(cls, url):
-        for S in ScrappersManager.getScrappersList():
-            if 'MATERIAL' in S.scrapped_type and S.canHandleUrl(url):
-                return S()
-        return None
-    
-    def createMaterial(self):
-        """Implement this in derived classes"""
         raise NotImplementedError
-    
+
+    def __init__(self, url, texture_root=""):
+        """url: Base url to scrap
+        texture_root: root directory where to store downloaded textures
+        """
+        self.url = url
+        self.texture_root = texture_root
+        self.error = None
+        self._variants = None
+        self._scrapper = __class__.makeScrapper(url)
+        if self._scrapper is None:
+            self.error = UNSUPPORTED_PROVIDER_ERR
+        else:
+            self._scrapper.texture_root = texture_root
+
+    def getVariantList(self):
+        if self.error is not None:
+            return None
+        if self._variants is not None:
+            return self._variants
+        self._variants = self._scrapper.fetchVariantList(self.url)
+        if self._variants is None:
+            self.error = self.scrapper.error
+        return self._variants
+
+    def selectVariant(self, variant_index):
+        if self.error is not None:
+            return False
+        if self._variants is None:
+            self.getVariantList()
+        if not self._scrapper.fetchVariant(variant_index, self):
+            return False
+        return True

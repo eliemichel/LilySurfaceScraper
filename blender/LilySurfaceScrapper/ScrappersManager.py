@@ -21,33 +21,36 @@
 # This file is part of LilySurfaceScrapper, a Blender add-on to import materials
 # from a single URL
 
-from .ScrappersManager import ScrappersManager
-from .ScrappedData import ScrappedData
+import os
 
-class MaterialData(ScrappedData):
-    """Internal representation of materials, responsible on one side for
-    scrapping texture providers and on the other side to build blender materials.
-    This class must not use the Blender API. Put Blender related stuff in subclasses
-    like CyclesMaterialData."""
-    
-    name: "Name"
-    maps: {
-        'baseColor': None,
-        'normal': None,
-        'opacity': None,
-        'roughness': None,
-        'metallic': None,
-        'specular': None,
-    }
+from .Scrappers.AbstractScrapper import AbstractScrapper
+
+class ScrappersManager():
+    all_scrappers: None
+
+    @staticmethod
+    def makeScrappersList():
+        """dirty but useful, for one to painlessly write scrapping class
+        and just drop them in the scrappers dir"""
+        import importlib
+        scrappers_names = []
+        scrappers_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Scrappers")
+        for f in os.listdir(scrappers_dir):
+            if f.endswith(".py") and os.path.isfile(os.path.join(scrappers_dir, f)):
+                scrappers_names.append(f[:-3])
+        scrappers = []
+        for s in scrappers_names:
+            module = importlib.import_module('.Scrappers.' + s, package='LilySurfaceScrapper')
+            for x in dir(module):
+                if x == 'AbstractScrapper':
+                    continue
+                m = getattr(module, x)
+                if isinstance(m, type) and issubclass(m, AbstractScrapper):
+                    scrappers.append(m)
+        return scrappers
 
     @classmethod
-    def makeScrapper(cls, url):
-        for S in ScrappersManager.getScrappersList():
-            if 'MATERIAL' in S.scrapped_type and S.canHandleUrl(url):
-                return S()
-        return None
-    
-    def createMaterial(self):
-        """Implement this in derived classes"""
-        raise NotImplementedError
-    
+    def getScrappersList(cls):
+        if cls.all_scrappers is None:
+            cls.all_scrappers = makeScrappersList()
+        return cls.all_scrappers

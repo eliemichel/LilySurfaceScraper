@@ -35,6 +35,9 @@ import shutil
 from ..settings import TEXTURE_DIR
 
 class AbstractScrapper():
+    # Can be 'MATERIAL', 'WORLD'
+    scrapped_type: {'MATERIAL'}
+
     @classmethod
     def canHandleUrl(cls, url):
         raise NotImplementedError

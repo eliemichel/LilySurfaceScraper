@@ -21,25 +21,39 @@
 # This file is part of LilySurfaceScrapper, a Blender add-on to import materials
 # from a single URL
 
-bl_info = {
-    "name": "Lily Surface Scrapper",
-    "author": "Élie Michel <elie.michel@exppad.com>",
-    "version": (1, 1, 0),
-    "blender": (2, 80, 0),
-    "location": "Properties > Material",
-    "description": "Import material from a single URL",
-    "warning": "",
-    "wiki_url": "",
-    "category": "Import",
-}
+import os
+import bpy
+from mathutils import Vector
 
-from . import frontend
+def getCyclesImage(imgpath):
+    """Avoid reloading an image that has already been loaded"""
+    for img in bpy.data.images:
+        if os.path.abspath(img.filepath) == os.path.abspath(imgpath):
+            return img
+    return bpy.data.images.load(imgpath)
 
-def register():
-    frontend.register()
-    
-def unregister():
-    frontend.unregister()
+def autoAlignNodes(self, root):
+    def makeTree(node):
+        descendentCount = 0
+        children = []
+        for i in node.inputs:
+            for l in i.links:
+                subtree = makeTree(l.from_node)
+                children.append(subtree)
+                descendentCount += subtree[2] + 1
+        return node, children, descendentCount
 
-if __name__ == "__main__":
-    register()
+    tree = makeTree(root)
+
+    def placeNodes(tree, rootLocation, xstep = 400, ystep = 250):
+        root, children, count = tree
+        root.location = rootLocation
+        childLoc = rootLocation + Vector((-xstep, ystep * count / 2.))
+        acc = 0.25
+        for child in children:
+            print(child[0].name, acc)
+            acc += (child[2]+1)/2.
+            placeNodes(child, childLoc + Vector((0, -ystep * acc)))
+            acc += (child[2]+1)/2.
+
+    placeNodes(tree, Vector((0,0)))
