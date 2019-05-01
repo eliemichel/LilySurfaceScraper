@@ -24,7 +24,7 @@
 import bpy
 
 from .WorldData import WorldData
-from cycles_utils import getCyclesImage
+from .cycles_utils import getCyclesImage, autoAlignNodes
 
 class CyclesWorldData(WorldData):
     def createWorld(self):
@@ -34,7 +34,6 @@ class CyclesWorldData(WorldData):
         links = world.node_tree.links
         background = nodes["Background"]
         world_output = nodes["World Output"]
-        background.inputs["Roughness"].default_value = 1.0
 
         img = self.maps['sky']
         if img is not None:

@@ -30,10 +30,11 @@ class WorldData(ScrappedData):
     This class must not use the Blender API. Put Blender related stuff in subclasses
     like CyclesMaterialData."""
     
-    name: "Name"
-    maps: {
-        'sky': None,
-    }
+    def reset(self):
+        self.name = "Lily World"
+        self.maps = {
+            'sky': None,
+        }
 
     @classmethod
     def makeScrapper(cls, url):

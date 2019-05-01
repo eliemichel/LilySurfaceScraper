@@ -23,11 +23,13 @@
 
 from .AbstractScrapper import AbstractScrapper
 
-class TextureHeavenScrapper(AbstractScrapper):
+class HdriHavenScrapper(AbstractScrapper):
+    scrapped_type = {'WORLD'}
+
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scrapped by this scrapper."""
-        return url.startswith("https://texturehaven.com/tex")
+        return url.startswith("https://hdrihaven.com/hdri")
     
     def fetchVariantList(self, url):
         """Get a list of available variants.
@@ -36,13 +38,11 @@ class TextureHeavenScrapper(AbstractScrapper):
         if html is None:
             return None
 
-        maps = html.xpath("//div[@class='download-buttons']//div[@class='map-type']")
-
-        variants = maps[0].xpath(".//div[@class='res-item']/a/div/text()")
-        variants = [self.clearString(s) for s in variants]
+        variant_data = html.xpath("//div[@class='download-buttons']/a")
+        variants = [self.clearString(d.xpath(".//div[@class='button']/b/text()")[0]) for d in variant_data]
 
         self._html = html
-        self._maps = maps
+        self._variant_data = variant_data
         self._variants = variants
         return variants
     
@@ -52,30 +52,20 @@ class TextureHeavenScrapper(AbstractScrapper):
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
         html = self._html
-        maps = self._maps
+        variant_data = self._variant_data
         variants = self._variants
         
         if variant_index < 0 or variant_index >= len(variants):
             self.error = "Invalid variant index: {}".format(variant_index)
             return False
         
-        base_name = html.xpath("//title/text()")[0].split('|')[0].strip()
+        base_name = html.xpath('//h1/b/text()')[0]
         var_name = variants[variant_index]
-        material_data.name = "textureheaven/" + base_name + '/' + var_name
+        material_data.name = "hdrihaven/" + base_name + '/' + var_name
 
-        # Translate cgbookcase map names into our internal map names
-        maps_tr = {
-            'Diffuse': 'baseColor',
-            'Normal': 'normal',
-            'Specular': 'specular',
-            'Roughness': 'roughness',
-            'Metallic': 'metallic',
-        }
-        for m in maps:
-            map_name = m.xpath("div[@class='map-download']//text()")[0]
-            map_url = "https://texturehaven.com" + m.xpath(".//div[@class='res-item']/a/@href")[variant_index]
-            if map_name in maps_tr:
-                map_name = maps_tr[map_name]
-                material_data.maps[map_name] = self.fetchImage(map_url, material_data.name, map_name)
+        redirect_url = "https://hdrihaven.com" + variant_data[variant_index].attrib['href']
+        redirect_html = self.fetchHtml(redirect_url)
+        map_url = "https://hdrihaven.com" + redirect_html.xpath("//a[@download]/@href")[0]
+        material_data.maps['sky'] = self.fetchImage(map_url, material_data.name, 'sky')
         
         return True

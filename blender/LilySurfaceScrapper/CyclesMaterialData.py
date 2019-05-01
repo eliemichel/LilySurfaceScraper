@@ -24,7 +24,7 @@
 import bpy
 
 from .MaterialData import MaterialData
-from cycles_utils import getCyclesImage, autoAlignNodes
+from .cycles_utils import getCyclesImage, autoAlignNodes
 
 class CyclesMaterialData(MaterialData):
     def createMaterial(self):
