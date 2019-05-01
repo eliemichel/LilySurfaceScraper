@@ -1,4 +1,4 @@
-![Lily Surface Scrapper](doc/imported.png)
+![Lily Surface Scrapper](doc/lilysurfacescrapper.png)
 
 Lily Surface Scrapper
 =====================
