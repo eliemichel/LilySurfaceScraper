@@ -30,15 +30,16 @@ class MaterialData(ScrappedData):
     This class must not use the Blender API. Put Blender related stuff in subclasses
     like CyclesMaterialData."""
     
-    name: "Name"
-    maps: {
-        'baseColor': None,
-        'normal': None,
-        'opacity': None,
-        'roughness': None,
-        'metallic': None,
-        'specular': None,
-    }
+    def reset(self):
+        self.name = "Lily Material"
+        self.maps = {
+            'baseColor': None,
+            'normal': None,
+            'opacity': None,
+            'roughness': None,
+            'metallic': None,
+            'specular': None,
+        }
 
     @classmethod
     def makeScrapper(cls, url):

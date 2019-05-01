@@ -33,6 +33,10 @@ class ScrappedData():
     def makeScrapper(cls, url):
         raise NotImplementedError
 
+    def reset(self):
+        """Implement in subclasses to (re)init specific data"""
+        pass
+
     def __init__(self, url, texture_root=""):
         """url: Base url to scrap
         texture_root: root directory where to store downloaded textures
@@ -41,11 +45,12 @@ class ScrappedData():
         self.texture_root = texture_root
         self.error = None
         self._variants = None
-        self._scrapper = __class__.makeScrapper(url)
+        self._scrapper = type(self).makeScrapper(url)
         if self._scrapper is None:
             self.error = UNSUPPORTED_PROVIDER_ERR
         else:
             self._scrapper.texture_root = texture_root
+        self.reset()
 
     def getVariantList(self):
         if self.error is not None:

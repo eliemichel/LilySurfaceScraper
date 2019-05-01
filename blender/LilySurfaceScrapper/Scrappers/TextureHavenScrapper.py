@@ -23,13 +23,11 @@
 
 from .AbstractScrapper import AbstractScrapper
 
-class HdriHeavenScrapper(AbstractScrapper):
-    scrapped_type: {'WORLD'}
-
+class TextureHavenScrapper(AbstractScrapper):
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scrapped by this scrapper."""
-        return url.startswith("https://hdrihaven.com/tex")
+        return url.startswith("https://texturehaven.com/tex")
     
     def fetchVariantList(self, url):
         """Get a list of available variants.
@@ -63,7 +61,7 @@ class HdriHeavenScrapper(AbstractScrapper):
         
         base_name = html.xpath("//title/text()")[0].split('|')[0].strip()
         var_name = variants[variant_index]
-        material_data.name = "textureheaven/" + base_name + '/' + var_name
+        material_data.name = "texturehaven/" + base_name + '/' + var_name
 
         # Translate cgbookcase map names into our internal map names
         maps_tr = {

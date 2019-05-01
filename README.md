@@ -40,14 +40,23 @@ You can then browse the downloaded files next to your blend. Note that they are 
 
 ![Add-on loaded in the User Preferences](doc/files.png)
 
+**NB** The same process is available in the World panel:
+
+![Lily Surface Scrapper in world panel](doc/world.png)
 
 ## Supported sources
 
-There are currently two supported sources:
+The following sources are supported, feel free to suggest new ones.
+
+Materials:
 
  - cgbookcase: https://www.cgbookcase.com
  - CC0Textures: https://cc0textures.com
- - TextureHeaven: https://texturehaven.com
+ - Texture Haven: https://texturehaven.com
+
+Worlds:
+
+ - HDRI Haven: https://hdrihaven.com/
 
 ## Adding new sources
 

@@ -36,7 +36,7 @@ from ..settings import TEXTURE_DIR
 
 class AbstractScrapper():
     # Can be 'MATERIAL', 'WORLD'
-    scrapped_type: {'MATERIAL'}
+    scrapped_type = {'MATERIAL'}
 
     @classmethod
     def canHandleUrl(cls, url):
@@ -64,11 +64,13 @@ class AbstractScrapper():
             os.makedirs(dirpath)
         return dirpath
 
-    def fetchImage(self, url, material_name, map_name):
+    def fetchImage(self, url, material_name, map_name, force_ext=False):
         """Utility helper for download textures"""
         root = self.getTextureDirectory(material_name)
-        ext = os.path.splitext(url)[1]
-        path = os.path.join(root, map_name) + ext
+        if not force_ext:
+            ext = os.path.splitext(url)[1]
+            map_name = map_name + ext
+        path = os.path.join(root, map_name)
         if os.path.isfile(path):
             print("Using cached {}.".format(url))
         else:

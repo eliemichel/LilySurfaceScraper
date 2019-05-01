@@ -32,7 +32,7 @@ def getCyclesImage(imgpath):
             return img
     return bpy.data.images.load(imgpath)
 
-def autoAlignNodes(self, root):
+def autoAlignNodes(root):
     def makeTree(node):
         descendentCount = 0
         children = []

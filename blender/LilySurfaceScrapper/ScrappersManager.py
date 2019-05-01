@@ -26,7 +26,7 @@ import os
 from .Scrappers.AbstractScrapper import AbstractScrapper
 
 class ScrappersManager():
-    all_scrappers: None
+    all_scrappers = None
 
     @staticmethod
     def makeScrappersList():
@@ -52,5 +52,5 @@ class ScrappersManager():
     @classmethod
     def getScrappersList(cls):
         if cls.all_scrappers is None:
-            cls.all_scrappers = makeScrappersList()
+            cls.all_scrappers = ScrappersManager.makeScrappersList()
         return cls.all_scrappers
