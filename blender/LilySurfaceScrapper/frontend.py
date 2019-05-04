@@ -58,7 +58,22 @@ class OBJECT_OT_LilySurfaceScrapper(PopupOperator):
         default=""
     )
 
+    create_material: bpy.props.BoolProperty(
+        name="Create Material",
+        description=(
+            "Create the material associated with downloaded maps. " +
+            "You most likely want this, but for integration into other tool " +
+            "you may want to set it to false and handle the material creation by yourself."
+        ),
+        options={'HIDDEN', 'SKIP_SAVE'},
+        default=True
+    )
+
     def execute(self, context):
+        if bpy.data.filepath == '':
+            self.report({'ERROR'}, 'You must save the file before using LilySurfaceScrapper')
+            return {'CANCELLED'}
+
         texdir = os.path.dirname(bpy.data.filepath)
         data = CyclesMaterialData(self.url, texture_root=texdir)
         if data.error is not None:
@@ -69,11 +84,14 @@ class OBJECT_OT_LilySurfaceScrapper(PopupOperator):
         if variants and len(variants) > 1:
             # More than one variant, prompt the user for which one she wants
             internal_states['skjhnvjkbg'] = data
-            bpy.ops.object.lily_surface_prompt_variant('INVOKE_DEFAULT', internal_state='skjhnvjkbg')
+            bpy.ops.object.lily_surface_prompt_variant('INVOKE_DEFAULT', internal_state='skjhnvjkbg', create_material=self.create_material)
         else:
             data.selectVariant(0)
-            mat = data.createMaterial()
-            context.object.active_material = mat
+            if self.create_material:
+                mat = data.createMaterial()
+                context.object.active_material = mat
+            else:
+                data.loadImages()
         return {'FINISHED'}
         
 
@@ -106,11 +124,25 @@ class OBJECT_OT_LilySurfacePromptVariant(PopupOperator):
         update=lambda self, ctx: self.variant
     )
 
+    create_material: bpy.props.BoolProperty(
+        name="Create Material",
+        description=(
+            "Create the material associated with downloaded maps. " +
+            "You most likely want this, but for integration into other tool " +
+            "you may want to set it to false and handle the material creation by yourself."
+        ),
+        options={'HIDDEN', 'SKIP_SAVE'},
+        default=True
+    )
+
     def execute(self, context):
         data = internal_states[self.internal_state]
         data.selectVariant(int(self.variant))
-        mat = data.createMaterial()
-        context.object.active_material = mat
+        if self.create_material:
+            mat = data.createMaterial()
+            context.object.active_material = mat
+        else:
+            data.loadImages()
         return {'FINISHED'}
 
 ### World
@@ -126,7 +158,22 @@ class OBJECT_OT_LilyWorldScrapper(PopupOperator):
         default=""
     )
 
+    create_world: bpy.props.BoolProperty(
+        name="Create World",
+        description=(
+            "Create the world associated with downloaded maps. " +
+            "You most likely want this, but for integration into other tool " +
+            "you may want to set it to false and handle the world creation by yourself."
+        ),
+        options={'HIDDEN', 'SKIP_SAVE'},
+        default=True
+    )
+
     def execute(self, context):
+        if bpy.data.filepath == '':
+            self.report({'ERROR'}, 'You must save the file before using LilySurfaceScrapper')
+            return {'CANCELLED'}
+
         texdir = os.path.dirname(bpy.data.filepath)
         data = CyclesWorldData(self.url, texture_root=texdir)
         if data.error is not None:
@@ -137,11 +184,14 @@ class OBJECT_OT_LilyWorldScrapper(PopupOperator):
         if variants and len(variants) > 1:
             # More than one variant, prompt the user for which one she wants
             internal_states['zeilult'] = data
-            bpy.ops.object.lily_world_prompt_variant('INVOKE_DEFAULT', internal_state='zeilult')
+            bpy.ops.object.lily_world_prompt_variant('INVOKE_DEFAULT', internal_state='zeilult', create_world=self.create_world)
         else:
             data.selectVariant(0)
-            world = data.createWorld()
-            context.scene.world = world
+            if self.create_world:
+                world = data.createWorld()
+                context.scene.world = world
+            else:
+                data.loadImages()
         return {'FINISHED'}
         
 
@@ -174,11 +224,25 @@ class OBJECT_OT_LilyWorldPromptVariant(PopupOperator):
         update=lambda self, ctx: self.variant
     )
 
+    create_world: bpy.props.BoolProperty(
+        name="Create World",
+        description=(
+            "Create the world associated with downloaded maps. " +
+            "You most likely want this, but for integration into other tool " +
+            "you may want to set it to false and handle the world creation by yourself."
+        ),
+        options={'HIDDEN', 'SKIP_SAVE'},
+        default=True
+    )
+
     def execute(self, context):
         data = internal_states[self.internal_state]
         data.selectVariant(int(self.variant))
-        world = data.createWorld()
-        context.scene.world = world
+        if self.create_world:
+            world = data.createWorld()
+            context.scene.world = world
+        else:
+            data.loadImages()
         return {'FINISHED'}
 
 

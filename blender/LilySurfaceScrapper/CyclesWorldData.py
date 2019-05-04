@@ -27,6 +27,13 @@ from .WorldData import WorldData
 from .cycles_utils import getCyclesImage, autoAlignNodes
 
 class CyclesWorldData(WorldData):
+    def loadImages(self):
+        """This is not needed by createMaterial, but is called when
+        create_material is false to load images anyway"""
+        img = self.maps['sky']
+        if img is not None:
+            getCyclesImage(img)
+            
     def createWorld(self):
         world = bpy.data.worlds.new(name=self.name)
         world.use_nodes = True

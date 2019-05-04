@@ -48,6 +48,12 @@ class MaterialData(ScrappedData):
                 return S()
         return None
     
+    def loadImages(self):
+        """This is not needed by createMaterial, but is called when
+        create_material is false to load images anyway
+        Implement this in derived classes"""
+        raise NotImplementedError
+
     def createMaterial(self):
         """Implement this in derived classes"""
         raise NotImplementedError

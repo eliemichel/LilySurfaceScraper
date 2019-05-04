@@ -43,6 +43,10 @@ class WorldData(ScrappedData):
                 return S()
         return None
     
+    def loadImages(self):
+        """Implement this in derived classes"""
+        raise NotImplementedError
+
     def createWorld(self):
         """Implement this in derived classes"""
         raise NotImplementedError

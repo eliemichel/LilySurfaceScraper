@@ -27,6 +27,24 @@ from .MaterialData import MaterialData
 from .cycles_utils import getCyclesImage, autoAlignNodes
 
 class CyclesMaterialData(MaterialData):
+    # Translate our internal map names into cycles principled inputs
+    input_tr = {
+        'baseColor': 'Base Color',
+        'normal': 'Normal',
+        'roughness': 'Roughness',
+        'metallic': 'Metallic',
+        'specular': 'Specular',
+        'opacity': '<custom>',
+    }
+
+    def loadImages(self):
+        """This is not needed by createMaterial, but is called when
+        create_material is false to load images anyway"""
+        for map_name, img in self.maps.items():
+            if img is None or map_name not in __class__.input_tr:
+                continue
+            getCyclesImage(img)
+
     def createMaterial(self):
         mat = bpy.data.materials.new(name=self.name)
         mat.use_nodes = True
@@ -35,34 +53,26 @@ class CyclesMaterialData(MaterialData):
         principled = nodes["Principled BSDF"]
         mat_output = nodes["Material Output"]
         principled.inputs["Roughness"].default_value = 1.0
-        # Translate our internal map names into cycles principled inputs
-        input_tr = {
-            'baseColor': 'Base Color',
-            'normal': 'Normal',
-            'roughness': 'Roughness',
-            'metallic': 'Metallic',
-            'specular': 'Specular',
-            'opacity': '<custom>',
-        }
-        for input, img in self.maps.items():
-            if img is None or input not in input_tr:
+        
+        for map_name, img in self.maps.items():
+            if img is None or map_name not in __class__.input_tr:
                 continue
             texture_node = nodes.new(type="ShaderNodeTexImage")
             texture_node.image = getCyclesImage(img)
-            texture_node.color_space = 'COLOR' if input == 'baseColor' else 'NONE'
-            if input == 'opacity':
+            texture_node.color_space = 'COLOR' if map_name == 'baseColor' else 'NONE'
+            if map_name == 'opacity':
                 transparence_node = nodes.new(type="ShaderNodeBsdfTransparent")
                 mix_node = nodes.new(type="ShaderNodeMixShader")
                 links.new(texture_node.outputs[0], mix_node.inputs[0])
                 links.new(transparence_node.outputs[0], mix_node.inputs[1])
                 links.new(principled.outputs[0], mix_node.inputs[2])
                 links.new(mix_node.outputs[0], mat_output.inputs[0])
-            elif input == "normal":
+            elif map_name == "normal":
                 normal_node = nodes.new(type="ShaderNodeNormalMap")
                 links.new(texture_node.outputs["Color"], normal_node.inputs["Color"])
                 links.new(normal_node.outputs["Normal"], principled.inputs["Normal"])
             else:
-                links.new(texture_node.outputs[0], principled.inputs[input_tr[input]])
+                links.new(texture_node.outputs[0], principled.inputs[__class__.input_tr[map_name]])
 
         autoAlignNodes(mat_output)
 
