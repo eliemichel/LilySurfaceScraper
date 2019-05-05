@@ -21,26 +21,32 @@
 # This file is part of LilySurfaceScrapper, a Blender add-on to import materials
 # from a single URL
 
-bl_info = {
-    "name": "Lily Surface Scrapper",
-    "author": "Élie Michel <elie.michel@exppad.com>",
-    "version": (1, 1, 2),
-    "blender": (2, 80, 0),
-    "location": "Properties > Material",
-    "description": "Import material from a single URL",
-    "warning": "",
-    "wiki_url": "",
-    "category": "Import",
-}
+import random
 
-from . import frontend
-from .callback import register_callback
+"""
+This module is used to register callbacks that operators will call once they are done.
+It works around a bpy API issue which is that it makes very hard to wait for an
+operator to finish. It converts callbacks into numeric handles that can be provided
+through operator properties.
+"""
 
-def register():
-    frontend.register()
-    
-def unregister():
-    frontend.unregister()
+callback_dict = {}
 
-if __name__ == "__main__":
-    register()
+def register_callback(callback):
+	"""
+	@param callback: a function to call after.an operator is done,
+	taking a unique argument which is the context
+	@return: a handle to the callback, to be provided to the operator
+	"""
+	limit = 1677216
+	if len(callback_dict) > limit / 4:
+		print("Too many callback registered")
+		return -1
+	handle = random.randint(0,limit)
+	while handle in callback_dict:
+		handle = random.randint(0,limit)
+	callback_dict[handle] = callback
+	return handle
+
+def get_callback(handle):
+	return callback_dict.get(handle, lambda context: None)

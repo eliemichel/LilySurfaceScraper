@@ -25,6 +25,7 @@ import os
 import bpy
 from .CyclesMaterialData import CyclesMaterialData
 from .CyclesWorldData import CyclesWorldData
+from .callback import register_callback, get_callback
 
 ## Operators
 
@@ -45,9 +46,21 @@ class PopupOperator(bpy.types.Operator):
         wm = context.window_manager
         return wm.invoke_props_dialog(self)
 
+class CallbackProps:
+    callback_handle: bpy.props.IntProperty(
+        name="Callback Handle",
+        description=(
+            "Handle to a callback to call once the operator is done." +
+            "Use LilySurfaceScrapper.register_callback(cb) to get such a handle."
+        ),
+        options={'HIDDEN', 'SKIP_SAVE'},
+        default=-1
+    )
+
+
 ### Material
 
-class OBJECT_OT_LilySurfaceScrapper(PopupOperator):
+class OBJECT_OT_LilySurfaceScrapper(PopupOperator, CallbackProps):
     """Import a material just by typing its URL. See documentation for a list of supported material providers."""
     bl_idname = "object.lily_surface_import"
     bl_label = "Import Surface"
@@ -84,7 +97,10 @@ class OBJECT_OT_LilySurfaceScrapper(PopupOperator):
         if variants and len(variants) > 1:
             # More than one variant, prompt the user for which one she wants
             internal_states['skjhnvjkbg'] = data
-            bpy.ops.object.lily_surface_prompt_variant('INVOKE_DEFAULT', internal_state='skjhnvjkbg', create_material=self.create_material)
+            bpy.ops.object.lily_surface_prompt_variant('INVOKE_DEFAULT',
+                internal_state='skjhnvjkbg',
+                create_material=self.create_material,
+                callback_handle=self.callback_handle)
         else:
             data.selectVariant(0)
             if self.create_material:
@@ -92,6 +108,8 @@ class OBJECT_OT_LilySurfaceScrapper(PopupOperator):
                 context.object.active_material = mat
             else:
                 data.loadImages()
+            cb = get_callback(self.callback_handle)
+            cb(context)
         return {'FINISHED'}
         
 
@@ -105,7 +123,7 @@ def list_variant_enum(self, context):
     internal_states['kbjfknvglvhn'] = items # keep a reference to avoid a known crash of blander, says the doc
     return items
 
-class OBJECT_OT_LilySurfacePromptVariant(PopupOperator):
+class OBJECT_OT_LilySurfacePromptVariant(PopupOperator, CallbackProps):
     """While importing a material, prompt the user for teh texture variant
     if there are several materials provided by the URL"""
     bl_idname = "object.lily_surface_prompt_variant"
@@ -143,11 +161,13 @@ class OBJECT_OT_LilySurfacePromptVariant(PopupOperator):
             context.object.active_material = mat
         else:
             data.loadImages()
+        cb = get_callback(self.callback_handle)
+        cb(context)
         return {'FINISHED'}
 
 ### World
 
-class OBJECT_OT_LilyWorldScrapper(PopupOperator):
+class OBJECT_OT_LilyWorldScrapper(PopupOperator, CallbackProps):
     """Import a world just by typing its URL. See documentation for a list of supported world providers."""
     bl_idname = "object.lily_world_import"
     bl_label = "Import World"
@@ -184,7 +204,10 @@ class OBJECT_OT_LilyWorldScrapper(PopupOperator):
         if variants and len(variants) > 1:
             # More than one variant, prompt the user for which one she wants
             internal_states['zeilult'] = data
-            bpy.ops.object.lily_world_prompt_variant('INVOKE_DEFAULT', internal_state='zeilult', create_world=self.create_world)
+            bpy.ops.object.lily_world_prompt_variant('INVOKE_DEFAULT',
+                internal_state='zeilult',
+                create_world=self.create_world,
+                callback_handle=self.callback_handle)
         else:
             data.selectVariant(0)
             if self.create_world:
@@ -192,6 +215,8 @@ class OBJECT_OT_LilyWorldScrapper(PopupOperator):
                 context.scene.world = world
             else:
                 data.loadImages()
+            cb = get_callback(self.callback_handle)
+            cb(context)
         return {'FINISHED'}
         
 
@@ -205,7 +230,7 @@ def list_variant_enum(self, context):
     internal_states['kbjfknvglvhn'] = items # keep a reference to avoid a known crash of blander, says the doc
     return items
 
-class OBJECT_OT_LilyWorldPromptVariant(PopupOperator):
+class OBJECT_OT_LilyWorldPromptVariant(PopupOperator, CallbackProps):
     """While importing a world, prompt the user for teh texture variant
     if there are several worlds provided by the URL"""
     bl_idname = "object.lily_world_prompt_variant"
@@ -243,6 +268,8 @@ class OBJECT_OT_LilyWorldPromptVariant(PopupOperator):
             context.scene.world = world
         else:
             data.loadImages()
+        cb = get_callback(self.callback_handle)
+        cb(context)
         return {'FINISHED'}
 
 
