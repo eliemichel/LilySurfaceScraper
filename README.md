@@ -107,6 +107,31 @@ Get a zip file from the URL `url`. This works like `fetchImage()`, returning the
 
 Remove non printable characters from s
 
+## Advanced use
+
+There are some advanced hidden properties provided in the Lily Surface operators, that may be useful for integration into other scripts or pipelines:
+
+### create_material/create_world
+
+These properties default to True, but can be turned off to prevent the operator from creating a material/world. When it is off, it still download the textures and loads the images in the blend file, but don't affect neither the active object's material nor the world.
+
+### callback_handle
+
+It can be useful to have operations run after the operator. Since it is always painful to do so with the vanilla bpy API, Lily Surface Scrapper features a simple callback mechanism. All operators can take a callback as property, a callback being a function called once the operator is done. It recieves one argument, namely the bpy context into which the operator was running.
+
+Since Blender operators cannot take arbitrary values like callbacks as properties, a `register_callback()` utility function is provided to convert the callback into a numeric handle that can then be provided to the operator. The following snippet illustrates the process:
+
+```python
+import LilySurfaceScrapper
+
+def c(ctx):
+    print("Callback running!")
+    print(ctx)
+    
+h = LilySurfaceScrapper.register_callback(c)
+bpy.ops.object.lily_surface_import(url="https://cc0textures.com/view.php?tex=Metal01", callback_handle=h)
+```
+
 ## TODO
 
  - Handle bump map
