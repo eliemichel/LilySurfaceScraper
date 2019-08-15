@@ -41,7 +41,7 @@ class Cc0texturesScrapper(AbstractScrapper):
         # Get variants
         variants_data = []
         variants = []
-        for button in html.xpath("//div[@class='view-downloads']//button"):
+        for button in html.xpath("//h3[@class='downloads']//a"):
             name = button.xpath("text()")[0].strip()
             if name == 'SBSAR':
                 continue
@@ -65,12 +65,12 @@ class Cc0texturesScrapper(AbstractScrapper):
             self.error = "Invalid variant index: {}".format(variant_index)
             return False
         v = variants_data[variant_index]
-        base_name = html.xpath("//div[@class='view-info']/h2/text()")[0]
-        variant_name = v.xpath("text()")[0].strip()
+        base_name = html.xpath("//div[@class='information']/h1/text()")[0].replace('#', '')
+        variant_name = v.xpath("text()")[0].strip().replace('|', '')
         
         material_data.name = "CC0Textures/" + base_name + "/" + variant_name
         
-        zip_url = "https://cc0textures.com" + v.attrib['onclick'].split("'")[1][1:]
+        zip_url = "https://cc0textures.com" + v.attrib['href'][1:]
         zip_path = self.fetchZip(zip_url, material_data.name, "textures.zip")
         zip_dir = os.path.dirname(zip_path)
         namelist = []
