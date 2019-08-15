@@ -58,6 +58,12 @@ Worlds:
 
  - HDRI Haven: https://hdrihaven.com/
 
+## Troubleshooting
+
+If you run into any sort of trouble running this add-on, please fill an [issue](https://github.com/eliemichel/LilySurfaceScrapper/issues/new) on this repository. In particular, do not attempt to report problems to the materials and skies sources as they are third party websites not involved in this project and I don't want them to receive undue "spam" because of me.
+
+Trouble are to be expected at any design change of the source websites. Please report so as soon as possible and be patient or try to propose your own changes (they should be pretty easy to do, see section about new sources bellow).
+
 ## Adding new sources
 
 I tried to make it as easy as possible to add new sources of data. The only thing to do is to add a python file in `Scrappers/` and define in it a class deriving from `AbstractScrapper`.
