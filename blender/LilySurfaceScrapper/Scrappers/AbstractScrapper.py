@@ -55,7 +55,15 @@ class AbstractScrapper():
             return None
         else:
             return etree.HTML(r.text)
-        
+    
+    def fetchXml(self, url):
+        r = requests.get(url)
+        if r.status_code != 200:
+            self.error = "URL not found: {}".format(url)
+            return None
+        else:
+            return etree.fromstring(r.text)
+
     def getTextureDirectory(self, material_name):
         """Return the texture dir, relative to the blend file, dependent on material's name"""
         name_path = material_name.replace('/',os.path.sep)

@@ -26,6 +26,8 @@ import os
 from .AbstractScrapper import AbstractScrapper
 
 class Cc0texturesScrapper(AbstractScrapper):
+    _texture_cache = None
+
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scrapped by this scrapper."""
@@ -34,43 +36,36 @@ class Cc0texturesScrapper(AbstractScrapper):
     def fetchVariantList(self, url):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
-        html = self.fetchHtml(url)
-        if html is None:
+        if Cc0texturesScrapper._texture_cache is None:
+            Cc0texturesScrapper._texture_cache = self.fetchXml("https://cc0textures.com/api/getDownloadLinks.php")
+
+        root = Cc0texturesScrapper._texture_cache
+
+        texture = root.find(f"assets/item[link='{url}']")
+
+        if texture is None:
             return None
-        
-        # Get variants
-        variants_data = []
-        variants = []
-        for button in html.xpath("//h3[@class='downloads']//a"):
-            name = button.xpath("text()")[0].strip()
-            if name == 'SBSAR':
-                continue
-            variants_data.append(button)
-            variants.append(name)
-        
-        # Save some data for fetchVariant
-        self._html = html
-        self._variants_data = variants_data
-        return variants
+
+        self._texture = texture
+        self._variants = list(filter(lambda v: v.attrib["res"] in ['1', '2', '4', '8'], texture.findall("downloads-pretty/download")))
+        return list(map(lambda v: v.attrib["res"], self._variants))
     
     def fetchVariant(self, variant_index, material_data):
         """Fill material_data with data from the selected variant.
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
-        html = self._html
-        variants_data = self._variants_data
-        
-        if variant_index < 0 or variant_index >= len(variants_data):
+        texture = self._texture
+        variants = self._variants
+
+        if variant_index < 0 or variant_index >= len(variants):
             self.error = "Invalid variant index: {}".format(variant_index)
             return False
-        v = variants_data[variant_index]
-        base_name = html.xpath("//div[@class='information']/h1/text()")[0].replace('#', '')
-        variant_name = v.xpath("text()")[0].strip().replace('|', '')
         
-        material_data.name = "CC0Textures/" + base_name + "/" + variant_name
-        
-        zip_url = "https://cc0textures.com" + v.attrib['href'][1:]
+        variant = variants[variant_index]
+
+        material_data.name = "CC0Textures/" + texture.find("title").text + "/" + variant.attrib["res"]
+        zip_url = variant.text
         zip_path = self.fetchZip(zip_url, material_data.name, "textures.zip")
         zip_dir = os.path.dirname(zip_path)
         namelist = []
@@ -78,7 +73,7 @@ class Cc0texturesScrapper(AbstractScrapper):
             namelist = zip_ref.namelist()
             zip_ref.extractall(zip_dir)
         
-        # Translate cgbookcase map names into our internal map names
+        # Translate cc0textures map names into our internal map names
         maps_tr = {
             'col': 'baseColor',
             'nrm': 'normal',
@@ -92,5 +87,4 @@ class Cc0texturesScrapper(AbstractScrapper):
             if map_type in maps_tr:
                 map_name = maps_tr[map_type]
                 material_data.maps[map_name] = os.path.join(zip_dir, name)
-
         return True
