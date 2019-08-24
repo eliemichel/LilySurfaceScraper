@@ -138,8 +138,7 @@ class OBJECT_OT_LilySurfacePromptVariant(PopupOperator, CallbackProps):
     internal_state: bpy.props.StringProperty(
         name="Internal State",
         description="System property used to transfer the state of the operator",
-        options={'HIDDEN', 'SKIP_SAVE'},
-        update=lambda self, ctx: self.variant
+        options={'HIDDEN', 'SKIP_SAVE'}
     )
 
     create_material: bpy.props.BoolProperty(
@@ -245,8 +244,7 @@ class OBJECT_OT_LilyWorldPromptVariant(PopupOperator, CallbackProps):
     internal_state: bpy.props.StringProperty(
         name="Internal State",
         description="System property used to transfer the state of the operator",
-        options={'HIDDEN', 'SKIP_SAVE'},
-        update=lambda self, ctx: self.variant
+        options={'HIDDEN', 'SKIP_SAVE'}
     )
 
     create_world: bpy.props.BoolProperty(

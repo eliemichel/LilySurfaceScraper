@@ -57,3 +57,29 @@ def autoAlignNodes(root):
             acc += (child[2]+1)/2.
 
     placeNodes(tree, Vector((0,0)))
+
+# Matching of node input/output names and their indices.
+# Do not use English names because it might break when setting
+# Blender in other language. Hope this won't change too much in
+# future updates. If it breaks, replace numbers with string values
+# but only for use with English set up.
+principled_normal_input = 17  # "Normal"
+texture_color_output = 0  # "Color"
+normal_normal_output = 0  # "Normal"
+normal_color_input = 1  # "Input"
+background_color_input = 0  # "Color"
+
+class PrincipledWorldWrapper:
+    """This is a wrapper similar in use to PrincipledBSDFWrapper (located in
+    bpy_extras.node_shader_utils) but for use with worlds. This is required to
+    avoid relying on node names, which depend on Blender's UI language settings
+    (see issue #7) """
+
+    def __init__(self, world):
+        self.node_background = None
+        self.node_out = None
+        for n in world.node_tree.nodes:
+            if self.node_background is None and n.type == "BACKGROUND":
+                self.node_background = n
+            elif self.node_out is None and n.type == "OUTPUT_WORLD":
+                self.node_out = n
