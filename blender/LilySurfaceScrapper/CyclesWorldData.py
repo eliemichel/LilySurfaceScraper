@@ -52,7 +52,10 @@ class CyclesWorldData(WorldData):
             texture_node = nodes.new(type="ShaderNodeTexEnvironment")
             texture_node.image = getCyclesImage(img)
             texture_node.image.colorspace_settings.name = "sRGB"
-            texture_node.color_space = "COLOR"
+            try:
+                texture_node.color_space = "COLOR"
+            except:
+                pass
             links.new(texture_node.outputs[texture_color_output], background.inputs[background_color_input])
         
         autoAlignNodes(world_output)
