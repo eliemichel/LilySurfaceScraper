@@ -24,7 +24,10 @@
 import bpy
 
 from .WorldData import WorldData
-from .cycles_utils import getCyclesImage, autoAlignNodes
+from .cycles_utils import (
+    getCyclesImage, autoAlignNodes, PrincipledWorldWrapper,
+    texture_color_output, background_color_input
+)
 
 class CyclesWorldData(WorldData):
     def loadImages(self):
@@ -39,15 +42,18 @@ class CyclesWorldData(WorldData):
         world.use_nodes = True
         nodes = world.node_tree.nodes
         links = world.node_tree.links
-        background = nodes["Background"]
-        world_output = nodes["World Output"]
+        PrincipledWorldWrapper
+        principled_world = PrincipledWorldWrapper(world)
+        background = principled_world.node_background
+        world_output = principled_world.node_out
 
         img = self.maps['sky']
         if img is not None:
             texture_node = nodes.new(type="ShaderNodeTexEnvironment")
             texture_node.image = getCyclesImage(img)
-            texture_node.image.colorspace_settings.name = 'sRGB'
-            links.new(texture_node.outputs["Color"], background.inputs["Color"])
+            texture_node.image.colorspace_settings.name = "sRGB"
+            texture_node.color_space = "COLOR"
+            links.new(texture_node.outputs[texture_color_output], background.inputs[background_color_input])
         
         autoAlignNodes(world_output)
 
