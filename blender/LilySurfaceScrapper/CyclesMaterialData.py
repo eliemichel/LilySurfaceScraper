@@ -25,10 +25,7 @@ import bpy
 from bpy_extras.node_shader_utils import PrincipledBSDFWrapper
 
 from .MaterialData import MaterialData
-from .cycles_utils import (
-    getCyclesImage, autoAlignNodes, principled_normal_input,
-    texture_color_output, normal_normal_output, normal_color_input
-)
+from .cycles_utils import getCyclesImage, autoAlignNodes
 
 class CyclesMaterialData(MaterialData):
     # Translate our internal map names into cycles principled inputs
@@ -70,16 +67,16 @@ class CyclesMaterialData(MaterialData):
             if map_name == "opacity":
                 transparence_node = nodes.new(type="ShaderNodeBsdfTransparent")
                 mix_node = nodes.new(type="ShaderNodeMixShader")
-                links.new(texture_node.outputs[texture_color_output], mix_node.inputs[0])
+                links.new(texture_node.outputs["Color"], mix_node.inputs[0])
                 links.new(transparence_node.outputs[0], mix_node.inputs[1])
                 links.new(principled.outputs[0], mix_node.inputs[2])
                 links.new(mix_node.outputs[0], mat_output.inputs[0])
             elif map_name == "normal":
                 normal_node = nodes.new(type="ShaderNodeNormalMap")
-                links.new(texture_node.outputs[texture_color_output], normal_node.inputs[normal_color_input])
-                links.new(normal_node.outputs[normal_normal_output], principled.inputs[principled_normal_input])
+                links.new(texture_node.outputs["Color"], normal_node.inputs["Color"])
+                links.new(normal_node.outputs["Normal"], principled.inputs["Normal"])
             else:
-                links.new(texture_node.outputs[texture_color_output], principled.inputs[__class__.input_tr[map_name]])
+                links.new(texture_node.outputs["Color"], principled.inputs[__class__.input_tr[map_name]])
 
         autoAlignNodes(mat_output)
 

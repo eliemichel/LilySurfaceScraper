@@ -24,10 +24,7 @@
 import bpy
 
 from .WorldData import WorldData
-from .cycles_utils import (
-    getCyclesImage, autoAlignNodes, PrincipledWorldWrapper,
-    texture_color_output, background_color_input
-)
+from .cycles_utils import getCyclesImage, autoAlignNodes, PrincipledWorldWrapper
 
 class CyclesWorldData(WorldData):
     def loadImages(self):
@@ -54,7 +51,7 @@ class CyclesWorldData(WorldData):
             texture_node.image.colorspace_settings.name = "sRGB"
             if hasattr(texture_node, "color_space"):
                 texture_node.color_space = "COLOR"
-            links.new(texture_node.outputs[texture_color_output], background.inputs[background_color_input])
+            links.new(texture_node.outputs["Color"], background.inputs["Color"])
         
         autoAlignNodes(world_output)
 
