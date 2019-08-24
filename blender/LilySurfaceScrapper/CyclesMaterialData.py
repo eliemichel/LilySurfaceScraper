@@ -65,7 +65,10 @@ class CyclesMaterialData(MaterialData):
             texture_node = nodes.new(type="ShaderNodeTexImage")
             texture_node.image = getCyclesImage(img)
             texture_node.image.colorspace_settings.name = "sRGB" if map_name == "baseColor" else "Non-Color"
-            texture_node.color_space = "COLOR" if map_name == "baseColor" else "NONE"
+            try:
+                texture_node.color_space = "COLOR" if map_name == "baseColor" else "NONE"
+            except:
+                pass
             if map_name == "opacity":
                 transparence_node = nodes.new(type="ShaderNodeBsdfTransparent")
                 mix_node = nodes.new(type="ShaderNodeMixShader")
