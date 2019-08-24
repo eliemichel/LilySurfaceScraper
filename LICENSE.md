@@ -1,4 +1,8 @@
-LilySurfaceScrapper is released under the terms of the GPLv3 license.
+LilySurfaceScrapper as a whole is released under the terms of the GPLv3 license
+because some of its part rely on the `bpy` module (Blender's API) which is
+itself released under the GPL. The part of the add-on that do not rely on
+`bpy`, including for instance the scrappers, are released under the more
+permissive MIT license. See individual files notice for details.
 
     Copyright (c) 2019 - Élie Michel
 
