@@ -64,7 +64,8 @@ class Cc0texturesScrapper(AbstractScrapper):
         
         variant = variants[variant_index]
 
-        material_data.name = "CC0Textures/" + texture.find("title").text + "/" + variant.attrib["res"]
+        base_name = texture.find("title").text.replace('#', '')
+        material_data.name = "CC0Textures/" + base_name + "/" + variant.attrib["res"]
         zip_url = variant.text
         zip_path = self.fetchZip(zip_url, material_data.name, "textures.zip")
         zip_dir = os.path.dirname(zip_path)
