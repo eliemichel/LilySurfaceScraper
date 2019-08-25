@@ -23,6 +23,7 @@
 
 import zipfile
 import os
+from urllib.parse import urlparse, parse_qs, urlencode
 from .AbstractScrapper import AbstractScrapper
 
 class Cc0texturesScrapper(AbstractScrapper):
@@ -41,7 +42,10 @@ class Cc0texturesScrapper(AbstractScrapper):
 
         root = Cc0texturesScrapper._texture_cache
 
-        texture = root.find(f"assets/item[link='{url}']")
+        parsed_url = urlparse(url.strip('/'))
+        query = parse_qs(parsed_url.query)
+        parsed_url = parsed_url._replace(query=urlencode({ 'tex': query.get('tex', None) }, True))
+        texture = root.find(f"assets/item[link='{parsed_url.geturl()}']")
 
         if texture is None:
             return None
