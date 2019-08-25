@@ -8,6 +8,7 @@ import os
 import bpy
 from .CyclesMaterialData import CyclesMaterialData
 from .CyclesWorldData import CyclesWorldData
+from .ScrappersManager import ScrappersManager
 from .callback import register_callback, get_callback
 
 ## Operators
@@ -209,7 +210,7 @@ def list_variant_enum(self, context):
     items = []
     for i, v in enumerate(data.getVariantList()):
         items.append((str(i), v, v))
-    internal_states['kbjfknvglvhn'] = items # keep a reference to avoid a known crash of blander, says the doc
+    internal_states['ikdrtvhdlvhn'] = items # keep a reference to avoid a known crash of blander, says the doc
     return items
 
 class OBJECT_OT_LilyWorldPromptVariant(PopupOperator, CallbackProps):
@@ -266,11 +267,14 @@ class MATERIAL_PT_LilySurfaceScrapper(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        row = layout.row()
         if bpy.data.filepath == '':
-            row.label(text="You must save the file to use Lily Surface Scrapper")
+            layout.label(text="You must save the file to use Lily Surface Scrapper")
         else:
-            row.operator("object.lily_surface_import")
+            layout.operator("object.lily_surface_import")
+            layout.label(text="Available sources:")
+            for S in ScrappersManager.getScrappersList():
+                if 'MATERIAL' in S.scrapped_type:
+                    layout.operator("wm.url_open", text=S.source_name).url = S.home_url
 
 class WORLD_PT_LilySurfaceScrapper(bpy.types.Panel):
     """Panel with the Lily Scrapper button"""
@@ -282,11 +286,14 @@ class WORLD_PT_LilySurfaceScrapper(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        row = layout.row()
         if bpy.data.filepath == '':
-            row.label(text="You must save the file to use Lily Surface Scrapper")
+            layout.label(text="You must save the file to use Lily Surface Scrapper")
         else:
-            row.operator("object.lily_world_import")
+            layout.operator("object.lily_world_import")
+            layout.label(text="Available sources:")
+            for S in ScrappersManager.getScrappersList():
+                if 'WORLD' in S.scrapped_type:
+                    layout.operator("wm.url_open", text=S.source_name).url = S.home_url
 
 ## Registration
 

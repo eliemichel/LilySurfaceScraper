@@ -27,6 +27,9 @@ from urllib.parse import urlparse, parse_qs, urlencode
 from .AbstractScrapper import AbstractScrapper
 
 class Cc0texturesScrapper(AbstractScrapper):
+    source_name = "CC0 Textures"
+    home_url = "https://cc0textures.com"
+
     _texture_cache = None
 
     @classmethod
@@ -52,7 +55,7 @@ class Cc0texturesScrapper(AbstractScrapper):
 
         self._texture = texture
         self._variants = list(filter(lambda v: v.attrib["res"] in ['1', '2', '4', '8'], texture.findall("downloads-pretty/download")))
-        return list(map(lambda v: v.attrib["res"], self._variants))
+        return list(map(lambda v: v.attrib["res"] + 'K', self._variants))
     
     def fetchVariant(self, variant_index, material_data):
         """Fill material_data with data from the selected variant.

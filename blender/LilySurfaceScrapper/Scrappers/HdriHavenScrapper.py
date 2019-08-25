@@ -25,6 +25,8 @@ from .AbstractScrapper import AbstractScrapper
 
 class HdriHavenScrapper(AbstractScrapper):
     scrapped_type = {'WORLD'}
+    source_name = "HDRI Haven"
+    home_url = "https://hdrihaven.com/hdris/"
 
     @classmethod
     def canHandleUrl(cls, url):

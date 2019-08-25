@@ -24,6 +24,9 @@
 from .AbstractScrapper import AbstractScrapper
 
 class CgbookcaseScrapper(AbstractScrapper):
+    source_name = "cgbookcase.com"
+    home_url = "https://www.cgbookcase.com/textures/"
+
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scrapped by this scrapper."""
