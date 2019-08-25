@@ -36,6 +36,10 @@ from ..settings import TEXTURE_DIR
 class AbstractScrapper():
     # Can be 'MATERIAL', 'WORLD'
     scrapped_type = {'MATERIAL'}
+    # The name of the scrapped source, displayed in UI
+    source_name = "<Abstract>"
+    # The URL of the source's home, used for the list of availabel sources in panels
+    home_url = None
 
     @classmethod
     def canHandleUrl(cls, url):

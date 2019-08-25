@@ -24,6 +24,9 @@
 from .AbstractScrapper import AbstractScrapper
 
 class TextureHavenScrapper(AbstractScrapper):
+    source_name = "Texture Haven"
+    home_url = "https://texturehaven.com/textures/"
+
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scrapped by this scrapper."""
