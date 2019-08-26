@@ -91,14 +91,13 @@ class CgbookcaseScrapper(AbstractScrapper):
         for m in v.xpath(".//a"):
             map_url = "https://www.cgbookcase.com" + m.attrib['href']
 
-            temp = map_url[map_url.find("K_") + 2:-4].split("_")[-1::-1]
-            map_name = " ".join(temp).title()
-            map_name = temp[0].capitalize()
+            temp = map_url[map_url.find("K_") + 2:-4].split("_")
+            map_name = " ".join(temp[1:]).title() if double_sided else " ".join(temp).title()
             # Add another folder for front / back textures
-            material_data.name += "/" + temp[1].capitalize() if double_sided else ""
+            temp = material_data.name + "/" + temp[0].capitalize() if double_sided else material_data.name
 
             if map_name in maps_tr:
                 map_name = maps_tr[map_name]
-                material_data.maps[map_name] = self.fetchImage(map_url, material_data.name, map_name)
+                material_data.maps[map_name] = self.fetchImage(map_url, temp, map_name)
         
         return True
