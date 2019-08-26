@@ -24,10 +24,6 @@ from ..ScrappersManager import ScrappersManager
 class TexturesOneScrapper(AbstractScrapper):  
     source_name = "Textures.one"
     home_url = "https://www.textures.one"
-    
-    # There is probably something rotten about doing it this way, but I couldn't really figure out another way
-    source_scrapper_type = None # lovely global state
-    source_scrapper = None
 
     @classmethod
     def findSource(cls, url):
@@ -42,21 +38,34 @@ class TexturesOneScrapper(AbstractScrapper):
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scrapped by this scrapper."""
-        if "textures.one/go/?id=" in url: # this is superior to url.startswith(), because it can deal with leaving out "https://" or "www."
+        if "textures.one/go/?id=" in url:
             source_url = cls.findSource(url)
             if source_url is not None:
                 # Look for a scrapper that can scrape the source page
                 for S in ScrappersManager.getScrappersList():
                     if S.canHandleUrl(source_url):
+                        cls.source_url = source_url
                         cls.source_scrapper_type = S
-                        cls.source_scrapper = S("") # I'd love to create this in this classes __init__(), but it gave me headache with scope problems.
+                        # cls.source_scrapper = S("") # I'd love to create this in this classes __init__(), but it gave me headache with scope problems.
                         cls.scrapped_type = cls.source_scrapper_type.scrapped_type # This works
                         return True
         return False
 
+    def __init__(self, texture_root=""):
+        super().__init__(texture_root)
+        cls = TexturesOneScrapper
+        self.source_url = cls.source_url
+        self.source_scrapper_type = cls.source_scrapper_type
+        self.source_scrapper = cls.source_scrapper_type(texture_root)
+        self.scrapped_type = cls.scrapped_type
+        # cls.source_url = None
+        # cls.source_scrapper_type = None
+        # cls.source_scrapper = None
+        # cls.scrapped_type = None
+
     def fetchVariantList(self, url):
         self.source_scrapper.texture_root = self.texture_root # I'd love to do this just once via the constructor, but again, didn't really get __init__() here to work
-        return self.source_scrapper.fetchVariantList(url)
+        return self.source_scrapper.fetchVariantList(self.source_url)
 
     def fetchVariant(self, variant_index, material_data):
         self.source_scrapper.texture_root = self.texture_root
