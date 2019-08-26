@@ -18,7 +18,7 @@ class CyclesMaterialData(MaterialData):
         'roughness': 'Roughness',
         'metallic': 'Metallic',
         'specular': 'Specular',
-        'opacity': '<custom>',
+        'opacity': 'Alpha',
     }
 
     def loadImages(self):
@@ -47,19 +47,15 @@ class CyclesMaterialData(MaterialData):
             texture_node.image.colorspace_settings.name = "sRGB" if map_name == "baseColor" else "Non-Color"
             if hasattr(texture_node, "color_space"):
                 texture_node.color_space = "COLOR" if map_name == "baseColor" else "NONE"
-            if map_name == "opacity":
-                transparence_node = nodes.new(type="ShaderNodeBsdfTransparent")
-                mix_node = nodes.new(type="ShaderNodeMixShader")
-                links.new(texture_node.outputs["Color"], mix_node.inputs[0])
-                links.new(transparence_node.outputs[0], mix_node.inputs[1])
-                links.new(principled.outputs[0], mix_node.inputs[2])
-                links.new(mix_node.outputs[0], mat_output.inputs[0])
             elif map_name == "normal":
                 normal_node = nodes.new(type="ShaderNodeNormalMap")
                 links.new(texture_node.outputs["Color"], normal_node.inputs["Color"])
                 links.new(normal_node.outputs["Normal"], principled.inputs["Normal"])
             else:
                 links.new(texture_node.outputs["Color"], principled.inputs[__class__.input_tr[map_name]])
+
+            if map_name == "opacity":
+                mat.blend_method = 'BLEND'
 
         autoAlignNodes(mat_output)
 
