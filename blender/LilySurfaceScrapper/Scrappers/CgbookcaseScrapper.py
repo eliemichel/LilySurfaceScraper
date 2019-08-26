@@ -40,7 +40,7 @@ class CgbookcaseScrapper(AbstractScrapper):
             return None
         
         # Get resolutions
-        resolutions = int(html.xpath("//meta[@name='tex1:resolution']/@content")[0][0])
+        resolutions = int(html.xpath("//meta[@name='tex1:resolution']/@content")[0])
 
         # Has front or back-side?
         # Checks for the "Front" text below the item name
@@ -48,7 +48,7 @@ class CgbookcaseScrapper(AbstractScrapper):
         double_sided = len(html.xpath("//div[@id='view-downloadSection']/h3")) is not 0
 
         # Get variants
-        variants_data = html.xpath("//div[@class='view-downloadLinks']/div")
+        variants_data = html.xpath("//div[@id='view-downloadLinks']/div")
         variants = []
         variants += [str(n) + "K" for n in range(1, resolutions + 1)]
         if double_sided:
@@ -60,12 +60,6 @@ class CgbookcaseScrapper(AbstractScrapper):
         self._variants = variants
         self._double_sided = double_sided
         return variants
-
-    def fetchVariantSingleSided(self, variant_index, material_data, variants_data):
-        pass
-    
-    def fetchVariantDoubleSided(self, variant_index, material_data, variants_data):
-        pass
     
     def fetchVariant(self, variant_index, material_data):
         """Fill material_data with data from the selected variant.
@@ -76,17 +70,12 @@ class CgbookcaseScrapper(AbstractScrapper):
         variants_data = self._variants_data
         variants = self._variants
         double_sided = self._double_sided
-
-        # if double_sided:
-        #     return self.fetchVariantDoubleSided(variant_index, material_data, variants_data)
-        # else:
-        #     return self.fetchVariantSingleSided(variant_index, material_data, variants_data)
         
         if variant_index < 0 or variant_index >= len(variants_data):
             self.error = "Invalid variant index: {}".format(variant_index)
             return False
         v = variants_data[variant_index]
-        base_name = html.xpath("//h1/text()")[0]
+        base_name = str(html.xpath("//h1/text()")[0])
         variant_name = variants[variant_index]
         
         material_data.name = "cgbookcase/" + base_name + "/" + variant_name
@@ -101,7 +90,13 @@ class CgbookcaseScrapper(AbstractScrapper):
         }
         for m in v.xpath(".//a"):
             map_url = "https://www.cgbookcase.com" + m.attrib['href']
-            map_name = map_url[map_url.find("K_") + 2:-4]
+
+            temp = map_url[map_url.find("K_") + 2:-4].split("_")[-1::-1]
+            map_name = " ".join(map_url[map_url.find("K_") + 2:-4].split("_")[-1::-1]).title()
+            map_name = temp[0].capitalize()
+            # Add another folder for front / back textures
+            material_data.name += "/" + temp[1].capitalize() if double_sided else ""
+
             if map_name in maps_tr:
                 map_name = maps_tr[map_name]
                 material_data.maps[map_name] = self.fetchImage(map_url, material_data.name, map_name)
