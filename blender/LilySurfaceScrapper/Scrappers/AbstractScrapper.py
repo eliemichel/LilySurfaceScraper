@@ -52,7 +52,7 @@ class AbstractScrapper():
     def fetchHtml(self, url):
         """Get a lxml.etree object representing the scrapped page.
         Use xpath queries to browse it."""
-        r = requests.get(url)
+        r = requests.get(url if "https://" in url else "https://" + url)
         if r.status_code != 200:
             self.error = "URL not found: {}".format(url)
             return None
@@ -60,7 +60,7 @@ class AbstractScrapper():
             return etree.HTML(r.text)
     
     def fetchXml(self, url):
-        r = requests.get(url)
+        r = requests.get(url if "https://" in url else "https://" + url)
         if r.status_code != 200:
             self.error = "URL not found: {}".format(url)
             return None
