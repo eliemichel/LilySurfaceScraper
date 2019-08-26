@@ -25,6 +25,8 @@ class TexturesOneScrapper(AbstractScrapper):
     source_name = "Textures.one"
     home_url = "https://www.textures.one"
 
+    _url_cache = {}
+
     @classmethod
     def findSource(cls, url):
         """Find the original page from where the texture is being distributed via scraping."""
@@ -44,28 +46,19 @@ class TexturesOneScrapper(AbstractScrapper):
                 # Look for a scrapper that can scrape the source page
                 for S in ScrappersManager.getScrappersList():
                     if S.canHandleUrl(source_url):
-                        cls.source_url = source_url
-                        cls.source_scrapper_type = S
+                        scrapper_type = S
+                        cls._url_cache[url] = (source_url, scrapper_type)
                         cls.scrapped_type = cls.source_scrapper_type.scrapped_type # This works
                         return True
         return False
 
-    def __init__(self, texture_root=""):
-        super().__init__(texture_root)
-        cls = TexturesOneScrapper
-        self.source_url = cls.source_url
-        self.source_scrapper_type = cls.source_scrapper_type
-        self.source_scrapper = cls.source_scrapper_type(texture_root)
-        self.scrapped_type = cls.scrapped_type
-        # cls.source_url = None
-        # cls.source_scrapper_type = None
-        # cls.source_scrapper = None
-        # cls.scrapped_type = None
-
     def fetchVariantList(self, url):
-        self.source_scrapper.texture_root = self.texture_root
-        return self.source_scrapper.fetchVariantList(self.source_url)
+        cls = TexturesOneScrapper
+        if url not in cls._url_cache:
+            return []
+        source_url, scrapper_type = cls._url_cache[url]
+        self.source_scrapper = scrapper_type(self.texture_root)
+        return self.source_scrapper.fetchVariantList(source_url)
 
     def fetchVariant(self, variant_index, material_data):
-        self.source_scrapper.texture_root = self.texture_root
         return self.source_scrapper.fetchVariant(variant_index, material_data)
