@@ -30,7 +30,7 @@ class CgbookcaseScrapper(AbstractScrapper):
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scrapped by this scrapper."""
-        return url.startswith("https://www.cgbookcase.com/textures/")
+        return "cgbookcase.com/textures/" in url
     
     def fetchVariantList(self, url):
         """Get a list of available variants.
