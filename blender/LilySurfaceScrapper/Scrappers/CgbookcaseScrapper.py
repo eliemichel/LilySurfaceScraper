@@ -92,7 +92,7 @@ class CgbookcaseScrapper(AbstractScrapper):
             map_url = "https://www.cgbookcase.com" + m.attrib['href']
 
             temp = map_url[map_url.find("K_") + 2:-4].split("_")[-1::-1]
-            map_name = " ".join(map_url[map_url.find("K_") + 2:-4].split("_")[-1::-1]).title()
+            map_name = " ".join(temp).title()
             map_name = temp[0].capitalize()
             # Add another folder for front / back textures
             material_data.name += "/" + temp[1].capitalize() if double_sided else ""
