@@ -39,14 +39,33 @@ class CgbookcaseScrapper(AbstractScrapper):
         if html is None:
             return None
         
+        # Get resolutions
+        resolutions = int(html.xpath("//meta[@name='tex1:resolution']/@content")[0][0])
+
+        # Has front or back-side?
+        # Checks for the "Front" text below the item name
+        # Example: https://www.cgbookcase.com/textures/autumn-leaf-22
+        double_sided = html.xpath("//div[@id='view-downloadSection']/h3") is not None
+
         # Get variants
-        variants_data = html.xpath("//div[@class='textureSet']")
-        variants = [v.xpath("h3/text()")[0] for v in variants_data]
+        variants_data = html.xpath("//div[@class='view-downloadLinks']/div")
+        variants = []
+        variants += [str(n) + "K" for n in range(1, resolutions)]
+        if double_sided:
+            variants += [v + " Backside" for v in variants]
         
         # Save some data for fetchVariant
         self._html = html
         self._variants_data = variants_data
+        self._variants = variants
+        self._double_sided = double_sided
         return variants
+
+    def fetchVariantSingleSided(self, variant_index, material_data, variants_data):
+        pass
+    
+    def fetchVariantDoubleSided(self, variant_index, material_data, variants_data):
+        pass
     
     def fetchVariant(self, variant_index, material_data):
         """Fill material_data with data from the selected variant.
@@ -55,13 +74,20 @@ class CgbookcaseScrapper(AbstractScrapper):
         # Get data saved in fetchVariantList
         html = self._html
         variants_data = self._variants_data
+        variants = self._variants
+        double_sided = self._double_sided
+
+        # if double_sided:
+        #     return self.fetchVariantDoubleSided(variant_index, material_data, variants_data)
+        # else:
+        #     return self.fetchVariantSingleSided(variant_index, material_data, variants_data)
         
         if variant_index < 0 or variant_index >= len(variants_data):
             self.error = "Invalid variant index: {}".format(variant_index)
             return False
         v = variants_data[variant_index]
-        base_name = html.xpath("//div[@id='textureRight']/h2/text()")[0]
-        variant_name = v.xpath("h3/text()")[0]
+        base_name = html.xpath("//h1/text()")[0]
+        variant_name = variants[variant_index]
         
         material_data.name = "cgbookcase/" + base_name + "/" + variant_name
         
@@ -73,9 +99,9 @@ class CgbookcaseScrapper(AbstractScrapper):
             'Roughness': 'roughness',
             'Metallic': 'metallic',
         }
-        for m in v.xpath(".//a[@class='directdownload']"):
-            map_name = m.xpath("div[@class='downloadable']/text()")[0].strip()
+        for m in v.xpath(".//a"):
             map_url = "https://www.cgbookcase.com" + m.attrib['href']
+            map_name = map_url[map_url.find("K_") + 2:-4]
             if map_name in maps_tr:
                 map_name = maps_tr[map_name]
                 material_data.maps[map_name] = self.fetchImage(map_url, material_data.name, map_name)
