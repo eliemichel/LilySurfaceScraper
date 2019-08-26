@@ -24,6 +24,7 @@ from ..ScrappersManager import ScrappersManager
 class TexturesOneScrapper(AbstractScrapper):  
     source_name = "Textures.one"
     home_url = "https://www.textures.one"
+    scrapped_type = "MATERIAL & WORLD"
 
     _url_cache = {}
 
@@ -46,9 +47,9 @@ class TexturesOneScrapper(AbstractScrapper):
                 # Look for a scrapper that can scrape the source page
                 for S in ScrappersManager.getScrappersList():
                     if S.canHandleUrl(source_url):
-                        scrapper_type = S
-                        cls._url_cache[url] = (source_url, scrapper_type)
-                        cls.scrapped_type = cls.source_scrapper_type.scrapped_type # This works
+                        scrapper_class = S
+                        scrapped_type = scrapper_class.scrapped_type
+                        cls._url_cache[url] = (source_url, scrapper_class, scrapped_type)
                         return True
         return False
 
@@ -56,8 +57,9 @@ class TexturesOneScrapper(AbstractScrapper):
         cls = TexturesOneScrapper
         if url not in cls._url_cache:
             return []
-        source_url, scrapper_type = cls._url_cache[url]
-        self.source_scrapper = scrapper_type(self.texture_root)
+        source_url, scrapper_class, scrapped_type = cls._url_cache[url]
+        self.scrapped_type = scrapped_type
+        self.source_scrapper = scrapper_class(self.texture_root)
         return self.source_scrapper.fetchVariantList(source_url)
 
     def fetchVariant(self, variant_index, material_data):
