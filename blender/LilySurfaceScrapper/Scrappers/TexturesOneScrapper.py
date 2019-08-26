@@ -46,7 +46,6 @@ class TexturesOneScrapper(AbstractScrapper):
                     if S.canHandleUrl(source_url):
                         cls.source_url = source_url
                         cls.source_scrapper_type = S
-                        # cls.source_scrapper = S("") # I'd love to create this in this classes __init__(), but it gave me headache with scope problems.
                         cls.scrapped_type = cls.source_scrapper_type.scrapped_type # This works
                         return True
         return False
@@ -64,7 +63,7 @@ class TexturesOneScrapper(AbstractScrapper):
         # cls.scrapped_type = None
 
     def fetchVariantList(self, url):
-        self.source_scrapper.texture_root = self.texture_root # I'd love to do this just once via the constructor, but again, didn't really get __init__() here to work
+        self.source_scrapper.texture_root = self.texture_root
         return self.source_scrapper.fetchVariantList(self.source_url)
 
     def fetchVariant(self, variant_index, material_data):
