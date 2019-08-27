@@ -28,17 +28,17 @@ class TexturesOneSearchMaterialScrapper(TexturesOneScrapper):
     supported_creators = [1, 2, 4] # IDs of the websites on Textures.one that we support
 
     @classmethod
-    def searchForTexture(cls, search_term):
+    def searchForTexture(cls, search_term: str) -> str:
         url = "https://textures.one/search/?q=" + search_term + "&" + cls.scrapped_type_name
         html = AbstractScrapper.fetchHtml(None, url)
         options = html.xpath("//div[@class='indexBox']")
         options = list(filter(lambda o : any("/" + str(p) + "/" in str(o.xpath(".//div/div")[1].xpath(".//img/@src")) for p in cls.supported_creators) , options))
-        links = list(map(lambda o:str(o.xpath(".//a/@href")[0]), options))
+        links = list(map(lambda o : str(o.xpath(".//a/@href")[0]), options))
         return choice(links)
 
     @classmethod
-    def canHandleUrl(cls, search_term):
-        return super().canHandleUrl(cls.searchForTexture(search_term))
+    def canHandleUrl(cls, url: str) -> bool:
+        return super().canHandleUrl(cls.searchForTexture(url))
 
 class TexturesOneSearchWorldScrapper(TexturesOneSearchMaterialScrapper):
     scrapped_type = "WORLD"
