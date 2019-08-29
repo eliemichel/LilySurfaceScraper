@@ -52,7 +52,9 @@ class CgbookcaseScrapper(AbstractScrapper):
         variants = []
         variants += [str(n) + "K" for n in range(1, resolutions + 1)]
         if double_sided:
-            variants += [v + " Backside" for v in variants]
+            front_variants = [v for v in variants]
+            variants += [v + " Backside" for v in front_variants]
+            variants += [v + " Twosided" for v in front_variants]
         
         # Save some data for fetchVariant
         self._html = html
@@ -70,16 +72,21 @@ class CgbookcaseScrapper(AbstractScrapper):
         variants_data = self._variants_data
         variants = self._variants
         double_sided = self._double_sided
-        
-        if variant_index < 0 or variant_index >= len(variants_data):
+
+        if variant_index < 0 or variant_index >= len(variants):
             self.error = "Invalid variant index: {}".format(variant_index)
             return False
-        v = variants_data[variant_index]
+
         base_name = str(html.xpath("//h1/text()")[0])
         variant_name = variants[variant_index]
-        
         material_data.name = "cgbookcase/" + base_name + "/" + variant_name
-        
+
+        # If two sided, use several variants, and label them with is_back_side bool
+        n = len(variants_data)
+        selected_variants = [(variants_data[variant_index % n], False)]
+        if double_sided and variant_index >= n and variant_index < n * 1.5:
+            selected_variants.append((variants_data[variant_index % n + n // 2], True))
+
         # Translate cgbookcase map names into our internal map names
         maps_tr = {
             'Base Color': 'baseColor',
@@ -88,16 +95,17 @@ class CgbookcaseScrapper(AbstractScrapper):
             'Roughness': 'roughness',
             'Metallic': 'metallic',
         }
-        for m in v.xpath(".//a"):
-            map_url = "https://www.cgbookcase.com" + m.attrib['href']
+        for variant_html_data, is_back_side in selected_variants:
+            for m in variant_html_data.xpath(".//a"):
+                map_url = "https://www.cgbookcase.com" + m.attrib['href']
 
-            temp = map_url[map_url.find("K_") + 2:-4].split("_")
-            map_name = " ".join(temp[1:]).title() if double_sided else " ".join(temp).title()
-            # Add another folder for front / back textures
-            temp = material_data.name + "/" + temp[0].capitalize() if double_sided else material_data.name
+                temp = map_url[map_url.find("K_") + 2:-4].split("_")
+                map_name = " ".join(temp[1:]).title() if double_sided else " ".join(temp).title()
 
-            if map_name in maps_tr:
-                map_name = maps_tr[map_name]
-                material_data.maps[map_name] = self.fetchImage(map_url, temp, map_name)
+                if map_name in maps_tr:
+                    map_name = maps_tr[map_name]
+                    if is_back_side:
+                        map_name += "_back"
+                    material_data.maps[map_name] = self.fetchImage(map_url, material_data.name, map_name)
         
         return True
