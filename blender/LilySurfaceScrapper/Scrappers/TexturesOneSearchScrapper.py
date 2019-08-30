@@ -18,19 +18,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from .TexturesOneScrapper import TexturesOneScrapper
+from .TexturesOneScrapper import TexturesOneMaterialScrapper, TexturesOneWorldScrapper
 from .AbstractScrapper import AbstractScrapper
 from random import choice
 
-class TexturesOneSearchMaterialScrapper(TexturesOneScrapper):
-    scrapped_type = "MATERIAL"
-    scrapped_type_name = "tex-pbr"
-    supported_creators = [1, 2, 4] # IDs of the websites on Textures.one that we support
+class TexturesOneSearchScrapper:
+    scrapped_type_name = ""
+    supported_creators = []
 
     @classmethod
-    def searchForTexture(cls, search_term: str) -> str:
+    def findSource(cls, search_term: str) -> str:
+        """Search and pick a random result from the results site"""
         url = "https://textures.one/search/?q=" + search_term + "&" + cls.scrapped_type_name
         html = AbstractScrapper.fetchHtml(None, url)
+        if html is None: raise ConnectionError
         options = html.xpath("//div[@class='indexBox']")
         options = list(filter(lambda o : any("/" + str(p) + "/" in str(o.xpath(".//div/div")[1].xpath(".//img/@src")) for p in cls.supported_creators) , options))
         links = list(map(lambda o : str(o.xpath(".//a/@href")[0]), options))
@@ -38,9 +39,12 @@ class TexturesOneSearchMaterialScrapper(TexturesOneScrapper):
 
     @classmethod
     def canHandleUrl(cls, url: str) -> bool:
-        return super().canHandleUrl(cls.searchForTexture(url))
+        raise NotImplementedError
 
-class TexturesOneSearchWorldScrapper(TexturesOneSearchMaterialScrapper):
-    scrapped_type = "WORLD"
+class TexturesOneSearchMaterialScrapper(TexturesOneMaterialScrapper, TexturesOneSearchScrapper):
+    scrapped_type_name = "tex-pbr"
+    supported_creators = [1, 2, 4] # IDs of the websites on Textures.one that we support
+
+class TexturesOneSearchWorldScrapper(TexturesOneWorldScrapper, TexturesOneSearchScrapper):
     scrapped_type_name = "hdri-sphere"
     supported_creators = [3]

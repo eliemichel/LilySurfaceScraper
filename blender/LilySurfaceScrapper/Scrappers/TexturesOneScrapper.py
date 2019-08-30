@@ -21,19 +21,18 @@
 from .AbstractScrapper import AbstractScrapper
 from ..ScrappersManager import ScrappersManager
 
-class TexturesOneScrapper(AbstractScrapper):  
+class TexturesOneMaterialScrapper(AbstractScrapper):  
     source_name = "Textures.one"
     home_url = "https://www.textures.one"
-    scrapped_type = "MATERIAL & WORLD"
+    scrapped_type = "MATERIAL"
 
-    _url_cache = {}
+    url_cache = {}
 
     @classmethod
     def findSource(cls, url: str) -> str:
         """Find the original page from where the texture is being distributed via scraping."""
-        html = super().fetchHtml(None, url)
-        if html is None:
-            return None
+        html = AbstractScrapper.fetchHtml(None, url)
+        if html is None: raise ConnectionError
         
         # Scrape the url
         return html.xpath("//span[@class='goLink']/a")[0].get("href")
@@ -41,7 +40,7 @@ class TexturesOneScrapper(AbstractScrapper):
     @classmethod
     def canHandleUrl(cls, url :str) -> bool:
         """Return true if the URL can be scrapped by this scrapper."""
-        if "textures.one/go/?id=" in url:
+        if "textures.one/go" and "?id=" in url:
             source_url = cls.findSource(url)
             if source_url is not None:
                 # Look for a scrapper that can scrape the source page
@@ -49,18 +48,21 @@ class TexturesOneScrapper(AbstractScrapper):
                     if S.canHandleUrl(source_url):
                         scrapper_class: AbstractScrapper = S
                         scrapped_type: str = scrapper_class.scrapped_type
-                        cls._url_cache[url] = (source_url, scrapper_class, scrapped_type)
+                        cls.url_cache[url] = (source_url, scrapper_class, scrapped_type)
                         return True
         return False
 
     def fetchVariantList(self, url: str) -> list:
-        cls = TexturesOneScrapper
-        if url not in cls._url_cache:
+        cls = self.__class__
+        if url not in cls.url_cache:
             return []
-        source_url, scrapper_class, scrapped_type = cls._url_cache[url]
+        source_url, scrapper_class, scrapped_type = cls.url_cache[url]
         self.scrapped_type = scrapped_type
         self.source_scrapper = scrapper_class(self.texture_root)
         return self.source_scrapper.fetchVariantList(source_url)
 
     def fetchVariant(self, variant_index, material_data):
         return self.source_scrapper.fetchVariant(variant_index, material_data)
+
+class TexturesOneWorldScrapper(TexturesOneMaterialScrapper):
+    scrapped_type = "WORLD"
