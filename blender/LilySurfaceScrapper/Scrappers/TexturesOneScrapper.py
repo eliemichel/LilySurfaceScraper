@@ -38,18 +38,25 @@ class TexturesOneMaterialScrapper(AbstractScrapper):
         return html.xpath("//span[@class='goLink']/a")[0].get("href")
 
     @classmethod
+    def cacheSourceUrl(cls, url) -> bool:
+        """Look for a scrapper that can scrap the source page, and if so caches the
+        result for further use."""
+        source_url = cls.findSource(url)
+        if source_url is None:
+            return False
+        for S in ScrappersManager.getScrappersList():
+            if cls.scrapped_type in S.scrapped_type and S.canHandleUrl(source_url):
+                scrapper_class: AbstractScrapper = S
+                scrapped_type: str = scrapper_class.scrapped_type
+                cls.url_cache[url] = (source_url, scrapper_class, scrapped_type)
+                return True
+        return False
+
+    @classmethod
     def canHandleUrl(cls, url :str) -> bool:
         """Return true if the URL can be scrapped by this scrapper."""
         if "textures.one/go" and "?id=" in url:
-            source_url = cls.findSource(url)
-            if source_url is not None:
-                # Look for a scrapper that can scrape the source page
-                for S in ScrappersManager.getScrappersList():
-                    if S.canHandleUrl(source_url):
-                        scrapper_class: AbstractScrapper = S
-                        scrapped_type: str = scrapper_class.scrapped_type
-                        cls.url_cache[url] = (source_url, scrapper_class, scrapped_type)
-                        return True
+            return cls.cacheSourceUrl(url)
         return False
 
     def fetchVariantList(self, url: str) -> list:
