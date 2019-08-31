@@ -22,7 +22,9 @@ from .TexturesOneScrapper import TexturesOneMaterialScrapper, TexturesOneWorldSc
 from .AbstractScrapper import AbstractScrapper
 from random import choice
 
-class TexturesOneSearchScrapper:
+class TexturesOneSearchScrapper(TexturesOneMaterialScrapper):
+    scrapped_type = "NONE"
+    home_url = None  # Prevent double with TexturesOneMaterialScrapper in UI
     scrapped_type_name = ""
     supported_creators = []
 
@@ -39,12 +41,17 @@ class TexturesOneSearchScrapper:
 
     @classmethod
     def canHandleUrl(cls, url: str) -> bool:
-        raise NotImplementedError
+        if "/" in url:
+            # It is an URL, not a search query
+            return False
+        return cls.cacheSourceUrl(url)
 
-class TexturesOneSearchMaterialScrapper(TexturesOneMaterialScrapper, TexturesOneSearchScrapper):
+class TexturesOneSearchMaterialScrapper(TexturesOneSearchScrapper):
+    scrapped_type = "MATERIAL"
     scrapped_type_name = "tex-pbr"
     supported_creators = [1, 2, 4] # IDs of the websites on Textures.one that we support
 
-class TexturesOneSearchWorldScrapper(TexturesOneWorldScrapper, TexturesOneSearchScrapper):
+class TexturesOneSearchWorldScrapper(TexturesOneSearchScrapper):
+    scrapped_type = "WORLD"
     scrapped_type_name = "hdri-sphere"
     supported_creators = [3]
