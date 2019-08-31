@@ -53,10 +53,12 @@ Materials:
  - cgbookcase: https://www.cgbookcase.com
  - CC0Textures: https://cc0textures.com
  - Texture Haven: https://texturehaven.com
+ - Research on Textures.one: If the "URL" contains just words, no slash, they are used as search keywords to randomly pick a result on http://textures.one if it is supported by the previously cited sources. You can also perform the search yourself and provide a link to the result page on Textures.one.
 
 Worlds:
 
  - HDRI Haven: https://hdrihaven.com/
+ - Research on Textures.one (same as for materials)
 
 ## Troubleshooting
 
