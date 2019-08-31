@@ -59,7 +59,7 @@ class ScrappedData():
             return self._variants
         self._variants = self._scrapper.fetchVariantList(self.url)
         if self._variants is None:
-            self.error = self.scrapper.error
+            self.error = self._scrapper.error
         return self._variants
 
     def selectVariant(self, variant_index):
