@@ -273,7 +273,7 @@ class MATERIAL_PT_LilySurfaceScrapper(bpy.types.Panel):
             layout.operator("object.lily_surface_import")
             layout.label(text="Available sources:")
             for S in ScrappersManager.getScrappersList():
-                if 'MATERIAL' in S.scrapped_type:
+                if 'MATERIAL' in S.scrapped_type and S.home_url is not None:
                     layout.operator("wm.url_open", text=S.source_name).url = S.home_url
 
 class WORLD_PT_LilySurfaceScrapper(bpy.types.Panel):
