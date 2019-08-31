@@ -95,7 +95,18 @@ class OBJECT_OT_LilySurfaceScrapper(PopupOperator, CallbackProps):
             cb = get_callback(self.callback_handle)
             cb(context)
         return {'FINISHED'}
-        
+
+class OBJECT_OT_LilyClipboardSurfaceScrapper(PopupOperator, CallbackProps):
+    """Same as lily_surface_import except that it gets the URL from clipboard."""
+    bl_idname = "object.lily_surface_import_from_clipboard"
+    bl_label = "Import from clipboard"
+    
+    def invoke(self, context, event):
+        return self.execute(context)
+
+    def execute(self, context):
+        bpy.ops.object.lily_surface_import('EXEC_DEFAULT', url=bpy.context.window_manager.clipboard)
+        return {'FINISHED'}
 
 def list_variant_enum(self, context):
     """Callback filling enum items for OBJECT_OT_LilySurfacePromptVariant"""
@@ -202,6 +213,17 @@ class OBJECT_OT_LilyWorldScrapper(PopupOperator, CallbackProps):
             cb(context)
         return {'FINISHED'}
         
+class OBJECT_OT_LilyClipboardWorldScrapper(PopupOperator, CallbackProps):
+    """Same as lily_world_import except that it gets the URL from clipboard."""
+    bl_idname = "object.lily_world_import_from_clipboard"
+    bl_label = "Import from clipboard"
+    
+    def invoke(self, context, event):
+        return self.execute(context)
+
+    def execute(self, context):
+        bpy.ops.object.lily_world_import('EXEC_DEFAULT', url=bpy.context.window_manager.clipboard)
+        return {'FINISHED'}
 
 def list_variant_enum(self, context):
     """Callback filling enum items for OBJECT_OT_LilySurfacePromptVariant"""
@@ -271,6 +293,7 @@ class MATERIAL_PT_LilySurfaceScrapper(bpy.types.Panel):
             layout.label(text="You must save the file to use Lily Surface Scrapper")
         else:
             layout.operator("object.lily_surface_import")
+            layout.operator("object.lily_surface_import_from_clipboard")
             layout.label(text="Available sources:")
             for S in ScrappersManager.getScrappersList():
                 if 'MATERIAL' in S.scrapped_type and S.home_url is not None:
@@ -290,6 +313,7 @@ class WORLD_PT_LilySurfaceScrapper(bpy.types.Panel):
             layout.label(text="You must save the file to use Lily Surface Scrapper")
         else:
             layout.operator("object.lily_world_import")
+            layout.operator("object.lily_world_import_from_clipboard")
             layout.label(text="Available sources:")
             for S in ScrappersManager.getScrappersList():
                 if 'WORLD' in S.scrapped_type:
@@ -299,16 +323,20 @@ class WORLD_PT_LilySurfaceScrapper(bpy.types.Panel):
 
 def register():
     bpy.utils.register_class(OBJECT_OT_LilySurfaceScrapper)
+    bpy.utils.register_class(OBJECT_OT_LilyClipboardSurfaceScrapper)
     bpy.utils.register_class(OBJECT_OT_LilySurfacePromptVariant)
     bpy.utils.register_class(OBJECT_OT_LilyWorldScrapper)
+    bpy.utils.register_class(OBJECT_OT_LilyClipboardWorldScrapper)
     bpy.utils.register_class(OBJECT_OT_LilyWorldPromptVariant)
     bpy.utils.register_class(MATERIAL_PT_LilySurfaceScrapper)
     bpy.utils.register_class(WORLD_PT_LilySurfaceScrapper)
 
 def unregister():
     bpy.utils.unregister_class(OBJECT_OT_LilySurfaceScrapper)
+    bpy.utils.unregister_class(OBJECT_OT_LilyClipboardSurfaceScrapper)
     bpy.utils.unregister_class(OBJECT_OT_LilySurfacePromptVariant)
     bpy.utils.unregister_class(OBJECT_OT_LilyWorldScrapper)
+    bpy.utils.unregister_class(OBJECT_OT_LilyClipboardWorldScrapper)
     bpy.utils.unregister_class(OBJECT_OT_LilyWorldPromptVariant)
     bpy.utils.unregister_class(MATERIAL_PT_LilySurfaceScrapper)
     bpy.utils.unregister_class(WORLD_PT_LilySurfaceScrapper)
