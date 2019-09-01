@@ -19,6 +19,10 @@ class CyclesMaterialData(MaterialData):
         'metallic': 'Metallic',
         'specular': 'Specular',
         'opacity': 'Alpha',
+        'emission': 'Emission',
+        'height': '<custom>',
+        'ambientOcclusion': '<custom>', # https://github.com/KhronosGroup/glTF-Blender-IO/issues/123
+        'glossiness': '<custom>',
     }
 
     def loadImages(self):

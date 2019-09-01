@@ -94,6 +94,8 @@ class CgbookcaseScrapper(AbstractScrapper):
             'Opacity': 'opacity',
             'Roughness': 'roughness',
             'Metallic': 'metallic',
+            'Height': 'height',
+            'AO': 'ambientOcclusion',
         }
         for variant_html_data, is_back_side in selected_variants:
             for m in variant_html_data.xpath(".//a"):
