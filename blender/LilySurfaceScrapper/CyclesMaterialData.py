@@ -43,6 +43,8 @@ class CyclesMaterialData(MaterialData):
         back_principled = None
         mat_output = principled_mat.node_out
         principled_mat.roughness = 1.0
+        normal_node = None
+        displacement_node = None
 
         for map_name, img in self.maps.items():
             if img is None or map_name.split("_")[0] not in __class__.input_tr:
@@ -69,10 +71,23 @@ class CyclesMaterialData(MaterialData):
 
             if hasattr(texture_node, "color_space"):
                 texture_node.color_space = "COLOR" if map_name == "baseColor" else "NONE"
+            elif map_name == "glossiness":
+                invert_node = nodes.new(type="ShaderNodeInvert")
+                links.new(texture_node.outputs["Color"], invert_node.inputs["Color"])
+                links.new(invert_node.outputs["Color"], current_principled.inputs["Roughness"])
+                current_principled
+            elif map_name == "height":
+                displacement_node = nodes.new(type="ShaderNodeDisplacement")
+                links.new(texture_node.outputs["Color"], displacement_node.inputs["Height"])
+                links.new(displacement_node.outputs["Displacement"], mat_output.inputs[2])
+                if normal_node is not None:
+                    links.new(normal_node.outputs["Normal"], displacement_node.inputs["Normal"])
             elif map_name == "normal":
                 normal_node = nodes.new(type="ShaderNodeNormalMap")
                 links.new(texture_node.outputs["Color"], normal_node.inputs["Color"])
                 links.new(normal_node.outputs["Normal"], current_principled.inputs["Normal"])
+                if displacement_node is not None:
+                    links.new(normal_node.outputs["Normal"], displacement_node.inputs["Normal"])
             else:
                 links.new(texture_node.outputs["Color"], current_principled.inputs[__class__.input_tr[map_name]])
 
