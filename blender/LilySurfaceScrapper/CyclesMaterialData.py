@@ -80,19 +80,18 @@ class CyclesMaterialData(MaterialData):
                 displacement_node = nodes.new(type="ShaderNodeDisplacement")
                 links.new(texture_node.outputs["Color"], displacement_node.inputs["Height"])
                 links.new(displacement_node.outputs["Displacement"], mat_output.inputs[2])
-                if normal_node is not None:
-                    links.new(normal_node.outputs["Normal"], displacement_node.inputs["Normal"])
             elif map_name == "normal":
                 normal_node = nodes.new(type="ShaderNodeNormalMap")
                 links.new(texture_node.outputs["Color"], normal_node.inputs["Color"])
                 links.new(normal_node.outputs["Normal"], current_principled.inputs["Normal"])
-                if displacement_node is not None:
-                    links.new(normal_node.outputs["Normal"], displacement_node.inputs["Normal"])
             else:
                 links.new(texture_node.outputs["Color"], current_principled.inputs[__class__.input_tr[map_name]])
 
             if map_name == "opacity":
                 mat.blend_method = 'BLEND'
+            
+            if displacement_node is not None and normal_node is not None:
+                    links.new(normal_node.outputs["Normal"], displacement_node.inputs["Normal"])
 
         autoAlignNodes(mat_output)
 
