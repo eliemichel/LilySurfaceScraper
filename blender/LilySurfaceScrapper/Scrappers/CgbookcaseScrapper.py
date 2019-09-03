@@ -50,7 +50,7 @@ class CgbookcaseScrapper(AbstractScrapper):
         # Get variants
         variants_data = html.xpath("//div[@id='view-downloadLinks']/div")
         variants = []
-        variants += [str(n) + "K" for n in range(1, resolutions + 1)]
+        variants += [str(n) + "K" for n in range(resolutions, 0, -1)]
         if double_sided:
             front_variants = [v for v in variants]
             variants += [v + " Backside" for v in front_variants]
