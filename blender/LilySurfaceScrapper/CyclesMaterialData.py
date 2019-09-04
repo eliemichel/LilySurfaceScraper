@@ -50,7 +50,7 @@ class CyclesMaterialData(MaterialData):
                 continue
             
             texture_node = nodes.new(type="ShaderNodeTexImage")
-            if "_back" in map_name:
+            if map_name.endswith("_back"):
                 map_name = map_name[:-5] # remove "_back"
                 back[map_name] = texture_node
             else:
@@ -63,41 +63,39 @@ class CyclesMaterialData(MaterialData):
             if map_name == "opacity":
                 mat.blend_method = 'BLEND'
 
-        front = back if not front else front # In case just the backside texture was chosen
+        if not front: # In case just the backside texture was chosen
+            front = back
+            back = {}
 
-        def advanced_setup(name, node):
-            if name == "glossiness":
-                invert_node = nodes.new(type="ShaderNodeInvert")
-                links.new(node.outputs["Color"], invert_node.inputs["Color"])
-                links.new(invert_node.outputs["Color"], principled.inputs["Roughness"])
-            elif name == "height":
-                displacement_node = nodes.new(type="ShaderNodeDisplacement")
-                links.new(node.outputs["Color"], displacement_node.inputs["Height"])
-                links.new(displacement_node.outputs["Displacement"], mat_output.inputs[2])
-            elif name == "normal":
-                normal_node = nodes.new(type="ShaderNodeNormalMap")
-                links.new(node.outputs["Color"], normal_node.inputs["Color"])
-                links.new(normal_node.outputs["Normal"], principled.inputs["Normal"])
+        def setup(name, node):
+            if __class__.input_tr.get(name):
+                links.new(node.outputs["Color"], principled.inputs[__class__.input_tr[name]])
+            else:
+                if name == "glossiness":
+                    invert_node = nodes.new(type="ShaderNodeInvert")
+                    links.new(node.outputs["Color"], invert_node.inputs["Color"])
+                    links.new(invert_node.outputs["Color"], principled.inputs["Roughness"])
+                elif name == "height":
+                    displacement_node = nodes.new(type="ShaderNodeDisplacement")
+                    links.new(node.outputs["Color"], displacement_node.inputs["Height"])
+                    links.new(displacement_node.outputs["Displacement"], mat_output.inputs[2])
+                elif name == "normal":
+                    normal_node = nodes.new(type="ShaderNodeNormalMap")
+                    links.new(node.outputs["Color"], normal_node.inputs["Color"])
+                    links.new(normal_node.outputs["Normal"], principled.inputs["Normal"])
 
         if not back: # If there is no item in the back dictionary
-            for name, node in front.items():
-                if __class__.input_tr.get(name):
-                    links.new(node.outputs["Color"], principled.inputs[__class__.input_tr[name]])
-                else:
-                    advanced_setup(name, node)
+            [setup(name, node) for name, node in front.items()]
         else:
             geometry_node = nodes.new("ShaderNodeNewGeometry")
-            def setup(name, front, back, mix):
+            def pre_setup(name, front, back, mix):
                 links.new(geometry_node.outputs["Backfacing"], mix.inputs[0])
                 links.new(front.outputs["Color"], mix.inputs[1])
                 links.new(back.outputs["Color"], mix.inputs[2])
-                if __class__.input_tr.get(name):
-                    links.new(mix.outputs["Color"], principled.inputs[__class__.input_tr[name]])
-                else:
-                    advanced_setup(name, mix)
+                setup(name, mix)
             for name, node in front.items():
                 if back.get(name):
-                    setup(name, node, back[name], nodes.new(type="ShaderNodeMixRGB"))
+                    pre_setup(name, node, back[name], nodes.new(type="ShaderNodeMixRGB"))
         
         autoAlignNodes(mat_output)
 
