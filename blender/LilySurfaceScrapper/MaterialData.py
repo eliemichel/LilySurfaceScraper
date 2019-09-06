@@ -37,8 +37,13 @@ class MaterialData(ScrappedData):
             'normal': None,
             'opacity': None,
             'roughness': None,
+            'glossiness': None,
             'metallic': None,
             'specular': None,
+            'height': None,
+            'vectorDisplacement': None,
+            'emission': None,
+            'ambientOcclusion': None,
         }
 
     @classmethod
