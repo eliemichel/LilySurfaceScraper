@@ -295,9 +295,11 @@ class MATERIAL_PT_LilySurfaceScrapper(bpy.types.Panel):
             layout.operator("object.lily_surface_import")
             layout.operator("object.lily_surface_import_from_clipboard")
             layout.label(text="Available sources:")
+            urls = {None}  # avoid doubles
             for S in ScrappersManager.getScrappersList():
-                if 'MATERIAL' in S.scrapped_type and S.home_url is not None:
+                if 'MATERIAL' in S.scrapped_type and S.home_url not in urls:
                     layout.operator("wm.url_open", text=S.source_name).url = S.home_url
+                    urls.add(S.home_url)
 
 class WORLD_PT_LilySurfaceScrapper(bpy.types.Panel):
     """Panel with the Lily Scrapper button"""
@@ -315,9 +317,11 @@ class WORLD_PT_LilySurfaceScrapper(bpy.types.Panel):
             layout.operator("object.lily_world_import")
             layout.operator("object.lily_world_import_from_clipboard")
             layout.label(text="Available sources:")
+            urls = {None}  # avoid doubles
             for S in ScrappersManager.getScrappersList():
-                if 'WORLD' in S.scrapped_type and S.home_url is not None:
+                if 'WORLD' in S.scrapped_type and S.home_url not in urls:
                     layout.operator("wm.url_open", text=S.source_name).url = S.home_url
+                    urls.add(S.home_url)
 
 ## Registration
 

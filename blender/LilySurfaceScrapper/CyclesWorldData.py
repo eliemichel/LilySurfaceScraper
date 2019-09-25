@@ -7,7 +7,10 @@
 import bpy
 
 from .WorldData import WorldData
-from .cycles_utils import getCyclesImage, autoAlignNodes, PrincipledWorldWrapper
+from .cycles_utils import (
+    getCyclesImage, autoAlignNodes,
+    PrincipledWorldWrapper, guessColorSpaceFromExtension
+)
 
 class CyclesWorldData(WorldData):
     def loadImages(self):
@@ -31,9 +34,13 @@ class CyclesWorldData(WorldData):
         if img is not None:
             texture_node = nodes.new(type="ShaderNodeTexEnvironment")
             texture_node.image = getCyclesImage(img)
-            texture_node.image.colorspace_settings.name = "sRGB"
+            color_space = guessColorSpaceFromExtension(img)
+            print("guessColorSpaceFromExtension(%s): " % (img,))
+            print(color_space)
+            texture_node.image.colorspace_settings.name = color_space["name"]
             if hasattr(texture_node, "color_space"):
-                texture_node.color_space = "COLOR"
+                texture_node.color_space = color_space["old_name"]
+            print(texture_node.image.colorspace_settings.name)
             links.new(texture_node.outputs["Color"], background.inputs["Color"])
         
         autoAlignNodes(world_output)

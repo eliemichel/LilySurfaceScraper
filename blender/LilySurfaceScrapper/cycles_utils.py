@@ -55,3 +55,17 @@ class PrincipledWorldWrapper:
                 self.node_background = n
             elif self.node_out is None and n.type == "OUTPUT_WORLD":
                 self.node_out = n
+
+def guessColorSpaceFromExtension(img):
+    """Guess the most appropriate color space from filename extension"""
+    img = img.lower()
+    if img.endswith(".jpg") or img.endswith(".jpeg") or img.endswith(".png"):
+        return {
+            "name": "sRGB",
+            "old_name": "COLOR", # mostly for backward compatibility
+        }
+    else:
+        return {
+            "name": "Linear",
+            "old_name": "NONE",
+        }
