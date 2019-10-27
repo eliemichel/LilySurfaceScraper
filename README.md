@@ -94,6 +94,13 @@ Scrap the information of the variant numbered `variant_index`, and write it to `
  - `material_data.maps['opacity']`: The path to the opacity map, or None
  - `material_data.maps['roughness']`: The path to the roughness map, or None
  - `material_data.maps['metallic']`: The path to the metallic map, or None
+ - `material_data.maps['emission']`: The path to the emission map, or None
+ - `material_data.maps['ambientOcclusion']`: The path to the ambient occlusion map, or None
+ - `material_data.maps['specular']`: The path to the specular map, or None
+ - `material_data.maps['glossiness']`: The path to the glossiness map (inverted roughness), or None
+ - `material_data.maps['height']`: The path to the height map, or None
+ - `material_data.maps['vectorDisplacement']`: The path to the vector displacement map, or None
+
 
 ## Utility functions
 
