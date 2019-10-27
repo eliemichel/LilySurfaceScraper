@@ -68,7 +68,7 @@ class TextureHavenScrapper(AbstractScrapper):
 
         # Translate cgbookcase map names into our internal map names
         maps_tr = {
-            'Diffuse': 'baseColor',
+            'Diffuse': 'albedo',
             'Normal': 'normal',
             'Specular': 'specular',
             'Roughness': 'roughness',

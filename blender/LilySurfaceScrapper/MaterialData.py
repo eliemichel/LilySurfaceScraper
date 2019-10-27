@@ -33,7 +33,7 @@ class MaterialData(ScrappedData):
     def reset(self):
         self.name = "Lily Material"
         self.maps = {
-            'baseColor': None,
+            'albedo': None,
             'normal': None,
             'opacity': None,
             'roughness': None,
