@@ -89,7 +89,7 @@ This method may save info like the html page in `self`, to reuse it in `fetchVar
 Scrap the information of the variant numbered `variant_index`, and write it to `material_data`. The following fields of `material_data` can be filled:
 
  - `material_data.name`: The name of the texture, typically prefixed by the source, followed by the texture name, then the variant name.
- - `material_data.maps['baseColor']`: The path to the base color map, or None
+ - `material_data.maps['albedo']`: The path to the albedo map, or None
  - `material_data.maps['normal']`: The path to the normal map, or None
  - `material_data.maps['opacity']`: The path to the opacity map, or None
  - `material_data.maps['roughness']`: The path to the roughness map, or None
