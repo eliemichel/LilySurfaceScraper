@@ -73,6 +73,9 @@ class TextureHavenScrapper(AbstractScrapper):
             'Specular': 'specular',
             'Roughness': 'roughness',
             'Metallic': 'metallic',
+            'AO': 'ambientOcclusion',
+            'Specular': 'specular',
+            'Displacement': 'height',
         }
         for m in maps:
             map_name = m.xpath("div[@class='map-download']//text()")[0]
