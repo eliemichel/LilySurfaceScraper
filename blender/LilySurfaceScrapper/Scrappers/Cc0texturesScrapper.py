@@ -35,7 +35,12 @@ class Cc0texturesScrapper(AbstractScrapper):
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scrapped by this scrapper."""
-        return url.startswith("https://cc0textures.com/view.php?tex=")
+        return url.startswith("https://cc0textures.com/view.php?tex=") or url.startswith("https://cc0textures.com/view?tex=")
+
+    @classmethod
+    def normalizeUrl(cls, url):
+        """Normalize URL to match canonical URLs as present in the download link xml"""
+        return url.replace("https://cc0textures.com/view?tex=", "https://cc0textures.com/view.php?tex=")
     
     def fetchVariantList(self, url):
         """Get a list of available variants.
@@ -44,6 +49,8 @@ class Cc0texturesScrapper(AbstractScrapper):
             Cc0texturesScrapper._texture_cache = self.fetchXml("https://cc0textures.com/api/getDownloadLinks.php")
 
         root = Cc0texturesScrapper._texture_cache
+
+        url = Cc0texturesScrapper.normalizeUrl(url)
 
         parsed_url = urlparse(url.strip('/'))
         query = parse_qs(parsed_url.query)
