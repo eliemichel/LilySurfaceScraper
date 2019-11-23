@@ -38,8 +38,10 @@ class AbstractScrapper():
     scrapped_type = {'MATERIAL'}
     # The name of the scrapped source, displayed in UI
     source_name = "<Abstract>"
-    # The URL of the source's home, used for the list of availabel sources in panels
+    # The URL of the source's home, used for the list of available sources in panels
     home_url = None
+    # The file name (eg CC0.txt) of the relevant license
+    license_file_name = None
 
     @classmethod
     def canHandleUrl(cls, url):
@@ -75,6 +77,13 @@ class AbstractScrapper():
             os.makedirs(dirpath)
         return dirpath
 
+    def placeLicenseFile(self, path):
+        """Place the correct license file (specified by the license_file_name constant) into the given directory"""
+        current_directory = os.path.dirname(os.path.realpath(__file__))
+        license_file_path = current_directory + os.path.sep + "Licenses" + os.path.sep + self.license_file_name
+        target_file_path = path + os.path.sep + self.license_file_name
+        return shutil.copyfile(license_file_path, target_file_path)
+
     def fetchImage(self, url, material_name, map_name, force_ext=False):
         """Utility helper for download textures"""
         root = self.getTextureDirectory(material_name)
@@ -91,6 +100,7 @@ class AbstractScrapper():
                 with open(path, 'wb') as f:
                     r.raw.decode_content = True
                     shutil.copyfileobj(r.raw, f)
+                self.placeLicenseFile(root)
             else:
                 self.error = "URL not found: {}".format(url)
                 return None
@@ -109,6 +119,7 @@ class AbstractScrapper():
                 with open(path, 'wb') as f:
                     r.raw.decode_content = True
                     shutil.copyfileobj(r.raw, f)
+                self.placeLicenseFile(root)
             else:
                 self.error = "URL not found: {}".format(url)
                 return None

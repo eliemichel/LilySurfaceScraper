@@ -26,6 +26,7 @@ from .AbstractScrapper import AbstractScrapper
 class TextureHavenScrapper(AbstractScrapper):
     source_name = "Texture Haven"
     home_url = "https://texturehaven.com/textures/"
+    license_file_name = "cc0.txt"
 
     @classmethod
     def canHandleUrl(cls, url):
