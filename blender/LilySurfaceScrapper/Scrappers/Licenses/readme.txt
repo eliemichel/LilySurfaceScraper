@@ -1,0 +1,4 @@
+Please note that this add-on is not distributed on the licenses found in this folder.
+The licenses here are just text files that we will put next to your downloaded textures according to what we believe to be the matching license. This is just a helper and does neither replace checking the license yourself, nor mean that the author of the texture is actually providing it under this license.
+The add-on is just aiding you in downloading them from the internet and does not change the fact that the license is between the platform from which the texture is being downloaded and you.
+Use this responsibly.
