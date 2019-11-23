@@ -20,7 +20,7 @@ class CyclesMaterialData(MaterialData):
         'emission': 'Emission',
         'normal': '',
         'height': '',
-        'ambientOcclusion': '', # https://github.com/KhronosGroup/glTF-Blender-IO/issues/123
+        'ambientOcclusion': '', # FIXME Handle this better https://github.com/KhronosGroup/glTF-Blender-IO/issues/123
         'glossiness': '',
     }
 
