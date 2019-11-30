@@ -90,7 +90,7 @@ class Cc0texturesScrapper(AbstractScrapper):
         
         # Translate cc0textures map names into our internal map names
         maps_tr = {
-            'col': 'albedo',
+            'col': 'baseColor',
             'nrm': 'normal',
             'mask': 'opacity',
             'rgh': 'roughness',
