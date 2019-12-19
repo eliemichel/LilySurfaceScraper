@@ -88,7 +88,8 @@ class AbstractScrapper():
             print("Using cached {}.".format(url))
         else:
             print("Downloading {}...".format(url))
-            r = requests.get(url, stream=True)
+            headers = {"User-Agent":"Mozilla/5.0"}  # fake user agent
+            r = requests.get(url, stream=True, headers=headers)
             if r.status_code == 200:
                 with open(path, 'wb') as f:
                     r.raw.decode_content = True
@@ -106,7 +107,8 @@ class AbstractScrapper():
             print("Using cached {}.".format(url))
         else:
             print("Downloading {}...".format(url))
-            r = requests.get(url, stream=True)
+            headers = {"User-Agent":"Mozilla/5.0"}  # fake user agent
+            r = requests.get(url, stream=True, headers=headers)
             if r.status_code == 200:
                 with open(path, 'wb') as f:
                     r.raw.decode_content = True
