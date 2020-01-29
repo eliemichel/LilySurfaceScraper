@@ -18,14 +18,27 @@ bl_info = {
     "category": "Import",
 }
 
-from . import frontend
-from .callback import register_callback
+def isImportedInBlender():
+    try:
+        import bpy
+        return True
+    except ImportError:
+        return False
 
-def register():
-    frontend.register()
-    
-def unregister():
-    frontend.unregister()
+if isImportedInBlender():
+    from . import frontend
+    from .callback import register_callback
 
-if __name__ == "__main__":
-    register()
+    def register():
+        frontend.register()
+        
+    def unregister():
+        frontend.unregister()
+
+    if __name__ == "__main__":
+        register()
+
+else:
+    from .WorldData import WorldData
+    from .MaterialData import MaterialData
+    from .ScrappersManager import ScrappersManager
