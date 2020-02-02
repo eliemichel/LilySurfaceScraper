@@ -7,8 +7,8 @@
 bl_info = {
     "name": "Lily Surface Scrapper",
     "author": "Élie Michel <elie.michel@exppad.com>",
-    "version": (1, 2, 2),
-    "blender": (2, 80, 0),
+    "version": (1, 2, 3),
+    "blender": (2, 81, 0),
     "location": "Properties > Material",
     "description": "Import material from a single URL",
     "warning": "",
@@ -18,14 +18,27 @@ bl_info = {
     "category": "Import",
 }
 
-from . import frontend
-from .callback import register_callback
+def isImportedInBlender():
+    try:
+        import bpy
+        return True
+    except ImportError:
+        return False
 
-def register():
-    frontend.register()
-    
-def unregister():
-    frontend.unregister()
+if isImportedInBlender():
+    from . import frontend
+    from .callback import register_callback
 
-if __name__ == "__main__":
-    register()
+    def register():
+        frontend.register()
+        
+    def unregister():
+        frontend.unregister()
+
+    if __name__ == "__main__":
+        register()
+
+else:
+    from .WorldData import WorldData
+    from .MaterialData import MaterialData
+    from .ScrappersManager import ScrappersManager

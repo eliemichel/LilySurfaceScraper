@@ -25,8 +25,12 @@ import os
 import string
 
 import sys
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "site-packages"))
-from lxml import etree
+try:
+    from lxml import etree
+except ImportError:
+    print("No system-wide installation of lxml found. Falling back to local version.")
+    sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "site-packages"))
+    from lxml import etree
 
 import requests
 import shutil
@@ -52,7 +56,8 @@ class AbstractScrapper():
     def fetchHtml(self, url):
         """Get a lxml.etree object representing the scrapped page.
         Use xpath queries to browse it."""
-        r = requests.get(url if "https://" in url else "https://" + url)
+        headers = {"User-Agent":"Mozilla/5.0"}  # fake user agent
+        r = requests.get(url if "https://" in url else "https://" + url, headers=headers)
         if r.status_code != 200:
             self.error = "URL not found: {}".format(url)
             return None
@@ -60,7 +65,8 @@ class AbstractScrapper():
             return etree.HTML(r.text)
     
     def fetchXml(self, url):
-        r = requests.get(url if "https://" in url else "https://" + url)
+        headers = {"User-Agent":"Mozilla/5.0"}  # fake user agent
+        r = requests.get(url if "https://" in url else "https://" + url, headers=headers)
         if r.status_code != 200:
             self.error = "URL not found: {}".format(url)
             return None
@@ -86,7 +92,8 @@ class AbstractScrapper():
             print("Using cached {}.".format(url))
         else:
             print("Downloading {}...".format(url))
-            r = requests.get(url, stream=True)
+            headers = {"User-Agent":"Mozilla/5.0"}  # fake user agent
+            r = requests.get(url, stream=True, headers=headers)
             if r.status_code == 200:
                 with open(path, 'wb') as f:
                     r.raw.decode_content = True
@@ -104,7 +111,8 @@ class AbstractScrapper():
             print("Using cached {}.".format(url))
         else:
             print("Downloading {}...".format(url))
-            r = requests.get(url, stream=True)
+            headers = {"User-Agent":"Mozilla/5.0"}  # fake user agent
+            r = requests.get(url, stream=True, headers=headers)
             if r.status_code == 200:
                 with open(path, 'wb') as f:
                     r.raw.decode_content = True
