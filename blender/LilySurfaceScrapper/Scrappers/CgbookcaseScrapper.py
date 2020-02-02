@@ -45,7 +45,7 @@ class CgbookcaseScrapper(AbstractScrapper):
         # Has front or back-side?
         # Checks for the "Front" text below the item name
         # Example: https://www.cgbookcase.com/textures/autumn-leaf-22
-        double_sided = len(html.xpath("//div[@id='view-downloadSection']/h3")) is not 0
+        double_sided = len(html.xpath("//div[@id='view-downloadSection']/h3")) != 0
 
         # Get variants
         variants_data = html.xpath("//div[@id='view-downloadLinks']/div")
