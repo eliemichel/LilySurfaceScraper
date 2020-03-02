@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Elie Michel
+# Copyright (c) 2019-2020 Elie Michel
 #
 # This file is part of LilySurfaceScrapper, a Blender add-on to import
 # materials from a single URL. It is released under the terms of the GPLv3
@@ -18,14 +18,17 @@ bl_info = {
     "category": "Import",
 }
 
-from . import frontend
-from .callback import register_callback
+# A bit of boilerplate because this add-on is intended to be zipped with only
+# the blender/LilySurfaceScrapper directory, not the root of the repo
+# (preferably don't use the "Download as zip" button from GitHub, but rather
+# download zip files from the release pages.
+import os
+import sys
+module_root = os.path.join(os.path.dirname(os.path.realpath(__file__)), "blender")
+if module_root not in sys.path:
+    sys.path.append(module_root)
 
-def register():
-    frontend.register()
-    
-def unregister():
-    frontend.unregister()
+from .blender.LilySurfaceScrapper import register, unregister, register_callback
 
 if __name__ == "__main__":
     register()
