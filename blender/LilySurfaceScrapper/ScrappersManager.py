@@ -35,12 +35,13 @@ class ScrappersManager():
         import importlib
         scrappers_names = []
         scrappers_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Scrappers")
+        package = __name__[:__name__.rfind('.')]
         for f in os.listdir(scrappers_dir):
             if f.endswith(".py") and os.path.isfile(os.path.join(scrappers_dir, f)):
                 scrappers_names.append(f[:-3])
         scrappers = []
         for s in scrappers_names:
-            module = importlib.import_module('.Scrappers.' + s, package='LilySurfaceScrapper')
+            module = importlib.import_module('.Scrappers.' + s, package=package)
             for x in dir(module):
                 if x == 'AbstractScrapper':
                     continue
