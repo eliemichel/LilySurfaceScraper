@@ -25,8 +25,12 @@ import os
 import string
 
 import sys
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "site-packages"))
-from lxml import etree
+try:
+    from lxml import etree
+except ImportError:
+    print("No system-wide installation of lxml found. Falling back to local version.")
+    sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "site-packages"))
+    from lxml import etree
 
 import requests
 import shutil
