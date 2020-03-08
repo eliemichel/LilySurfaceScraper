@@ -42,7 +42,7 @@ class AbstractScrapper():
     scrapped_type = {'MATERIAL'}
     # The name of the scrapped source, displayed in UI
     source_name = "<Abstract>"
-    # The URL of the source's home, used for the list of availabel sources in panels
+    # The URL of the source's home, used for the list of available sources in panels
     home_url = None
 
     @classmethod
