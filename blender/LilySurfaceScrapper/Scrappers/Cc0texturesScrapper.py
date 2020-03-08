@@ -70,7 +70,7 @@ class Cc0texturesScrapper(AbstractScrapper):
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
         links = self._links
-        material_data.name = re.sub(r"(\w)([A-Z])", r"\1 \2", self._material_name) # https://www.w3resource.com/python-exercises/re/python-re-exercise-51.php
+        material_data.name = re.sub(r"([a-zA-Z])(([A-Z])|\d)", r"\1 \2", self._material_name) # https://www.w3resource.com/python-exercises/re/python-re-exercise-51.php
 
         if variant_index < 0 or variant_index >= len(links):
             self.error = "Invalid variant index: {}".format(variant_index)
