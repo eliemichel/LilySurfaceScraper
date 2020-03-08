@@ -23,65 +23,62 @@
 
 import zipfile
 import os
-from urllib.parse import urlparse, parse_qs, urlencode
+import re
+from typing import List, Union
 from .AbstractScrapper import AbstractScrapper
 
 class Cc0texturesScrapper(AbstractScrapper):
     source_name = "CC0 Textures"
     home_url = "https://cc0textures.com"
-
-    _texture_cache = None
+    material_view_url = "https://www.cc0textures.com/view?id="
 
     @classmethod
-    def canHandleUrl(cls, url):
+    def canHandleUrl(cls, url) -> bool:
         """Return true if the URL can be scrapped by this scrapper."""
-        return url.startswith("https://cc0textures.com/view.php?tex=") or url.startswith("https://cc0textures.com/view?tex=")
+        return url.startswith(cls.material_view_url)
 
     @classmethod
-    def normalizeUrl(cls, url):
-        """Normalize URL to match canonical URLs as present in the download link xml"""
-        return url.replace("https://cc0textures.com/view?tex=", "https://cc0textures.com/view.php?tex=")
+    def getMaterialName(cls, url) -> str:
+        """Turn 'https://www.cc0textures.com/view?id=PavingStones055' into 'PavingStones055'."""
+        return url[len(cls.material_view_url):]
     
-    def fetchVariantList(self, url):
+    def fetchVariantList(self, url) -> Union[List[str], None]:
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
-        if Cc0texturesScrapper._texture_cache is None:
-            Cc0texturesScrapper._texture_cache = self.fetchXml("https://cc0textures.com/api/getDownloadLinks.php")
-
-        root = Cc0texturesScrapper._texture_cache
-
-        url = Cc0texturesScrapper.normalizeUrl(url)
-
-        parsed_url = urlparse(url.strip('/'))
-        query = parse_qs(parsed_url.query)
-        parsed_url = parsed_url._replace(query=urlencode({ 'tex': query.get('tex', None) }, True))
-        texture = root.find(f"assets/item[link='{parsed_url.geturl()}']")
-
-        if texture is None:
+        html = self.fetchHtml(url)
+        if html is None:
             return None
 
-        self._texture = texture
-        self._variants = list(filter(lambda v: v.attrib["res"] in ['1', '2', '4', '8'], texture.findall("downloads-pretty/download")))
-        return list(map(lambda v: v.attrib["res"] + 'K', self._variants))
+        # List of these strings ".get?file=PavingStones055_2K-JPG.zip"
+        download_sublinks = html.xpath("//div[@class='DownloadButton']/a/@href")
+        if download_sublinks is None:
+            return None
+
+        def slice_variant_name(link) -> str:
+            """Turn '.get?file=PavingStones055_2K-JPG.zip' into '2K-JPG'."""
+            return link[len("./get?file=" + self.getMaterialName() + "_"):-len(".zip")]
+
+        # Save the actual download links so fetchVariant can access them
+        self._links = list(map(lambda link: self.home_url + link[1:] , download_sublinks))
+        self._material_name = self.getMaterialName(url)
+
+        return list(map(lambda link: slice_variant_name(link).replace("-", " "), download_sublinks))
     
-    def fetchVariant(self, variant_index, material_data):
+    def fetchVariant(self, variant_index, material_data) -> bool:
         """Fill material_data with data from the selected variant.
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
-        texture = self._texture
-        variants = self._variants
+        links = self._links
+        material_data.name = re.sub(r"(\w)([A-Z])", r"\1 \2", self._material_name) # https://www.w3resource.com/python-exercises/re/python-re-exercise-51.php
 
-        if variant_index < 0 or variant_index >= len(variants):
+        if variant_index < 0 or variant_index >= len(links):
             self.error = "Invalid variant index: {}".format(variant_index)
             return False
         
-        variant = variants[variant_index]
+        variant = links[variant_index]
 
-        base_name = texture.find("title").text.replace('#', '')
-        material_data.name = "CC0Textures/" + base_name + "/" + variant.attrib["res"]
-        zip_url = variant.text
-        zip_path = self.fetchZip(zip_url, material_data.name, "textures.zip")
+        zip_path = self.fetchZip(variant, material_data.name, "textures.zip")
         zip_dir = os.path.dirname(zip_path)
         namelist = []
         with zipfile.ZipFile(zip_path,"r") as zip_ref:
