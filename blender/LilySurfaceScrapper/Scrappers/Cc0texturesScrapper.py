@@ -51,7 +51,7 @@ class Cc0texturesScrapper(AbstractScrapper):
         url = url.replace("https://cc0textures.com/view?id=", "https://cc0textures.com/view.php?tex=")
         url = url.replace("https://cc0textures.com/", "https://old.cc0textures.com/")
         # Remove leading 0s in texture name at the end of URL
-        url = re.sub(r"(tex=.*?)0*([1-9]*)$", r"\1\2", url)
+        url = re.sub(r"(tex=.*?)0*(0[1-9]*)$", r"\1\2", url)
 
         return url
 
