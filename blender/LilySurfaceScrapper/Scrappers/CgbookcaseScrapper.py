@@ -89,7 +89,7 @@ class CgbookcaseScrapper(AbstractScrapper):
 
         # Translate cgbookcase map names into our internal map names
         maps_tr = {
-            'Base Color': 'albedo',
+            'Base Color': 'baseColor',
             'Normal': 'normal',
             'Opacity': 'opacity',
             'Roughness': 'roughness',
