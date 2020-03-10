@@ -35,6 +35,7 @@ class MaterialData(ScrappedData):
         # FIXME Maybe we can use Python enums instead?
         self.maps = {
             'albedo': None,
+            'diffuse': None,
             'normal': None,
             'normalInvertedY': None, # https://help.cc0textures.com/doku.php?id=usage:directx-opengl
             'opacity': None,

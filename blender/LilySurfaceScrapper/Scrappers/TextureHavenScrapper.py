@@ -69,6 +69,7 @@ class TextureHavenScrapper(AbstractScrapper):
         # Translate TextureHaven map names into our internal map names
         maps_tr = {
             'Albedo': 'albedo',
+            'Diffuse': 'diffuse',
             'Normal': 'normal',
             'Specular': 'specular',
             'Roughness': 'roughness',
