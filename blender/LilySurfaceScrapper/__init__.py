@@ -8,7 +8,7 @@ bl_info = {
     "name": "Lily Surface Scrapper",
     "author": "Élie Michel <elie.michel@exppad.com>",
     "version": (1, 2, 5),
-    "blender": (2, 81, 0),
+    "blender": (2, 82, 0),
     "location": "Properties > Material",
     "description": "Import material from a single URL",
     "warning": "",
