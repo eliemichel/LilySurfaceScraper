@@ -46,6 +46,7 @@ class MaterialData(ScrappedData):
             'vectorDisplacement': None,
             'emission': None,
             'ambientOcclusion': None,
+            'ambientOcclusionRough': None,
         }
 
     @classmethod

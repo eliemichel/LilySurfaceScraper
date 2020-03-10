@@ -22,6 +22,7 @@ class CyclesMaterialData(MaterialData):
         'normalInvertedY': '',
         'height': '',
         'ambientOcclusion': '', # FIXME Handle this better https://github.com/KhronosGroup/glTF-Blender-IO/issues/123
+        'ambientOcclusionRough': '', # TODO Do something with this
         'glossiness': '',
     }
 

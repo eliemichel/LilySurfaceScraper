@@ -66,14 +66,15 @@ class TextureHavenScrapper(AbstractScrapper):
         var_name = variants[variant_index]
         material_data.name = "texturehaven/" + base_name + '/' + var_name
 
-        # Translate cgbookcase map names into our internal map names
+        # Translate TextureHaven map names into our internal map names
         maps_tr = {
-            'Diffuse': 'albedo',
+            'Albedo': 'albedo',
             'Normal': 'normal',
             'Specular': 'specular',
             'Roughness': 'roughness',
             'Metallic': 'metallic',
             'AO': 'ambientOcclusion',
+            'Rough Ao': 'ambientOcclusionRough',
             'Specular': 'specular',
             'Displacement': 'height',
         }
