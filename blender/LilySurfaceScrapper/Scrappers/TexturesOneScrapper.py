@@ -55,7 +55,7 @@ class TexturesOneMaterialScrapper(AbstractScrapper):
     @classmethod
     def canHandleUrl(cls, url :str) -> bool:
         """Return true if the URL can be scrapped by this scrapper."""
-        if "textures.one/go" and "?id=" in url:
+        if "textures.one/go" in url and "?id=" in url:
             return cls.cacheSourceUrl(url)
         return False
 
