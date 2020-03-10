@@ -18,6 +18,7 @@ class CyclesMaterialData(MaterialData):
         'specular': 'Specular',
         'opacity': 'Alpha',
         'emission': 'Emission',
+        'diffuse': '',
         'normal': '',
         'normalInvertedY': '',
         'height': '',
@@ -59,9 +60,9 @@ class CyclesMaterialData(MaterialData):
                 front[map_name] = texture_node
             
             texture_node.image = getCyclesImage(img)
-            texture_node.image.colorspace_settings.name = "sRGB" if map_name == "albedo" else "Non-Color"
+            texture_node.image.colorspace_settings.name = "sRGB" if map_name == "albedo" or map_name == "diffuse" else "Non-Color"
             if hasattr(texture_node, "color_space"):
-                texture_node.color_space = "COLOR" if map_name == "albedo" else "NONE"
+                texture_node.color_space = "COLOR" if map_name == "albedo" or map_name == "diffuse" else "NONE"
             if map_name == "opacity":
                 mat.blend_method = 'BLEND'
 
@@ -77,6 +78,9 @@ class CyclesMaterialData(MaterialData):
                     invert_node = nodes.new(type="ShaderNodeInvert")
                     links.new(node.outputs["Color"], invert_node.inputs["Color"])
                     links.new(invert_node.outputs["Color"], principled.inputs["Roughness"])
+                if name == "diffuse":
+                    if not principled.inputs["Base Color"].is_linked:
+                        links.new(node.outputs["Color"], principled.inputs["Base Color"])
                 elif name == "height":
                     displacement_node = nodes.new(type="ShaderNodeDisplacement")
                     displacement_node.inputs[2].default_value = .2
