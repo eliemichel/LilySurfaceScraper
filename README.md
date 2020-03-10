@@ -90,17 +90,21 @@ Scrap the information of the variant numbered `variant_index`, and write it to `
 
  - `material_data.name`: The name of the texture, typically prefixed by the source, followed by the texture name, then the variant name.
  - `material_data.maps['baseColor']`: The path to the baseColor map, or None
+ - `material_data.maps['diffuse']`: The path to the diffuse map, or None
  - `material_data.maps['normal']`: The path to the normal map, or None
+ - `material_data.maps['normalInvertedY']`: The path to the normal map, or None
  - `material_data.maps['opacity']`: The path to the opacity map, or None
  - `material_data.maps['roughness']`: The path to the roughness map, or None
  - `material_data.maps['metallic']`: The path to the metallic map, or None
  - `material_data.maps['emission']`: The path to the emission map, or None
  - `material_data.maps['ambientOcclusion']`: The path to the ambient occlusion map, or None
+ - `material_data.maps['ambientOcclusionRough']`: The path to the rough ambient occlusion map, or None
  - `material_data.maps['specular']`: The path to the specular map, or None
  - `material_data.maps['glossiness']`: The path to the glossiness map (inverted roughness), or None
  - `material_data.maps['height']`: The path to the height map, or None
  - `material_data.maps['vectorDisplacement']`: The path to the vector displacement map, or None
 
+You can define your own texture maps by adding them to `self.maps` in `MaterialData.py`. You can then assign a texture map that name in your scrapper (we, by convention, have a dictionary called `maps_tr` that maps the scraped name onto the internal naming defined in `MaterialData.py`) and translate it to a node setup in for example `CyclesMaterialData.py`.
 
 ## Utility functions
 
@@ -150,5 +154,4 @@ bpy.ops.object.lily_surface_import(url="https://cc0textures.com/view.php?tex=Met
 ## TODO
 
  - Handle bump map
- - Handle AO map
  - Include `lxml` more properly. I don't know the idiomatic way to package such a dependency in a Blender addon.
