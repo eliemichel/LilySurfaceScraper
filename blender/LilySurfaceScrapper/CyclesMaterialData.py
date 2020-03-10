@@ -19,6 +19,7 @@ class CyclesMaterialData(MaterialData):
         'opacity': 'Alpha',
         'emission': 'Emission',
         'normal': '',
+        'normalInvertedY': '',
         'height': '',
         'ambientOcclusion': '', # FIXME Handle this better https://github.com/KhronosGroup/glTF-Blender-IO/issues/123
         'glossiness': '',
@@ -77,6 +78,7 @@ class CyclesMaterialData(MaterialData):
                     links.new(invert_node.outputs["Color"], principled.inputs["Roughness"])
                 elif name == "height":
                     displacement_node = nodes.new(type="ShaderNodeDisplacement")
+                    displacement_node.inputs[2].default_value = .2
                     links.new(node.outputs["Color"], displacement_node.inputs["Height"])
                     links.new(displacement_node.outputs["Displacement"], mat_output.inputs[2])
                 elif name == "normal":
