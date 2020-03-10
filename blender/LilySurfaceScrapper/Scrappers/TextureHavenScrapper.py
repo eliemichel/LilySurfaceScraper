@@ -62,7 +62,7 @@ class TextureHavenScrapper(AbstractScrapper):
             self.error = "Invalid variant index: {}".format(variant_index)
             return False
         
-        base_name = html.xpath("//title/text()")[0].split('|')[0].strip()
+        base_name = html.xpath("//title/text()")[0].split('|')[0].strip().replace("_", " ").title()
         var_name = variants[variant_index]
         material_data.name = "texturehaven/" + base_name + '/' + var_name
 
