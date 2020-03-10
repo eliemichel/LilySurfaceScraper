@@ -83,6 +83,24 @@ class CyclesMaterialData(MaterialData):
                     normal_node = nodes.new(type="ShaderNodeNormalMap")
                     links.new(node.outputs["Color"], normal_node.inputs["Color"])
                     links.new(normal_node.outputs["Normal"], principled.inputs["Normal"])
+                elif name == "normalInvertedY":
+                    normal_node = nodes.new(type="ShaderNodeNormalMap")
+                    separate_node = nodes.new(type="ShaderNodeSeparateRGB")
+                    combine_node = nodes.new(type="ShaderNodeCombineRGB")
+                    math_node = nodes.new(type="ShaderNodeMath")
+                    math_node.operation = "MULTIPLY_ADD"
+                    math_node.inputs[1].default_value = -1
+                    math_node.inputs[2].default_value = 1
+
+                    links.new(node.outputs["Color"], separate_node.inputs["Image"])
+                    
+                    links.new(separate_node.outputs["R"], combine_node.inputs[0])
+                    links.new(separate_node.outputs["G"], math_node.inputs[0])
+                    links.new(math_node.outputs["Value"], combine_node.inputs[1])
+                    links.new(separate_node.outputs["B"], combine_node.inputs[2])
+
+                    links.new(combine_node.outputs["Image"], normal_node.inputs["Color"])
+                    links.new(normal_node.outputs["Normal"], principled.inputs["Normal"])
 
         if not back: # If there is no item in the back dictionary
             [setup(name, node) for name, node in front.items()]

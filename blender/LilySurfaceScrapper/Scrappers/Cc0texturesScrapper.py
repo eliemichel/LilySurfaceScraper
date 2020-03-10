@@ -113,10 +113,12 @@ class Cc0texturesScrapper(AbstractScrapper):
         # Translate cc0textures map names into our internal map names
         maps_tr = {
             'col': 'albedo',
-            'nrm': 'normal',
+            'nrm': 'normalInvertedY',
             'mask': 'opacity',
             'rgh': 'roughness',
             'met': 'metallic',
+            'AO': 'ambientOcclusion',
+            'disp': 'height'
         }
         for name in namelist:
             base = os.path.splitext(name)[0]
