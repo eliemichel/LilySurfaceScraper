@@ -12,7 +12,7 @@ from .cycles_utils import getCyclesImage, autoAlignNodes
 class CyclesMaterialData(MaterialData):
     # Translate our internal map names into cycles principled inputs
     input_tr = {
-        'albedo': 'Base Color',
+        'baseColor': 'Base Color',
         'roughness': 'Roughness',
         'metallic': 'Metallic',
         'specular': 'Specular',
@@ -60,9 +60,9 @@ class CyclesMaterialData(MaterialData):
                 front[map_name] = texture_node
             
             texture_node.image = getCyclesImage(img)
-            texture_node.image.colorspace_settings.name = "sRGB" if map_name == "albedo" or map_name == "diffuse" else "Non-Color"
+            texture_node.image.colorspace_settings.name = "sRGB" if map_name == "baseColor" or map_name == "diffuse" else "Non-Color"
             if hasattr(texture_node, "color_space"):
-                texture_node.color_space = "COLOR" if map_name == "albedo" or map_name == "diffuse" else "NONE"
+                texture_node.color_space = "COLOR" if map_name == "baseColor" or map_name == "diffuse" else "NONE"
             if map_name == "opacity":
                 mat.blend_method = 'BLEND'
 
