@@ -24,7 +24,7 @@
 import zipfile
 import os
 import re
-from urllib.parse import urlparse, parse_qs, urlencode
+from urllib.parse import urlparse, parse_qs, urlencode, urljoin
 from .AbstractScrapper import AbstractScrapper
 
 class Cc0texturesScrapper(AbstractScrapper):
@@ -39,70 +39,46 @@ class Cc0texturesScrapper(AbstractScrapper):
         return (
         	url.startswith("https://cc0textures.com/view.php?tex=")
         	or url.startswith("https://cc0textures.com/view?tex=")
+            or url.startswith("https://www.cc0textures.com/view?id=")
         	or url.startswith("https://cc0textures.com/view?id=")
         )
 
-    @classmethod
-    def normalizeUrl(cls, url):
-        """Normalize URL to match canonical URLs as present in the download link xml"""
-        url = url.replace("https://cc0textures.com/view?tex=", "https://cc0textures.com/view.php?tex=")
-
-        # Fix during transition from old to new CC0Textures
-        url = url.replace("https://cc0textures.com/view?id=", "https://cc0textures.com/view.php?tex=")
-        url = url.replace("https://cc0textures.com/", "https://old.cc0textures.com/")
-        # Remove leading 0s in texture name at the end of URL
-        url = re.sub(r"(tex=.*?)0*(0[1-9]*)$", r"\1\2", url)
-
-        return url
-
-    @classmethod
-    def fixDownloadUrl(cls, url):
-        """Fix URLs from the download link xml (some are missing the "old" prefix)"""
-        url = url.replace("https://cc0textures.com/", "https://old.cc0textures.com/")
-        return url
-    
     def fetchVariantList(self, url):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
-        if Cc0texturesScrapper._texture_cache is None:
-            Cc0texturesScrapper._texture_cache = self.fetchXml("https://old.cc0textures.com/api/getDownloadLinks.php")
-
-        root = Cc0texturesScrapper._texture_cache
-
-        url = Cc0texturesScrapper.normalizeUrl(url)
-
-        parsed_url = urlparse(url.strip('/'))
-        query = parse_qs(parsed_url.query)
-        parsed_url = parsed_url._replace(query=urlencode({ 'tex': query.get('tex', None) }, True))
-        print("parsed_url.geturl(): " + str(parsed_url.geturl()))
-        texture = root.find(f"assets/item[link='{parsed_url.geturl()}']")
-
-        print("texture: " + str(texture))
-
-        if texture is None:
+        html = self.fetchHtml(url)
+        if html is None:
             return None
 
-        self._texture = texture
-        self._variants = list(filter(lambda v: v.attrib["res"] in ['1', '2', '4', '8'], texture.findall("downloads-pretty/download")))
-        return list(map(lambda v: v.attrib["res"] + 'K', self._variants))
-    
+        base_name = html.xpath("//div[@class='View-Title']/text()")[0].strip()
+        variants_html = html.xpath("//div[@class='View-DownloadButton']")
+        variants = [v.xpath(".//div[@class='View-DownloadAttribute']/text()")[0] for v in variants_html]
+        variants_urls = [
+            urljoin(url, v.xpath(".//a/@href")[0])
+            for v in variants_html
+        ]
+
+        self._variants_urls = variants_urls
+        self._variants = variants
+        self._base_name = base_name
+        return variants
+
     def fetchVariant(self, variant_index, material_data):
         """Fill material_data with data from the selected variant.
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
-        texture = self._texture
         variants = self._variants
+        variants_urls = self._variants_urls
 
         if variant_index < 0 or variant_index >= len(variants):
             self.error = "Invalid variant index: {}".format(variant_index)
             return False
         
         variant = variants[variant_index]
+        zip_url = variants_urls[variant_index]
 
-        base_name = texture.find("title").text.replace('#', '')
-        material_data.name = "CC0Textures/" + base_name + "/" + variant.attrib["res"]
-        zip_url = Cc0texturesScrapper.fixDownloadUrl(variant.text)
+        material_data.name = "CC0Textures/" + self._base_name + "/" + variant
         zip_path = self.fetchZip(zip_url, material_data.name, "textures.zip")
         zip_dir = os.path.dirname(zip_path)
         namelist = []
@@ -112,13 +88,22 @@ class Cc0texturesScrapper(AbstractScrapper):
         
         # Translate cc0textures map names into our internal map names
         maps_tr = {
+            # Names of the old website
             'col': 'baseColor',
             'nrm': 'normalInvertedY',
             'mask': 'opacity',
             'rgh': 'roughness',
             'met': 'metallic',
             'AO': 'ambientOcclusion',
-            'disp': 'height'
+            'disp': 'height',
+            # New names
+            'Color': 'baseColor',
+            'Normal': 'normalInvertedY',
+            'Opacity': 'opacity',
+            'Roughness': 'roughness',
+            'Metalness': 'metallic',
+            'AmbientOcclusion': 'ambientOcclusion',
+            'Displacement': 'height'
         }
         for name in namelist:
             base = os.path.splitext(name)[0]
