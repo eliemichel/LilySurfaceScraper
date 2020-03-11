@@ -65,6 +65,8 @@ class CyclesMaterialData(MaterialData):
                 texture_node.color_space = "COLOR" if map_name == "baseColor" or map_name == "diffuse" else "NONE"
             if map_name == "opacity":
                 mat.blend_method = 'BLEND'
+            if map_name == "height":
+                mat.cycles.displacement_method = 'BOTH'
 
         if not front: # In case just the backside texture was chosen
             front = back

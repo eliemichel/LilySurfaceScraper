@@ -23,70 +23,54 @@
 
 import zipfile
 import os
+from os import path
 import re
 from urllib.parse import urlparse, parse_qs, urlencode, urljoin
 from .AbstractScrapper import AbstractScrapper
 
-class Cc0texturesScrapper(AbstractScrapper):
-    source_name = "CC0 Textures"
-    home_url = "https://cc0textures.com"
+class LocalDirectoryScrapper(AbstractScrapper):
+    """
+    This scrapper does not actually scrap a website, it links textures from a
+    local directory, trying to guess the meaning of textures from their names.
+    """
+    source_name = "Local Directory"
+    home_url = None
+
+    _texture_cache = None
 
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scrapped by this scrapper."""
-        return (
-        	url.startswith("https://cc0textures.com/view.php?tex=")
-        	or url.startswith("https://cc0textures.com/view?tex=")
-            or url.startswith("https://www.cc0textures.com/view?id=")
-        	or url.startswith("https://cc0textures.com/view?id=")
-        )
+        print("test: {}" + url)
+        return path.isdir(url)
 
     def fetchVariantList(self, url):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
-        html = self.fetchHtml(url)
-        if html is None:
-            return None
-
-        base_name = html.xpath("//div[@class='View-Title']/text()")[0].strip()
-        variants_html = html.xpath("//div[@class='View-DownloadButton']")
-        variants = [v.xpath(".//div[@class='View-DownloadAttribute']/text()")[0] for v in variants_html]
-        variants_urls = [
-            urljoin(url, v.xpath(".//a/@href")[0])
-            for v in variants_html
-        ]
-
-        self._variants_urls = variants_urls
-        self._variants = variants
-        self._base_name = base_name
-        return variants
+        self._directory = url
+        return [url]
 
     def fetchVariant(self, variant_index, material_data):
-        """Fill material_data with data from the selected variant.
-        Must fill material_data.name and material_data.maps.
-        Return a boolean status, and fill self.error to add error messages."""
-        # Get data saved in fetchVariantList
-        variants = self._variants
-        variants_urls = self._variants_urls
+        d = self._directory
 
-        if variant_index < 0 or variant_index >= len(variants):
-            self.error = "Invalid variant index: {}".format(variant_index)
-            return False
-        
-        variant = variants[variant_index]
-        zip_url = variants_urls[variant_index]
+        material_data.name = path.basename(path.dirname(d)) + "/" + path.basename(d)
 
-        material_data.name = "CC0Textures/" + self._base_name + "/" + variant
-        zip_path = self.fetchZip(zip_url, material_data.name, "textures.zip")
-        zip_dir = os.path.dirname(zip_path)
-        namelist = []
-        with zipfile.ZipFile(zip_path,"r") as zip_ref:
-            namelist = zip_ref.namelist()
-            zip_ref.extractall(zip_dir)
+        namelist = [f for f in os.listdir(d) if path.isfile(path.join(d, f))]
         
-        # Translate cc0textures map names into our internal map names
+        # TODO: Find a more exhaustive list of perfix/suffix
         maps_tr = {
-            # Names of the old website
+            'baseColor': 'baseColor',
+            'metallic': 'metallic',
+            'height': 'height',
+            'normalInvertedY': 'normalInvertedY',
+            'opacity': 'opacity',
+            'roughness': 'roughness',
+            'ambientOcclusion': 'ambientOcclusion',
+            'normal': 'normal',
+
+            'Base Color': 'baseColor',
+            'Metallic': 'metallic',
+            'Height': 'height',
             'col': 'baseColor',
             'nrm': 'normalInvertedY',
             'mask': 'opacity',
@@ -94,7 +78,6 @@ class Cc0texturesScrapper(AbstractScrapper):
             'met': 'metallic',
             'AO': 'ambientOcclusion',
             'disp': 'height',
-            # New names
             'Color': 'baseColor',
             'Normal': 'normalInvertedY',
             'Opacity': 'opacity',
@@ -106,7 +89,8 @@ class Cc0texturesScrapper(AbstractScrapper):
         for name in namelist:
             base = os.path.splitext(name)[0]
             map_type = base.split('_')[-1]
-            if map_type in maps_tr:
-                map_name = maps_tr[map_type]
-                material_data.maps[map_name] = os.path.join(zip_dir, name)
+            for k, map_name in maps_tr.items():
+                if k in base:
+                    map_name = maps_tr[k]
+                    material_data.maps[map_name] = path.join(d, name)
         return True
