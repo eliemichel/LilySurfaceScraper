@@ -10,7 +10,8 @@ from .CyclesMaterialData import CyclesMaterialData
 from .CyclesWorldData import CyclesWorldData
 from .ScrappersManager import ScrappersManager
 from .callback import register_callback, get_callback
-
+from .preferences import getPreferences
+    
 ## Operators
 
 # I really wish there would be a cleaner way to do so: I need to prompt twice
@@ -67,7 +68,8 @@ class OBJECT_OT_LilySurfaceScrapper(PopupOperator, CallbackProps):
     )
 
     def execute(self, context):
-        if bpy.data.filepath == '':
+        pref = getPreferences(context)
+        if bpy.data.filepath == '' and not os.path.isabs(pref.texture_dir):
             self.report({'ERROR'}, 'You must save the file before using LilySurfaceScrapper')
             return {'CANCELLED'}
 
@@ -184,7 +186,8 @@ class OBJECT_OT_LilyWorldScrapper(PopupOperator, CallbackProps):
     )
 
     def execute(self, context):
-        if bpy.data.filepath == '':
+        pref = getPreferences(context)
+        if bpy.data.filepath == '' and not os.path.isabs(pref.texture_dir):
             self.report({'ERROR'}, 'You must save the file before using LilySurfaceScrapper')
             return {'CANCELLED'}
 
@@ -289,8 +292,10 @@ class MATERIAL_PT_LilySurfaceScrapper(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        if bpy.data.filepath == '':
+        pref = getPreferences(context)
+        if bpy.data.filepath == '' and not os.path.isabs(pref.texture_dir):
             layout.label(text="You must save the file to use Lily Surface Scrapper")
+            layout.label(text="or setup a texture directory in preferences.")
         else:
             layout.operator("object.lily_surface_import")
             layout.operator("object.lily_surface_import_from_clipboard")
@@ -311,8 +316,10 @@ class WORLD_PT_LilySurfaceScrapper(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        if bpy.data.filepath == '':
+        pref = getPreferences(context)
+        if bpy.data.filepath == '' and not os.path.isabs(pref.texture_dir):
             layout.label(text="You must save the file to use Lily Surface Scrapper")
+            layout.label(text="or setup a texture directory in preferences.")
         else:
             layout.operator("object.lily_world_import")
             layout.operator("object.lily_world_import_from_clipboard")

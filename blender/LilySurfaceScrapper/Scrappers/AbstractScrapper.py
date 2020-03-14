@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Elie Michel
+# Copyright (c) 2019-2020 Elie Michel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -36,6 +36,7 @@ import requests
 import shutil
 
 from ..settings import TEXTURE_DIR
+from ..preferences import getPreferences
 
 class AbstractScrapper():
     # Can be 'MATERIAL', 'WORLD'
@@ -75,8 +76,13 @@ class AbstractScrapper():
 
     def getTextureDirectory(self, material_name):
         """Return the texture dir, relative to the blend file, dependent on material's name"""
+        texture_dir = getPreferences().texture_dir
+        if texture_dir == "":
+            texture_dir = TEXTURE_DIR
+        if not os.path.isabs(texture_dir):
+            texture_dir = os.path.realpath(os.path.join(self.texture_root, texture_dir))
         name_path = material_name.replace('/',os.path.sep)
-        dirpath = os.path.join(self.texture_root, TEXTURE_DIR, name_path)
+        dirpath = os.path.join(texture_dir, name_path)
         if not os.path.isdir(dirpath):
             os.makedirs(dirpath)
         return dirpath
