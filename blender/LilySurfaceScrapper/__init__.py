@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Elie Michel
+# Copyright (c) 2019-2020 Elie Michel
 #
 # This file is part of LilySurfaceScrapper, a Blender add-on to import
 # materials from a single URL. It is released under the terms of the GPLv3
@@ -7,7 +7,7 @@
 bl_info = {
     "name": "Lily Surface Scrapper",
     "author": "Élie Michel <elie.michel@exppad.com>",
-    "version": (1, 3, 0),
+    "version": (1, 3, 1),
     "blender": (2, 82, 0),
     "location": "Properties > Material",
     "description": "Import material from a single URL",
@@ -27,13 +27,16 @@ def isImportedInBlender():
 
 if isImportedInBlender():
     from . import frontend
+    from . import preferences
     from .callback import register_callback
 
     def register():
+        preferences.register()
         frontend.register()
         
     def unregister():
         frontend.unregister()
+        preferences.unregister()
 
     if __name__ == "__main__":
         register()
