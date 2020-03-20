@@ -23,7 +23,7 @@
 
 import bpy
 
-addon_idname = __package__
+addon_idname = __package__.split(".")[0]
 
 # -----------------------------------------------------------------------------
 
