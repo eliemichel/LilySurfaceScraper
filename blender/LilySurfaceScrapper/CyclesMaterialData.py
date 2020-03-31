@@ -36,17 +36,28 @@ class CyclesMaterialData(MaterialData):
             getCyclesImage(img)
 
     def createMaterial(self):
+        # Initialize variables
         mat = bpy.data.materials.new(name=self.name)
         mat.use_nodes = True
-        nodes = mat.node_tree.nodes
-        links = mat.node_tree.links
+        group = bpy.data.node_groups.new(self.name, "ShaderNodeTree")
+        group.inputs.new("NodeSocketVector", "UV")
+        mat_nodes = mat.node_tree.nodes
+        mat_links = mat.node_tree.links
+        nodes = group.nodes
+        links = group.links
+        front = {}
+        back = {}
+
+        # Setup nodes
         principled_mat = PrincipledBSDFWrapper(mat, is_readonly=False)
         principled = principled_mat.node_principled_bsdf
         mat_output = principled_mat.node_out
+        group_inputs = nodes.new("NodeGroupInput")
+        group_outputs = nodes.new("NodeGroupOutput")
+        texgroup = mat_nodes.new("ShaderNodeGroup")
+        texgroup.node_tree = group
         texcoords = principled_mat.node_texcoords
-        principled_mat.roughness = 1.0
-        front = {}
-        back = {}
+        mat_links.new(texcoords.outputs["UV"], texgroup.inputs["UV"])
 
         # Create all of the texture nodes
         for map_name, img in self.maps.items():
@@ -73,27 +84,41 @@ class CyclesMaterialData(MaterialData):
             front = back
             back = {}
 
-        def setup(name, node):
-            links.new(texcoords.outputs["UV"], node.inputs["Vector"])
-            if __class__.input_tr.get(name):
-                links.new(node.outputs["Color"], principled.inputs[__class__.input_tr[name]])
+        def export(name: str, output, input):
+            """Creates a link between an output socket from
+            inside the node group to a socket input on the material.
+            """
+            name = name.capitalize()
+            group.outputs.new(output.bl_idname, name)
+            links.new(output, group_outputs.inputs[name])
+            mat_links.new(texgroup.outputs[name], input)
+
+        def setup(name: str, node):
+            """Creates a texture setup for the node and connects it with the principled
+            shader on the material.
+
+            If you want to add a node setup for a new map type, you'd do that here.
+            """
+            links.new(group_inputs.outputs["UV"], node.inputs["Vector"])
+            if __class__.input_tr.get(name): # Is there a socket on the Pricipled BSDF with that name?
+                export(name, node.outputs["Color"], principled.inputs[__class__.input_tr[name]])
             else:
                 if name == "glossiness":
                     invert_node = nodes.new(type="ShaderNodeInvert")
                     links.new(node.outputs["Color"], invert_node.inputs["Color"])
-                    links.new(invert_node.outputs["Color"], principled.inputs["Roughness"])
+                    export(name, invert_node.outputs["Color"], principled.inputs["Roughness"])
                 if name == "diffuse":
                     if not principled.inputs["Base Color"].is_linked:
-                        links.new(node.outputs["Color"], principled.inputs["Base Color"])
+                        export(name, node.outputs["Color"], principled.inputs["Base Color"])
                 elif name == "height":
-                    displacement_node = nodes.new(type="ShaderNodeDisplacement")
+                    displacement_node = mat_nodes.new(type="ShaderNodeDisplacement")
                     displacement_node.inputs[2].default_value = .2
-                    links.new(node.outputs["Color"], displacement_node.inputs["Height"])
-                    links.new(displacement_node.outputs["Displacement"], mat_output.inputs[2])
+                    export(name, node.outputs["Color"], displacement_node.inputs["Height"])
+                    mat_links.new(displacement_node.outputs["Displacement"], mat_output.inputs[2])
                 elif name == "normal":
                     normal_node = nodes.new(type="ShaderNodeNormalMap")
                     links.new(node.outputs["Color"], normal_node.inputs["Color"])
-                    links.new(normal_node.outputs["Normal"], principled.inputs["Normal"])
+                    export(name, normal_node.outputs["Normal"], principled.inputs["Normal"])
                 elif name == "normalInvertedY":
                     normal_node = nodes.new(type="ShaderNodeNormalMap")
                     separate_node = nodes.new(type="ShaderNodeSeparateRGB")
@@ -111,7 +136,7 @@ class CyclesMaterialData(MaterialData):
                     links.new(separate_node.outputs["B"], combine_node.inputs[2])
 
                     links.new(combine_node.outputs["Image"], normal_node.inputs["Color"])
-                    links.new(normal_node.outputs["Normal"], principled.inputs["Normal"])
+                    export("normal", normal_node.outputs["Normal"], principled.inputs["Normal"])
 
         if not back: # If there is no item in the back dictionary
             [setup(name, node) for name, node in front.items()]
@@ -126,6 +151,7 @@ class CyclesMaterialData(MaterialData):
                 if back.get(name):
                     pre_setup(name, node, back[name], nodes.new(type="ShaderNodeMixRGB"))
         
+        autoAlignNodes(group_outputs)
         autoAlignNodes(mat_output)
 
         return mat
