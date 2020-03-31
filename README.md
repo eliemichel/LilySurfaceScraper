@@ -17,7 +17,7 @@ This add-on has been designed to make it very easy to add new sources. You can j
 
 ## Installation
 
-Download the [last release](https://github.com/eliemichel/LilySurfaceScrapper/releases/latest), then in Blender, go to `Edit > Preferences`, `Add-on`, `Install`, browse to the zip file.
+Download the [latest release](https://github.com/eliemichel/LilySurfaceScrapper/releases/latest), then in Blender, go to `Edit > Preferences`, `Add-on`, `Install`, browse to the zip file.
 
 Make that you have ticked the small checkbox next to "Import: Lily Surface Scrapper", otherwise the add-on will not be active.
 
