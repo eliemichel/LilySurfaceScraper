@@ -43,6 +43,7 @@ class CyclesMaterialData(MaterialData):
         principled_mat = PrincipledBSDFWrapper(mat, is_readonly=False)
         principled = principled_mat.node_principled_bsdf
         mat_output = principled_mat.node_out
+        texcoords = principled_mat.node_texcoords
         principled_mat.roughness = 1.0
         front = {}
         back = {}
@@ -73,6 +74,7 @@ class CyclesMaterialData(MaterialData):
             back = {}
 
         def setup(name, node):
+            links.new(texcoords.outputs["UV"], node.inputs["Vector"])
             if __class__.input_tr.get(name):
                 links.new(node.outputs["Color"], principled.inputs[__class__.input_tr[name]])
             else:
