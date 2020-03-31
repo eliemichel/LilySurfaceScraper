@@ -9,7 +9,11 @@ LilySurfaceScrapper suggest a very intuitive and unified workflow: browse your f
 
 This add-on has been designed to make it very easy to add new sources. You can just add a script in the `Scrappers/` directory, it will be automatically detected. See below for more information.
 
-![Lily Surface Scrapper](doc/lilysurfacescrapper.png)
+## Links & Resources
+
+- Video demonstration on [YouTube](https://www.youtube.com/watch?v=KfEhjxvia0Q)
+- Support thread on [BlenderArtists](https://blenderartists.org/t/2-80-lily-surface-scrapper-import-material-from-a-simple-url/1157897)
+- [Downloads](https://github.com/eliemichel/LilySurfaceScrapper/releases)
 
 ## Installation
 
@@ -66,7 +70,7 @@ Materials:
  - cgbookcase: https://www.cgbookcase.com
  - CC0Textures: https://cc0textures.com
  - Texture Haven: https://texturehaven.com
- - Your local filesystem
+ - [Your local filesystem](https://www.youtube.com/watch?v=BXbNA3nN_HI)
  - Search on Textures.one: If the "URL" contains just words, no slash, they are used as search keywords to randomly pick a result on https://textures.one. You can also perform the search yourself and provide a link to the result page on Textures.one. Make sure that the link is for a supported texture site.
 
 Worlds:
