@@ -28,7 +28,7 @@ import sys
 try:
     from lxml import etree
 except ImportError:
-    print("No system-wide installation of lxml found. Installing a local version...")
+    print("No system-wide installation of lxml found. Installing it...")
     import subprocess
     binary_path_python = sys.executable
     if binary_path_python.endswith(("blender", "blender.exe")):
