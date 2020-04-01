@@ -33,6 +33,8 @@ class CyclesWorldData(WorldData):
         img = self.maps['sky']
         if img is not None:
             texture_node = nodes.new(type="ShaderNodeTexEnvironment")
+            texcoords = nodes.new("ShaderNodeTexCoord")
+            mapping = nodes.new("ShaderNodeMapping")
             texture_node.image = getCyclesImage(img)
             color_space = guessColorSpaceFromExtension(img)
             print("guessColorSpaceFromExtension(%s): " % (img,))
@@ -42,7 +44,9 @@ class CyclesWorldData(WorldData):
                 texture_node.color_space = color_space["old_name"]
             print(texture_node.image.colorspace_settings.name)
             links.new(texture_node.outputs["Color"], background.inputs["Color"])
-        
+            links.new(mapping.outputs["Vector"], texture_node.inputs["Vector"])
+            links.new(texcoords.outputs["Generated"], mapping.inputs["Vector"])
+
         autoAlignNodes(world_output)
 
         return world
