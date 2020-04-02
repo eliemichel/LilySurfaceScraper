@@ -171,5 +171,3 @@ bpy.ops.object.lily_surface_import(url="https://cc0textures.com/view.php?tex=Met
 ```
 
 ## TODO
-
- - Include `lxml` more properly. I don't know the idiomatic way to package such a dependency in a Blender addon.
