@@ -37,6 +37,8 @@ class TexturesOneSearchScrapper(TexturesOneMaterialScrapper):
         options = html.xpath("//div[@class='indexBox']")
         options = list(filter(lambda o : any("/" + str(p) + "/" in str(o.xpath(".//div/div")[1].xpath(".//img/@src")) for p in cls.supported_creators) , options))
         links = list(map(lambda o : str(o.xpath(".//a/@href")[0]), options))
+        if links == []:
+            return None
         return choice(links)
 
     @classmethod
