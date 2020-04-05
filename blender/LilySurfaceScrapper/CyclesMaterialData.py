@@ -84,7 +84,7 @@ class CyclesMaterialData(MaterialData):
             front = back
             back = {}
 
-        def export(name: str, output, input):
+        def export(name: str, output: NodeSocket, input: NodeSocket):
             """Creates a link between an output socket from
             inside the node group to a socket input on the material.
             """
@@ -93,7 +93,7 @@ class CyclesMaterialData(MaterialData):
             links.new(output, group_outputs.inputs[name])
             mat_links.new(texgroup.outputs[name], input)
 
-        def setup(name: str, node):
+        def setup(name: str, node: ShaderNodeTexImage):
             """Creates a texture setup for the node and connects it with the principled
             shader on the material.
 
