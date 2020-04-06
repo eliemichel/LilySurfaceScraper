@@ -21,7 +21,7 @@ def getCyclesImage(imgpath):
 def autoAlignNodes(root: bpy.types.Node):
     def makeTree(node):
         descendentCount = 0
-        children : List[bpy.types.Node]
+        children : List[bpy.types.Node] = []
         for i in node.inputs:
             for l in i.links:
                 subtree = makeTree(l.from_node)
