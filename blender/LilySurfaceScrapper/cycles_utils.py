@@ -69,3 +69,28 @@ def guessColorSpaceFromExtension(img):
             "name": "Linear",
             "old_name": "NONE",
         }
+
+class appendableNodeGroups:
+    """Use this as a wrapper for appendFromBlend to append
+    one of the node groups included within node-groups.blend
+    """
+    __appended_node_groups = {}
+    BLEND_FILE = Path(__path__).parent / "node-groups.blend"
+
+    @property
+    def randomize_tiles (self) -> bpy.types.ShaderNodeTree:
+        (group := __appended_node_groups["Randomize Tile"])
+        if group is None:
+            group = appendFromBlend(BLEND_FILE, bpy.types.BlendDataNodeTrees , "Randomize Tiles")[0]
+        return group
+
+def appendFromBlend(filepath: Path, type: bpy.types.BlendData, names: List[str]) -> List[bpy.types.ID]:
+    """Append a collection of objects from a specifc BlendData [1] type.
+    This is done via `BlendDataLibraries` [2] instead of `bpy.ops.wm.append().`
+
+    [1] https://docs.blender.org/api/current/bpy.types.BlendData.html?highlight=node_group#bpy.types.BlendData.node_groups \\
+    [2] https://docs.blender.org/api/current/bpy.types.BlendDataLibraries.html?highlight=blenddatalibrary
+    """
+
+    with bpy.data.libraries.load(str(filepath)) as (data_from, data_to):
+        
