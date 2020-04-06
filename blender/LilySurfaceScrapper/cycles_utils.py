@@ -86,7 +86,7 @@ class appendableNodeGroups:
     def randomize_tiles (self) -> bpy.types.ShaderNodeTree:
         # TODO Refactor with walrus operator once Blender ships with Python 3.8 (oh god, they'll support Blender 2.83 until end of next year)
         if __appended_node_groups["Randomize Tile"] is None:
-            __appended_node_groups["Randomize Tile"] = appendFromBlend(BLEND_FILE, bpy.types.BlendData.node_groups , "Randomize Tiles")[0]
+            __appended_node_groups["Randomize Tile"] = appendFromBlend(BLEND_FILE, datatype = bpy.types.BlendData.node_groups , name = "Randomize Tiles")[0]
         return __appended_node_groups["Randomize Tile"]
 
 
@@ -106,6 +106,7 @@ def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = 
     """
 
     # Sanitize datatype
+    datatype : Optional[str] = locals()[2] if datatype else None
     if "." in datatype: # bpy.types.BlendData.node_groups to node_groups
         datatype = datatype.rsplit(".", 1)[-1].replace("BlendData", "", 1)
     if datatype.startswith("BlendData"): # BlendDataLattices to lattices
