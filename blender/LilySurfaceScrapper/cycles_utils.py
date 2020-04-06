@@ -6,7 +6,10 @@
 
 import os
 import bpy
+import enum
 from mathutils import Vector
+from pathlib import Path
+from typing import List, Dict
 
 def getCyclesImage(imgpath):
     """Avoid reloading an image that has already been loaded"""
@@ -15,10 +18,10 @@ def getCyclesImage(imgpath):
             return img
     return bpy.data.images.load(imgpath)
 
-def autoAlignNodes(root):
+def autoAlignNodes(root: bpy.types.Node):
     def makeTree(node):
         descendentCount = 0
-        children = []
+        children : List[bpy.types.Node] = []
         for i in node.inputs:
             for l in i.links:
                 subtree = makeTree(l.from_node)
@@ -28,7 +31,8 @@ def autoAlignNodes(root):
 
     tree = makeTree(root)
 
-    def placeNodes(tree, rootLocation, xstep = 400, ystep = 250):
+    def placeNodes(tree, rootLocation, xstep = 400, ystep = 170):
+        # TODO The results still aren't ideal; especially texture nodes are sometimes placed completely off
         root, children, count = tree
         root.location = rootLocation
         childLoc = rootLocation + Vector((-xstep, ystep * count / 2.))
@@ -56,7 +60,7 @@ class PrincipledWorldWrapper:
             elif self.node_out is None and n.type == "OUTPUT_WORLD":
                 self.node_out = n
 
-def guessColorSpaceFromExtension(img):
+def guessColorSpaceFromExtension(img: str) -> Dict[str, str]:
     """Guess the most appropriate color space from filename extension"""
     img = img.lower()
     if img.endswith(".jpg") or img.endswith(".jpeg") or img.endswith(".png"):

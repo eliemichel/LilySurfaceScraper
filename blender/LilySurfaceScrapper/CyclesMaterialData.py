@@ -37,9 +37,9 @@ class CyclesMaterialData(MaterialData):
 
     def createMaterial(self):
         # Initialize variables
-        mat = bpy.data.materials.new(name=self.name)
+        mat : bpy.types.Material = bpy.data.materials.new(name=self.name)
         mat.use_nodes = True
-        group = bpy.data.node_groups.new(self.name, "ShaderNodeTree")
+        group : bpy.types.ShaderNodeTree = bpy.data.node_groups.new(self.name, "ShaderNodeTree")
         group.inputs.new("NodeSocketVector", "UV")
         mat_nodes = mat.node_tree.nodes
         mat_links = mat.node_tree.links
@@ -50,13 +50,13 @@ class CyclesMaterialData(MaterialData):
 
         # Setup nodes
         principled_mat = PrincipledBSDFWrapper(mat, is_readonly=False)
-        principled = principled_mat.node_principled_bsdf
-        mat_output = principled_mat.node_out
-        group_inputs = nodes.new("NodeGroupInput")
-        group_outputs = nodes.new("NodeGroupOutput")
-        texgroup = mat_nodes.new("ShaderNodeGroup")
+        principled : bpy.types.ShaderNodeBsdfPrincipled = principled_mat.node_principled_bsdf
+        mat_output : bpy.types.ShaderNodeOutputMaterial = principled_mat.node_out
+        group_inputs : bpy.types.NodeGroupInput = nodes.new("NodeGroupInput")
+        group_outputs : bpy.types.NodeGroupOutput = nodes.new("NodeGroupOutput")
+        texgroup : bpy.types.ShaderNodeGroup = mat_nodes.new("ShaderNodeGroup")
         texgroup.node_tree = group
-        texcoords = principled_mat.node_texcoords
+        texcoords : bpy.types.ShaderNodeTexCoord = principled_mat.node_texcoords
         mat_links.new(texcoords.outputs["UV"], texgroup.inputs["UV"])
 
         # Create all of the texture nodes
@@ -64,7 +64,7 @@ class CyclesMaterialData(MaterialData):
             if img is None or map_name.split("_")[0] not in __class__.input_tr:
                 continue
             
-            texture_node = nodes.new(type="ShaderNodeTexImage")
+            texture_node : bpy.types.ShaderNodeTexImage = nodes.new(type="ShaderNodeTexImage")
             if map_name.endswith("_back"):
                 map_name = map_name[:-5] # remove "_back"
                 back[map_name] = texture_node
@@ -84,7 +84,7 @@ class CyclesMaterialData(MaterialData):
             front = back
             back = {}
 
-        def export(name: str, output, input):
+        def export(name: str, output : bpy.types.NodeSocket, input : bpy.types.NodeSocket):
             """Creates a link between an output socket from
             inside the node group to a socket input on the material.
             """
@@ -93,7 +93,7 @@ class CyclesMaterialData(MaterialData):
             links.new(output, group_outputs.inputs[name])
             mat_links.new(texgroup.outputs[name], input)
 
-        def setup(name: str, node):
+        def setup(name: str, node: bpy.types.ShaderNodeTexImage):
             """Creates a texture setup for the node and connects it with the principled
             shader on the material.
 
