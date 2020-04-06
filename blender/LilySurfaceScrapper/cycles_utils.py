@@ -31,7 +31,8 @@ def autoAlignNodes(root: bpy.types.Node):
 
     tree = makeTree(root)
 
-    def placeNodes(tree, rootLocation, xstep = 400, ystep = 250):
+    def placeNodes(tree, rootLocation, xstep = 400, ystep = 170):
+        # TODO The results still aren't ideal; especially texture nodes are sometimes placed completely off
         root, children, count = tree
         root.location = rootLocation
         childLoc = rootLocation + Vector((-xstep, ystep * count / 2.))
