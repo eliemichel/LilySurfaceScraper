@@ -8,6 +8,7 @@ import os
 import bpy
 import enum
 import re
+import functools
 from mathutils import Vector
 from pathlib import Path
 from typing import List, Dict, Union, Iterable, Optional
@@ -82,6 +83,7 @@ class appendableNodeGroups:
     __appended_node_groups = {}
     BLEND_FILE = Path(__file__).parent / "node-groups.blend"
 
+    # TODO Refactor this to be more generic
     @property
     def randomize_tiles (self) -> bpy.types.ShaderNodeTree:
         # TODO Refactor with walrus operator once Blender ships with Python 3.8 (oh god, they'll support Blender 2.83 until end of next year)
@@ -140,7 +142,27 @@ def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = 
         for attr in dir(data_to):
             appendeddata += innerLoop(attr)
 
-    if name:
-        return dict(zip(names, appendeddata)) # FIXME Does the order of elements change? What if there is a .001 thing going on?
+    if name: # TODO This whole thing needs testing
+        result : Dict[str, bpy.types.ID] = []
+        appendeddata.sort(key=name)
+        for data in appendeddata:
+            data_stripped = data.name.rsplit(".", 1)[0]
+            if data_stripped == data:
+                names.remove(data)
+                result[data.name] = data
+                continue
+            filtered = filter(lambda n : n.rsplit(".", 1)[0] == data_stripped, names)
+            if not any(filtered):
+                print("For some reason stuff you didn't ask for has been appended 🤔")
+                result[data.name] = data
+                continue
+            if len(filtered) == 1:
+                names.remove(filtered[0])
+                result[filtered[0]] = data.name
+                continue
+            smallest = functools.reduce(lambda x,y : min(x,y), filtered).next()
+            names.remove(smallest)
+            result[smallest] = data
+        return result
     else:
         return dict(zip(map(lambda prop : prop.name), appendeddata), appendeddata)
