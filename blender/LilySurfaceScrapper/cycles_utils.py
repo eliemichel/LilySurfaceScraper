@@ -80,7 +80,7 @@ class appendableNodeGroups:
     one of the node groups included within node-groups.blend
     """
     __appended_node_groups = {}
-    BLEND_FILE = Path(__path__).parent / "node-groups.blend"
+    BLEND_FILE = Path(__file__).parent / "node-groups.blend"
 
     @property
     def randomize_tiles (self) -> bpy.types.ShaderNodeTree:
