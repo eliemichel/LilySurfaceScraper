@@ -7,9 +7,10 @@
 import os
 import bpy
 import enum
+import re
 from mathutils import Vector
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Union, Iterable, Optional
 
 def getCyclesImage(imgpath):
     """Avoid reloading an image that has already been loaded"""
@@ -85,16 +86,40 @@ class appendableNodeGroups:
     def randomize_tiles (self) -> bpy.types.ShaderNodeTree:
         (group := __appended_node_groups["Randomize Tile"])
         if group is None:
-            group = appendFromBlend(BLEND_FILE, bpy.types.BlendDataNodeTrees , "Randomize Tiles")[0]
+            group = appendFromBlend(BLEND_FILE, bpy.types.BlendData.node_groups , "Randomize Tiles")[0]
         return group
 
-def appendFromBlend(filepath: Path, type: bpy.types.BlendData, names: List[str]) -> List[bpy.types.ID]:
-    """Append a collection of objects from a specifc BlendData [1] type.
-    This is done via `BlendDataLibraries` [2] instead of `bpy.ops.wm.append().`
+def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = None, datatype: Optional[str] = None) -> List[bpy.types.ID]:
+    """Append stuff from a given blend file at file path. You could for example
+    append all node_groups, Object "Suzanne" and "Cube", or everything in the file.
+    Already existing data in your file will not get overwritten, Blender will but a `.001`
+    at the end of the appended asset in that case.
 
-    [1] https://docs.blender.org/api/current/bpy.types.BlendData.html?highlight=node_group#bpy.types.BlendData.node_groups \\
+    If `name = None`, everything will be appended.
+    To improve performance you can specify for which datatype[1] you are looking for. \\
+    This function is a wrapper for `BlendDataLibraries`[2], so it's not using `bpy.ops.wm.append().`
+
+    [1] https://docs.blender.org/api/current/bpy.types.BlendData.html \\
     [2] https://docs.blender.org/api/current/bpy.types.BlendDataLibraries.html?highlight=blenddatalibrary
     """
 
-    with bpy.data.libraries.load(str(filepath)) as (data_from, data_to):
-        
+    # TODO Actually return the imported assets (convenience)
+
+    # Sanitize datatype
+    if "." in datatype: # bpy.types.BlendData.node_groups to node_groups
+        datatype = datatype.rsplit(".", 1)[0].replace("BlendData", "", 1)
+    if datatype.startswith("BlendData"): # BlendDataLattices to lattices
+        datatype = re.sub('(?!^)([A-Z]+)', r'_\1', datatype.replace("BlendData", "", 0)).lower()
+    
+    with bpy.data.libraries.load(str(filepath), link = False) as (data_from, data_to):
+        def append(datatype):
+            if name is None:
+                setattr(data_to, attr, getattr(data_from, attr))
+            else:
+                setattr(data_to, datatype, [name] if isinstance(name, str) else name)
+
+        if datatype is None:
+            for attr in dir(data_from):
+                append(attr)
+        else:
+            append(datatype)
