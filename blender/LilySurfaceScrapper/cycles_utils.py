@@ -84,10 +84,11 @@ class appendableNodeGroups:
 
     @property
     def randomize_tiles (self) -> bpy.types.ShaderNodeTree:
-        (group := __appended_node_groups["Randomize Tile"])
-        if group is None:
-            group = appendFromBlend(BLEND_FILE, bpy.types.BlendData.node_groups , "Randomize Tiles")[0]
-        return group
+        # TODO Refactor with walrus operator once Blender ships with Python 3.8 (oh god, they'll support Blender 2.83 until end of next year)
+        if __appended_node_groups["Randomize Tile"] is None:
+            __appended_node_groups["Randomize Tile"] = appendFromBlend(BLEND_FILE, bpy.types.BlendData.node_groups , "Randomize Tiles")[0]
+        return __appended_node_groups["Randomize Tile"]
+
 
 def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = None, datatype: Optional[str] = None) -> List[bpy.types.ID]:
     """Append stuff from a given blend file at file path. You could for example
