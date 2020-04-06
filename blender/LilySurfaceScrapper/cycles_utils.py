@@ -90,37 +90,62 @@ class appendableNodeGroups:
         return __appended_node_groups["Randomize Tile"]
 
 
-def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = None, datatype: Optional[str] = None) -> List[bpy.types.ID]:
+def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = None, \
+    datatype: Optional[Union[str, bpy.types.bpy_struct]] = None, returnappended: bool = True, link: bool = False) -> List[bpy.types.ID]:
     """Append stuff from a given blend file at file path. You could for example
     append all node_groups, Object "Suzanne" and "Cube", or everything in the file.
     Already existing data in your file will not get overwritten, Blender will but a `.001`
     at the end of the appended asset in that case.
 
-    If `name = None`, everything will be appended.
+    If `name = None`, everything will be appended. Use `link = True` to link instead of appending.
     To improve performance you can specify for which datatype[1] you are looking for. \\
-    This function is a wrapper for `BlendDataLibraries`[2], so it's not using `bpy.ops.wm.append().`
+    This function is a wrapper for `BlendDataLibraries`[2], so it's not using `bpy.ops.wm.append()`.
+    Disabling `returnappended` will disable checks for which object is appended to improve performance.
+    This function will return an empty List in that case.
 
     [1] https://docs.blender.org/api/current/bpy.types.BlendData.html \\
     [2] https://docs.blender.org/api/current/bpy.types.BlendDataLibraries.html?highlight=blenddatalibrary
     """
 
-    # TODO Actually return the imported assets (convenience)
+    results : Optional[List[bpy.types.ID]] = []
 
     # Sanitize datatype
     if "." in datatype: # bpy.types.BlendData.node_groups to node_groups
-        datatype = datatype.rsplit(".", 1)[0].replace("BlendData", "", 1)
+        datatype = datatype.rsplit(".", 1)[-1].replace("BlendData", "", 1)
     if datatype.startswith("BlendData"): # BlendDataLattices to lattices
         datatype = re.sub('(?!^)([A-Z]+)', r'_\1', datatype.replace("BlendData", "", 0)).lower()
     
-    with bpy.data.libraries.load(str(filepath), link = False) as (data_from, data_to):
-        def append(datatype):
+    with bpy.data.libraries.load(str(filepath), link = link) as (data_from, data_to):
+
+        def append(datatype) -> List[bpy.types.ID]:
+            def track():
+                props : List[str] = getattr(bpy.data, datatype).keys().sort()
+                for prop in props:
+                        for data in getattr(data_from, attr):
+                            prop : str
+                            data : str
+                            if data == prop.rsplit(".", 1)[0]: # Catch ImageTexture.001
+                                pass
+                            yield data
+
+            results : List[bpy.types.ID] = []
             if name:
+                if returnappended:
+                    pass
                 setattr(data_to, datatype, [name] if isinstance(name, str) else name)
+                if returnappended:
+                    pass
             else:
+                if returnappended:
+                    results = track()
                 setattr(data_to, attr, getattr(data_from, attr))
+                if returnappended:
+                    pass
 
         if datatype:
             append(datatype)
         else:
             for attr in dir(data_from):
                 append(attr)
+
+    return results
