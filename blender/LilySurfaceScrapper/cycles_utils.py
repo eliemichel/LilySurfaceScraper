@@ -114,13 +114,13 @@ def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = 
     
     with bpy.data.libraries.load(str(filepath), link = False) as (data_from, data_to):
         def append(datatype):
-            if name is None:
-                setattr(data_to, attr, getattr(data_from, attr))
-            else:
+            if name:
                 setattr(data_to, datatype, [name] if isinstance(name, str) else name)
+            else:
+                setattr(data_to, attr, getattr(data_from, attr))
 
-        if datatype is None:
+        if datatype:
+            append(datatype)
+        else:
             for attr in dir(data_from):
                 append(attr)
-        else:
-            append(datatype)
