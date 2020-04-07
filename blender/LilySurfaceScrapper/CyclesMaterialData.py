@@ -60,7 +60,7 @@ class CyclesMaterialData(MaterialData):
         if True:
             mapping_node : bpy.types.ShaderNodeMapping = mat_nodes.new("ShaderNodeMapping")
             tiling_node : bpy.types.ShaderNodeGroup = mat_nodes.new("ShaderNodeGroup")
-            tiling_node.node_tree = appendableNodeGroups.randomize_tiles
+            tiling_node.node_tree = appendableNodeGroups.randomizeTiles()
             mat_links.new(texcoords.outputs["UV"], mapping_node.inputs["Vector"])
             mat_links.new(mapping_node.outputs["Vector"], tiling_node.inputs["UV"])
             mat_links.new(tiling_node.outputs["UV"], texgroup.inputs["UV"])
