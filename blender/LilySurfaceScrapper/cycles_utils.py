@@ -12,6 +12,7 @@ import functools
 from mathutils import Vector
 from pathlib import Path
 from typing import List, Dict, Union, Iterable, Optional
+from itertools import chain
 
 def getCyclesImage(imgpath):
     """Avoid reloading an image that has already been loaded"""
@@ -109,14 +110,15 @@ class appendableNodeGroups:
 
 
 def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = None, \
-    datatype: Optional[str] = None, link: bool = False) -> Dict[str, bpy.types.ID]:
+    datatype: Optional[str] = None, link: bool = False, track = True) -> Optional[Dict[str, bpy.types.ID]]:
     """Append stuff from a given blend file at file path. You could for example
     append all node_groups, Object "Suzanne" and "Cube", or everything in the file.
     Already existing data in your file will not get overwritten, Blender will but a `.001`
     at the end of the appended asset in that case.
 
     If `name = None`, everything will be appended. Use `link = True` to link instead of appending.
-    To improve performance you can specify for which datatype[1] you are looking for. \\
+    To improve performance you can specify for which datatype[1] you are looking for.
+    You can also set `track = None`, which disable the returns.\\
     This function is a wrapper for `BlendDataLibraries`[2], so it's not using `bpy.ops.wm.append()`.
 
     [1] https://docs.blender.org/api/current/bpy.types.BlendData.html \\
@@ -139,17 +141,14 @@ def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = 
             for attr in dir(data_from):
                 append(attr)
 
-    def innerLoop(datatype):
-        for prop in getattr(data_to, datatype):
-            prop : bpy.types.ID
-            yield prop
-    
-    appended_data : Iterable[bpy.types.ID] = []
+    if not track:
+        return None
+
     if datatype:
-        appended_data = innerLoop(datatype)
+        appended_data = [prop for prop in getattr(data_to, datatype)]
     else:
         for attr in dir(data_to):
-            appended_data += innerLoop(attr)
+            appended_data += [prop for prop in getattr(data_to, attr)]
 
     if name: # TODO This whole thing needs testing
         result : Dict[str, bpy.types.ID] = []
