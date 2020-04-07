@@ -145,15 +145,17 @@ def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = 
         return None
 
     if datatype:
-        appended_data = [prop for prop in getattr(data_to, datatype)]
+        appended_data = [prop for prop in getattr(data_to, datatype) if prop is bpy.types.ID]
     else:
         appended_data = []
         for attr in dir(data_to):
-            appended_data += [prop for prop in getattr(data_to, attr)]
+            appended_data += [prop for prop in getattr(data_to, attr) if prop is bpy.types.ID]
+
+    assert len(appended_data) > 0 # FIXME Should be removed as soon as this works
 
     if name: # TODO This whole thing needs testing
         result : Dict[str, bpy.types.ID] = []
-        appended_data : List[bpy.types.ID] = list(filter(None, appended_data)).sort(key=lambda x: x.name)
+        appended_data : List[bpy.types.ID] = appended_data.sort(key=lambda x: x.name)
         for data in appended_data:
             data_stripped = data.name.rsplit(".", 1)[0]
             if data_stripped == data:
