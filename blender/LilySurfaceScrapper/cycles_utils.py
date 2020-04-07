@@ -147,6 +147,7 @@ def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = 
     if datatype:
         appended_data = [prop for prop in getattr(data_to, datatype)]
     else:
+        appended_data = []
         for attr in dir(data_to):
             appended_data += [prop for prop in getattr(data_to, attr)]
 
