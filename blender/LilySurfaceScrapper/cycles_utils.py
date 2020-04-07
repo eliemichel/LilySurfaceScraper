@@ -78,13 +78,23 @@ def guessColorSpaceFromExtension(img: str) -> Dict[str, str]:
 
 class appendableNodeGroups:
     """Use this as a wrapper for appendFromBlend to append
-    one of the node groups included within node-groups.blend
+    one of the node groups included within node-groups.blend \\
+    When adding a new node group to the blend, make sure that you put
+    some kind of ID-string as the label on the group input node.
     """
     __appended_node_groups = {}
     BLEND_FILE = Path(__file__).parent / "node-groups.blend"
 
+    def __isAlreadyThere(self, name : str, id : str) -> bool:
+        """Test if there is already a node group with the same ID
+        as the label on the group input in the blend file. Kinda ghetto,
+        but duplicates shouldn't be a problem with this approach anymore.
+        """
+        return any(filter(lambda group : group.nodes["Group Input"].label == id, bpy.data.node_groups))
+
     # TODO Refactor this to be more generic
     @property # FIXME WTF is a property actually doing?
+    #ID-34GH89
     def randomize_tiles (self) -> bpy.types.ShaderNodeTree:
         # TODO Refactor with walrus operator once Blender ships with Python 3.8 (oh god, they'll support Blender 2.83 until end of next year)
         if __appended_node_groups["Randomize Tile"] is None:
