@@ -88,12 +88,12 @@ class appendableNodeGroups:
     def randomize_tiles (self) -> bpy.types.ShaderNodeTree:
         # TODO Refactor with walrus operator once Blender ships with Python 3.8 (oh god, they'll support Blender 2.83 until end of next year)
         if __appended_node_groups["Randomize Tile"] is None:
-            __appended_node_groups["Randomize Tile"] = appendFromBlend(BLEND_FILE, datatype = bpy.types.BlendData.node_groups , name = "Randomize Tiles")["Randomize Tiles"]
+            __appended_node_groups["Randomize Tile"] = appendFromBlend(BLEND_FILE, datatype = "node_groups" , name = "Randomize Tiles")["Randomize Tiles"]
         return __appended_node_groups["Randomize Tile"]
 
 
 def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = None, \
-    datatype: Optional[Union[str, bpy.types.bpy_struct]] = None, link: bool = False) -> Dict[str, bpy.types.ID]:
+    datatype: Optional[str] = None, link: bool = False) -> Dict[str, bpy.types.ID]:
     """Append stuff from a given blend file at file path. You could for example
     append all node_groups, Object "Suzanne" and "Cube", or everything in the file.
     Already existing data in your file will not get overwritten, Blender will but a `.001`
@@ -106,13 +106,6 @@ def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = 
     [1] https://docs.blender.org/api/current/bpy.types.BlendData.html \\
     [2] https://docs.blender.org/api/current/bpy.types.BlendDataLibraries.html?highlight=blenddatalibrary
     """
-
-    # Sanitize datatype
-    datatype : Optional[str] = locals()[2] if datatype else None
-    if "." in datatype: # bpy.types.BlendData.node_groups to node_groups
-        datatype = datatype.rsplit(".", 1)[-1].replace("BlendData", "", 1)
-    if datatype.startswith("BlendData"): # BlendDataLattices to lattices
-        datatype = re.sub('(?!^)([A-Z]+)', r'_\1', datatype.replace("BlendData", "", 0)).lower()
 
     # Sanitize name
     names = [name] if isinstance(name, str) else name
