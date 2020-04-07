@@ -144,17 +144,17 @@ def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = 
             prop : bpy.types.ID
             yield prop
     
-    appendeddata : Iterable[bpy.types.ID]
+    appended_data : Iterable[bpy.types.ID] = []
     if datatype:
-        appendeddata = innerLoop(datatype)
+        appended_data = innerLoop(datatype)
     else:
         for attr in dir(data_to):
-            appendeddata += innerLoop(attr)
+            appended_data += innerLoop(attr)
 
     if name: # TODO This whole thing needs testing
         result : Dict[str, bpy.types.ID] = []
-        appendeddata = list(appendeddata).sort(key=name)
-        for data in appendeddata:
+        appended_data : List[bpy.types.ID] = list(filter(None, appended_data)).sort(key=lambda x: x.name)
+        for data in appended_data:
             data_stripped = data.name.rsplit(".", 1)[0]
             if data_stripped == data:
                 names.remove(data)
@@ -174,4 +174,4 @@ def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = 
             result[smallest] = data
         return result
     else:
-        return dict(zip(map(lambda prop : prop.name), appendeddata), appendeddata)
+        return dict(zip(map(lambda prop : prop.name), appended_data), appended_data)
