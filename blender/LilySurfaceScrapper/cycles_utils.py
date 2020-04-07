@@ -84,7 +84,7 @@ class appendableNodeGroups:
     BLEND_FILE = Path(__file__).parent / "node-groups.blend"
 
     # TODO Refactor this to be more generic
-    @property
+    @property # FIXME WTF is a property actually doing?
     def randomize_tiles (self) -> bpy.types.ShaderNodeTree:
         # TODO Refactor with walrus operator once Blender ships with Python 3.8 (oh god, they'll support Blender 2.83 until end of next year)
         if __appended_node_groups["Randomize Tile"] is None:
