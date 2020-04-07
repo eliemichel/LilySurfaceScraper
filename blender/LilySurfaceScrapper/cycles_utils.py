@@ -105,7 +105,7 @@ class appendableNodeGroups:
     def randomizeTiles() -> bpy.types.ShaderNodeTree:
         already_there = appendableNodeGroups.__isAlreadyThere("Randomize Tiles", "ID-34GH89")
         return already_there if already_there else \
-            appendFromBlend(BLEND_FILE, datatype = "node_groups" , name = "Randomize Tiles")["Randomize Tiles"]
+            appendFromBlend(appendableNodeGroups.BLEND_FILE, datatype = "node_groups" , name = "Randomize Tiles")["Randomize Tiles"]
 
 
 def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = None, \
@@ -153,7 +153,7 @@ def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = 
 
     if name: # TODO This whole thing needs testing
         result : Dict[str, bpy.types.ID] = []
-        appendeddata.sort(key=name)
+        appendeddata = list(appendeddata).sort(key=name)
         for data in appendeddata:
             data_stripped = data.name.rsplit(".", 1)[0]
             if data_stripped == data:
