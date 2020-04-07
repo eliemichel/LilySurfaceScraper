@@ -97,7 +97,7 @@ class appendableNodeGroups:
             return False
 
         try:
-            return filter(f, bpy.data.node_groups).__next__()
+            return next(filter(f, bpy.data.node_groups))
         except StopIteration:
             return None
 
