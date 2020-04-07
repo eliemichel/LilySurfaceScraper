@@ -27,7 +27,7 @@ import string
 import sys
 try:
     from lxml import etree
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     print("No system-wide installation of lxml found. Installing it...")
     import subprocess
     binary_path_python = sys.executable
