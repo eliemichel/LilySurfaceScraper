@@ -84,21 +84,26 @@ class appendableNodeGroups:
     """
     BLEND_FILE = Path(__file__).parent / "node-groups.blend"
 
-    @classmethod
-    def __isAlreadyThere(cls, name : str, id : str) -> Optional[bpy.types.ShaderNodeTree]:
+    @staticmethod
+    def __isAlreadyThere(name : str, id : str) -> Optional[bpy.types.ShaderNodeTree]:
         """Test if there is already a node group with the same ID
         as the label on the group input in the blend file. Kinda ghetto,
         but duplicates shouldn't be a problem with this approach anymore.
         """
+        def f(group : bpy.types.NodeTree) -> bool:
+            if "Group Input" in group.nodes:
+                return group.nodes["Group Input"].label == id
+            return False
+
         try:
-            return filter(lambda group : group.nodes["Group Input"].label == id, bpy.data.node_groups).__next__()
+            return filter(f, bpy.data.node_groups).__next__()
         except StopIteration:
             return None
 
     # TODO Refactor this to be more generic
-    @classmethod
-    def randomizeTiles(cls) -> bpy.types.ShaderNodeTree:
-        already_there = __isAlreadyThere("Randomize Tiles", "ID-34GH89")
+    @staticmethod
+    def randomizeTiles() -> bpy.types.ShaderNodeTree:
+        already_there = appendableNodeGroups.__isAlreadyThere("Randomize Tiles", "ID-34GH89")
         return already_there if already_there else \
             appendFromBlend(BLEND_FILE, datatype = "node_groups" , name = "Randomize Tiles")["Randomize Tiles"]
 
