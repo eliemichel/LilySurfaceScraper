@@ -7,7 +7,7 @@
 import bpy
 from bpy_extras.node_shader_utils import PrincipledBSDFWrapper
 from .MaterialData import MaterialData
-from .cycles_utils import getCyclesImage, autoAlignNodes
+from .cycles_utils import getCyclesImage, autoAlignNodes, appendableNodeGroups
 
 class CyclesMaterialData(MaterialData):
     # Translate our internal map names into cycles principled inputs
@@ -57,7 +57,15 @@ class CyclesMaterialData(MaterialData):
         texgroup : bpy.types.ShaderNodeGroup = mat_nodes.new("ShaderNodeGroup")
         texgroup.node_tree = group
         texcoords : bpy.types.ShaderNodeTexCoord = principled_mat.node_texcoords
-        mat_links.new(texcoords.outputs["UV"], texgroup.inputs["UV"])
+        if True:
+            mapping_node : bpy.types.ShaderNodeMapping = mat_nodes.new("ShaderNodeMapping")
+            tiling_node : bpy.types.ShaderNodeGroup = mat_nodes.new("ShaderNodeGroup")
+            tiling_node.node_tree = appendableNodeGroups.randomizeTiles()
+            mat_links.new(texcoords.outputs["UV"], mapping_node.inputs["Vector"])
+            mat_links.new(mapping_node.outputs["Vector"], tiling_node.inputs["UV"])
+            mat_links.new(tiling_node.outputs["UV"], texgroup.inputs["UV"])
+        else:    
+            mat_links.new(texcoords.outputs["UV"], texgroup.inputs["UV"])
 
         # Create all of the texture nodes
         for map_name, img in self.maps.items():
