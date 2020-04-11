@@ -33,6 +33,16 @@ class HdriHavenScrapper(AbstractScrapper):
         """Return true if the URL can be scrapped by this scrapper."""
         return url.startswith("https://hdrihaven.com/hdri")
     
+    def extractButtonName(self, d):
+        names = d.xpath(".//div[@class='button']/b/text()")
+        if len(names) >= 1:
+            return names[0]
+        names = d.xpath(".//div[@class='button']/text()")
+        if len(names) >= 1:
+            return names[0].split("⋅")[0].strip()
+        return "(unrecognized option)"
+
+
     def fetchVariantList(self, url):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
@@ -41,7 +51,7 @@ class HdriHavenScrapper(AbstractScrapper):
             return None
 
         variant_data = html.xpath("//div[@class='download-buttons']/a")
-        variants = [self.clearString(d.xpath(".//div[@class='button']/b/text()")[0]) for d in variant_data]
+        variants = [self.clearString(self.extractButtonName(d)) for d in variant_data]
 
         self._html = html
         self._variant_data = variant_data
@@ -65,9 +75,12 @@ class HdriHavenScrapper(AbstractScrapper):
         var_name = variants[variant_index]
         material_data.name = "hdrihaven/" + base_name + '/' + var_name
 
-        redirect_url = "https://hdrihaven.com" + variant_data[variant_index].attrib['href']
-        redirect_html = self.fetchHtml(redirect_url)
-        map_url = "https://hdrihaven.com" + redirect_html.xpath("//a[@download]/@href")[0]
+        url = "https://hdrihaven.com" + variant_data[variant_index].attrib['href']
+        if url.endswith('.exr') or url.endswith('.hdr') or url.endswith('.jpg'):
+            map_url = url
+        else:
+            redirect_html = self.fetchHtml(url)
+            map_url = "https://hdrihaven.com" + redirect_html.xpath("//a[@download]/@href")[0]
         material_data.maps['sky'] = self.fetchImage(map_url, material_data.name, 'sky')
         
         return True

@@ -1,6 +1,4 @@
-*If this helps you save time or money for your job, please condier supporting the work involved in here ;)* [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=DNEEF8GDX2EV6&currency_code=EUR&source=url)
-
-![Lily Surface Scrapper](doc/lilysurfacescrapper.png)
+*If this helps you save time or money for your job, please consider supporting the work involved in here ;)* [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=DNEEF8GDX2EV6&currency_code=EUR&source=url)
 
 Lily Surface Scrapper
 =====================
@@ -9,28 +7,43 @@ There are many sources for getting PBR textures on the Internet, but it is alway
 
 LilySurfaceScrapper suggest a very intuitive and unified workflow: browse your favorite library in your browser. Once you have made your choice, just copy the URL of the page and paste it in Blender. The script will prompt for potential variants if some are detected, then download the maps and setup the material.
 
-This add-on has been designed to make it very easy to add new sources. You can just add a script in the `Scrappers/` directory, it will be automatically detected. See bellow for more information.
+This add-on has been designed to make it very easy to add new sources. You can just add a script in the `Scrappers/` directory, it will be automatically detected. See below for more information.
+
+## Links & Resources
+
+- Video demonstration on [YouTube](https://www.youtube.com/watch?v=KfEhjxvia0Q)
+- Support thread on [BlenderArtists](https://blenderartists.org/t/2-80-lily-surface-scrapper-import-material-from-a-simple-url/1157897)
+- [Downloads](https://github.com/eliemichel/LilySurfaceScrapper/releases)
 
 ## Installation
 
-Download the [last release](https://github.com/eliemichel/LilySurfaceScrapper/releases/latest), then in Blender, go to `Edit > Preferences`, `Add-on`, `Install`, browse to the zip file.
+Download the [latest release](https://github.com/eliemichel/LilySurfaceScrapper/releases/latest), then in Blender, go to `Edit > Preferences`, `Add-on`, `Install`, browse to the zip file.
 
-![Add-on loaded in the User Preferences](doc/addon.png)
+Make sure that you have ticked the small checkbox next to "Import: Lily Surface Scrapper", otherwise the add-on will not be active.
+
+![Add-on loaded in the User Preferences](doc/preferences.jpg)
+
+### Preferences
+
+You can set a path to your texture library. If the path is in absolute form, like `C:\Users\Suzanne\Pictures`, you will not have to save your blend files before you can use the add-on.
+
+If a path is relative like `image-textures\lily` _LilySurfaceScrapper_ searches for a folder named _image-textures_ next to your .blend project file and saves the textures inside _image-textures_ in a subfolder named _lily_.
 
 ## Usage
 
- 1. Browse the website of the source of your choice, until you find a texture, say https://cc0textures.com/view.php?tex=Metal01
- 2. Copy this URL
+ 1. Open the material properies panel.
 
- 3. If you just opened Blender and did not save yet, the add-on is not available:
+![Add-on loaded in the User Preferences](doc/ui.jpg)
 
-![Add-on loaded in the User Preferences](doc/not-saved.png)
+ 2.  If you see this message you need to save your file first or [set an absolute path](#preferences) for your textures.
 
- 4. Save your file, this is needed because the textures will be loaded in a directory called `LilySurface` next to it.
+![Add-on loaded in the User Preferences](doc/not-saved.jpg)
 
-![Add-on loaded in the User Preferences](doc/saved.png)
+ 3. Browse one of the [supported websites](#supported-sources), until you find a texture, say https://cc0textures.com/view.php?tex=Metal01
+ 
+ 4. Copy this URL
 
- 5. Paste the URL of the texture:
+ 5. Click _Import from Clipboard_ to instantly import the material. Alternatively you can click _Import Surface_ and paste the URL you just copied:
 
 ![Add-on loaded in the User Preferences](doc/paste-url.png)
 
@@ -38,7 +51,9 @@ Download the [last release](https://github.com/eliemichel/LilySurfaceScrapper/re
 
 ![Add-on loaded in the User Preferences](doc/select-variant.png)
 
-You can then browse the downloaded files next to your blend. Note that they are not downloaded twice if you use the same URL and variant again.
+ 7. The textures are now being downloaded and the material is being setup. Depending on the resolution and your internet connection this can take a few seconds.
+
+To change where the textures are being stored on the drive, check [Preferences](#preferences). Note that they are not downloaded twice if you use the same URL and variant again.
 
 ![Add-on loaded in the User Preferences](doc/files.png)
 
@@ -55,18 +70,20 @@ Materials:
  - cgbookcase: https://www.cgbookcase.com
  - CC0Textures: https://cc0textures.com
  - Texture Haven: https://texturehaven.com
- - Research on Textures.one: If the "URL" contains just words, no slash, they are used as search keywords to randomly pick a result on http://textures.one if it is supported by the previously cited sources. You can also perform the search yourself and provide a link to the result page on Textures.one.
+ - [Your local filesystem](https://www.youtube.com/watch?v=BXbNA3nN_HI)
+ - Search on Textures.one: If the "URL" contains just words, no slash, they are used as search keywords to randomly pick a result on https://textures.one. You can also perform the search yourself and provide a link to the result page on Textures.one. Make sure that the link is for a supported texture site.
 
 Worlds:
 
  - HDRI Haven: https://hdrihaven.com/
- - Research on Textures.one (same as for materials)
+ - Search on Textures.one (same as for materials)
 
 ## Troubleshooting
 
-If you run into any sort of trouble running this add-on, please fill an [issue](https://github.com/eliemichel/LilySurfaceScrapper/issues/new) on this repository. In particular, do not attempt to report problems to the materials and skies sources as they are third party websites not involved in this project and I don't want them to receive undue "spam" because of me.
+If you run into any sort of trouble running this add-on, please fill an [issue](https://github.com/eliemichel/LilySurfaceScrapper/issues/new) on this repository.
+Please, do not attempt to report problems with the addon to the material and sky sources' websites as they are not involved in this project and I don't want them to receive undue "spam" because of me.
 
-Trouble are to be expected at any design change of the source websites. Please report so as soon as possible and be patient or try to propose your own changes (they should be pretty easy to do, see section about new sources bellow).
+Trouble is to be expected the source websites change their design. Please report it here and be patient so we can fix the addon, or try to propose your own changes (they should be pretty easy to do, see section about new sources below).
 
 ## Adding new sources
 
@@ -154,6 +171,3 @@ bpy.ops.object.lily_surface_import(url="https://cc0textures.com/view.php?tex=Met
 ```
 
 ## TODO
-
- - Handle bump map
- - Include `lxml` more properly. I don't know the idiomatic way to package such a dependency in a Blender addon.
