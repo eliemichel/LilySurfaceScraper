@@ -23,13 +23,14 @@ internal_states = {}
 class PopupOperator(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
     
-    @classmethod
-    def poll(cls, context):
-        return context.active_object is not None
-
     def invoke(self, context, event):
         wm = context.window_manager
         return wm.invoke_props_dialog(self)
+
+class ObjectPopupOperator(PopupOperator):
+    @classmethod
+    def poll(cls, context):
+        return context.active_object is not None
 
 class CallbackProps:
     callback_handle: bpy.props.IntProperty(
@@ -45,7 +46,7 @@ class CallbackProps:
 
 ### Material
 
-class OBJECT_OT_LilySurfaceScrapper(PopupOperator, CallbackProps):
+class OBJECT_OT_LilySurfaceScrapper(ObjectPopupOperator, CallbackProps):
     """Import a material just by typing its URL. See documentation for a list of supported material providers."""
     bl_idname = "object.lily_surface_import"
     bl_label = "Import Surface"
@@ -98,7 +99,7 @@ class OBJECT_OT_LilySurfaceScrapper(PopupOperator, CallbackProps):
             cb(context)
         return {'FINISHED'}
 
-class OBJECT_OT_LilyClipboardSurfaceScrapper(PopupOperator, CallbackProps):
+class OBJECT_OT_LilyClipboardSurfaceScrapper(ObjectPopupOperator, CallbackProps):
     """Same as lily_surface_import except that it gets the URL from clipboard."""
     bl_idname = "object.lily_surface_import_from_clipboard"
     bl_label = "Import from clipboard"
@@ -120,7 +121,7 @@ def list_variant_enum(self, context):
     internal_states['kbjfknvglvhn'] = items # keep a reference to avoid a known crash of blander, says the doc
     return items
 
-class OBJECT_OT_LilySurfacePromptVariant(PopupOperator, CallbackProps):
+class OBJECT_OT_LilySurfacePromptVariant(ObjectPopupOperator, CallbackProps):
     """While importing a material, prompt the user for teh texture variant
     if there are several materials provided by the URL"""
     bl_idname = "object.lily_surface_prompt_variant"
