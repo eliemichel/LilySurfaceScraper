@@ -11,7 +11,7 @@ from .CyclesWorldData import CyclesWorldData
 from .ScrappersManager import ScrappersManager
 from .callback import register_callback, get_callback
 from .preferences import getPreferences
-    
+
 ## Operators
 
 # I really wish there would be a cleaner way to do so: I need to prompt twice
@@ -22,7 +22,7 @@ internal_states = {}
 
 class PopupOperator(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
-    
+
     def invoke(self, context, event):
         wm = context.window_manager
         return wm.invoke_props_dialog(self)
@@ -50,7 +50,7 @@ class OBJECT_OT_LilySurfaceScrapper(ObjectPopupOperator, CallbackProps):
     """Import a material just by typing its URL. See documentation for a list of supported material providers."""
     bl_idname = "object.lily_surface_import"
     bl_label = "Import Surface"
-    
+
     url: bpy.props.StringProperty(
         name="URL",
         description="Address from which importing the material",
@@ -79,7 +79,7 @@ class OBJECT_OT_LilySurfaceScrapper(ObjectPopupOperator, CallbackProps):
         if data.error is not None:
             self.report({'ERROR_INVALID_INPUT'}, data.error)
             return {'CANCELLED'}
-        
+
         variants = data.getVariantList()
         if variants and len(variants) > 1:
             # More than one variant, prompt the user for which one she wants
@@ -103,7 +103,7 @@ class OBJECT_OT_LilyClipboardSurfaceScrapper(ObjectPopupOperator, CallbackProps)
     """Same as lily_surface_import except that it gets the URL from clipboard."""
     bl_idname = "object.lily_surface_import_from_clipboard"
     bl_label = "Import from clipboard"
-    
+
     def invoke(self, context, event):
         return self.execute(context)
 
@@ -126,13 +126,13 @@ class OBJECT_OT_LilySurfacePromptVariant(ObjectPopupOperator, CallbackProps):
     if there are several materials provided by the URL"""
     bl_idname = "object.lily_surface_prompt_variant"
     bl_label = "Select Variant"
-    
+
     variant: bpy.props.EnumProperty(
         name="Variant",
         description="Name of the material variant to load",
         items=list_variant_enum,
     )
-    
+
     internal_state: bpy.props.StringProperty(
         name="Internal State",
         description="System property used to transfer the state of the operator",
@@ -168,7 +168,7 @@ class OBJECT_OT_LilyWorldScrapper(PopupOperator, CallbackProps):
     """Import a world just by typing its URL. See documentation for a list of supported world providers."""
     bl_idname = "object.lily_world_import"
     bl_label = "Import World"
-    
+
     url: bpy.props.StringProperty(
         name="URL",
         description="Address from which importing the world",
@@ -197,7 +197,7 @@ class OBJECT_OT_LilyWorldScrapper(PopupOperator, CallbackProps):
         if data.error is not None:
             self.report({'ERROR_INVALID_INPUT'}, data.error)
             return {'CANCELLED'}
-        
+
         variants = data.getVariantList()
         if variants and len(variants) > 1:
             # More than one variant, prompt the user for which one she wants
@@ -216,12 +216,12 @@ class OBJECT_OT_LilyWorldScrapper(PopupOperator, CallbackProps):
             cb = get_callback(self.callback_handle)
             cb(context)
         return {'FINISHED'}
-        
+
 class OBJECT_OT_LilyClipboardWorldScrapper(PopupOperator, CallbackProps):
     """Same as lily_world_import except that it gets the URL from clipboard."""
     bl_idname = "object.lily_world_import_from_clipboard"
     bl_label = "Import from clipboard"
-    
+
     def invoke(self, context, event):
         return self.execute(context)
 
@@ -244,13 +244,13 @@ class OBJECT_OT_LilyWorldPromptVariant(PopupOperator, CallbackProps):
     if there are several worlds provided by the URL"""
     bl_idname = "object.lily_world_prompt_variant"
     bl_label = "Select Variant"
-    
+
     variant: bpy.props.EnumProperty(
         name="Variant",
         description="Name of the world variant to load",
         items=list_variant_enum,
     )
-    
+
     internal_state: bpy.props.StringProperty(
         name="Internal State",
         description="System property used to transfer the state of the operator",
@@ -294,6 +294,10 @@ class MATERIAL_PT_LilySurfaceScrapper(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         pref = getPreferences(context)
+        if bpy.context.active_object.active_material is not None:
+            layout.label(text="Material helpers:")
+            
+            layout.label(text="Import textures:")
         if bpy.data.filepath == '' and not os.path.isabs(pref.texture_dir):
             layout.label(text="You must save the file to use Lily Surface Scrapper")
             layout.label(text="or setup a texture directory in preferences.")
