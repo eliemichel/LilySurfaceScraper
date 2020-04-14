@@ -63,17 +63,25 @@ def toggleRandomizeTiles(material: bpy.types.Material) -> bool:
 
     def flatten(list : Iterable) -> Iterator: return (item for sublist in list for item in sublist)
 
-    texcoord_links = list(flatten((socket.links for socket in flatten((node.outputs for node in nodes if isinstance(node, bpy.types.ShaderNodeTexCoord))) if socket.is_linked)))
+    texcoord_links = list(socket.links for socket in flatten(node.outputs for node in nodes if isinstance(node, bpy.types.ShaderNodeTexCoord)) if socket.is_linked)
 
     if len(texcoord_links) == 0:
         return False
 
     group = appendableNodeGroups.randomizeTiles()
 
-    group_node : bpy.types.ShaderNodeGroup = nodes.new("ShaderNodeGroup")
-    group_node.node_tree = group
-
-
+    for link_tuple in texcoord_links:  # Every outgoing bundle
+        mapping_node : bpy.types.ShaderNodeMapping = nodes.new("ShaderNodeMapping")
+        tiling_node : bpy.types.ShaderNodeGroup = nodes.new("ShaderNodeGroup")
+        tiling_node.node_tree = group
+        links.new(mapping_node.outputs["Vector"], tiling_node.inputs["UV"])
+        start : bpy.types.NodeSocket
+        for link in link_tuple:
+            start = link.from_socket
+            target = link.to_socket
+            links.remove(link)
+            links.new(tiling_node.outputs["UV"], target)
+        links.new(start, mapping_node.inputs["Vector"])
 
 class PrincipledWorldWrapper:
     """This is a wrapper similar in use to PrincipledBSDFWrapper (located in bpy_extras.node_shader_utils) but for use with worlds.
