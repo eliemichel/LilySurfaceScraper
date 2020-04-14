@@ -11,6 +11,7 @@ from .CyclesWorldData import CyclesWorldData
 from .ScrappersManager import ScrappersManager
 from .callback import register_callback, get_callback
 from .preferences import getPreferences
+from .cycles_utils import toggleRandomizeTiles
 
 ## Operators
 
@@ -45,6 +46,25 @@ class CallbackProps:
 
 
 ### Material
+
+class MATERIAL_OT_LilyMaterialHelper_RandomizeTiles(bpy.types.Operator):
+    """Connect the root Texture Coordinates node with a mapping node and the Randomize Tiles node group."""
+    bl_options = {'REGISTER', 'UNDO'}
+
+    bl_idname = "material.lily_helper_tiles"
+    bl_label = "Toggle Randomize Tiles"
+
+    @classmethod
+    def poll(cls, context):
+        return context.active_object.active_material is not None
+
+    def execute(self, context):
+        if context.active_object.active_material is None:
+            return {'CANCELLED'}
+        return {'FINISHED'} if toggleRandomizeTiles(context.active_object.active_material) else {'CANCELLED'}
+
+    def invoke(self, context, event):
+        return self.execute(context)
 
 class OBJECT_OT_LilySurfaceScrapper(ObjectPopupOperator, CallbackProps):
     """Import a material just by typing its URL. See documentation for a list of supported material providers."""
@@ -296,7 +316,7 @@ class MATERIAL_PT_LilySurfaceScrapper(bpy.types.Panel):
         pref = getPreferences(context)
         if bpy.context.active_object.active_material is not None:
             layout.label(text="Material helpers:")
-            
+            layout.operator("material.lily_helper_tiles")
             layout.label(text="Import textures:")
         if bpy.data.filepath == '' and not os.path.isabs(pref.texture_dir):
             layout.label(text="You must save the file to use Lily Surface Scrapper")
@@ -338,6 +358,7 @@ class WORLD_PT_LilySurfaceScrapper(bpy.types.Panel):
 ## Registration
 
 def register():
+    bpy.utils.register_class(MATERIAL_OT_LilyMaterialHelper_RandomizeTiles)
     bpy.utils.register_class(OBJECT_OT_LilySurfaceScrapper)
     bpy.utils.register_class(OBJECT_OT_LilyClipboardSurfaceScrapper)
     bpy.utils.register_class(OBJECT_OT_LilySurfacePromptVariant)
@@ -348,6 +369,7 @@ def register():
     bpy.utils.register_class(WORLD_PT_LilySurfaceScrapper)
 
 def unregister():
+    bpy.utils.unregister_class(MATERIAL_OT_LilyMaterialHelper_RandomizeTiles)
     bpy.utils.unregister_class(OBJECT_OT_LilySurfaceScrapper)
     bpy.utils.unregister_class(OBJECT_OT_LilyClipboardSurfaceScrapper)
     bpy.utils.unregister_class(OBJECT_OT_LilySurfacePromptVariant)
