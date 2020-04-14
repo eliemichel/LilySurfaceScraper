@@ -118,19 +118,16 @@ class appendableNodeGroups:
         return appendableNodeGroups.__isAlreadyThere("Randomize Tiles", "ID-34GH89") or \
             appendFromBlend(appendableNodeGroups.BLEND_FILE, datatype = "node_groups" , name = "Randomize Tiles")["Randomize Tiles"]
 
-
 def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = None,
-    datatype: Optional[str] = None, link: bool = False, track = True) -> Optional[Dict[str, bpy.types.ID]]:
+    datatype: Optional[str] = None, link: bool = False) -> Union[List[bpy.types.ID], bpy.types.BlendData]:
     """Append stuff from a given blend file at file path.
- 
-    You could for example
-    append all node_groups, Object "Suzanne" and "Cube", or everything in the file.
+
+    You could for example append all node_groups, Object "Suzanne" and "Cube", or everything in the file.
     Already existing data in your file will not get overwritten, Blender will but a `.001`
     at the end of the appended asset in that case.
 
     If `name = None`, everything will be appended. Use `link = True` to link instead of appending.
-    To improve performance you can specify for which datatype[1] you are looking for.
-    You can also set `track = None`, which disable the returns.
+    You can also specify for which datatype[1] you are looking for.
 
     This function is a wrapper for `BlendDataLibraries`[2], so it's not using `bpy.ops.wm.append()`.
 
@@ -138,13 +135,14 @@ def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = 
     [2] https://docs.blender.org/api/current/bpy.types.BlendDataLibraries.html?highlight=blenddatalibrary
     """
     # Sanitize name
-    names : Optional[List[str]] = [name] if isinstance(name, str) else None if name is None else list(name)
+    names: Optional[List[str]] = [name] if isinstance(name, str) else None if name is None else list(name)
+    blocks: Union[List[str], List[bpy.types.ID], None] = deepcopy(names)
 
     # Append
     with bpy.data.libraries.load(str(filepath), link = link) as (data_from, data_to):
         def append(datatype):
             if name:
-                setattr(data_to, datatype, names)
+                setattr(data_to, datatype, blocks) # The context manager will replace each entry in the List with a reference to the actual data.
             else:
                 setattr(data_to, datatype, getattr(data_from, datatype))
         if datatype:
@@ -153,42 +151,5 @@ def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = 
             for attr in dir(data_from):
                 append(attr)
 
-    if not track:
-        return None
-
-    if datatype:
-        appended_data = [prop for prop in getattr(data_to, datatype) if prop is not None]
-    else:
-        for attr in dir(data_to):
-            appended_data += [prop for prop in getattr(data_to, attr) if prop is not None]
-
-    if name: # TODO This whole thing needs testing
-        assert names is not None
-        result : Dict[str, bpy.types.ID] = {}
-        appended_data.sort(key=lambda x: x.name)
-        for data in appended_data:
-            assert isinstance(data, bpy.types.ID)
-            data_name : str = data.name
-            data_name_stripped = data_name.rsplit(".", 1)[0]
-            if data_name_stripped == data_name: # The imported block has no .001 suffix
-                try:
-                    names.remove(data_name) # therefore the searched for name has to match
-                except ValueError:
-                    warn("Asset " + data_name + " has been appended without you explicitly asking for it.")
-                result[data_name] = data
-                continue
-            filtered = list(filter(lambda n : n.rsplit(".", 1)[0] == data_name_stripped, names))
-            if not any(filtered): # None of the names given matches the data block's name
-                warn(data_name + " was appended and you didn't ask for it specifically. 🤔")
-                result[data_name] = data
-                continue
-            if len(filtered) == 1: # Exactly one match
-                names.remove(filtered[0])
-                result[filtered[0]] = data_name
-                continue
-            smallest = functools.reduce(lambda x,y : min(x,y), filtered)
-            names.remove(smallest) # Multiple matches, pick the smallest .001 suffix (Blender only counts upwards)
-            result[smallest] = data
-        return result
-    else:
-        return dict(zip(map(lambda prop : prop.name), appended_data), appended_data)
+    # TODO data_to could be unwrapped and also exposed as a List, if that's more convenient.
+    return blocks if name else data_to
