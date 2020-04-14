@@ -9,6 +9,7 @@ import bpy
 import enum
 import re
 import functools
+from copy import deepcopy
 from warnings import warn
 from mathutils import Vector
 from pathlib import Path
@@ -24,6 +25,7 @@ def getCyclesImage(imgpath):
 
 def autoAlignNodes(root: bpy.types.Node):
     """Align nodes in a node tree to be more visually pleasing."""
+    # TODO Center view afterwards
     def makeTree(node):
         descendentCount = 0
         children : List[bpy.types.Node] = []
@@ -49,6 +51,29 @@ def autoAlignNodes(root: bpy.types.Node):
             acc += (child[2]+1)/2.
 
     placeNodes(tree, Vector((0,0)))
+
+def toggleRandomizeTiles(material: bpy.types.Material) -> bool:
+    """Place a Randomize Tiles node group and a mapping node between each linked Texture Coordinates output.
+    """
+    if material.use_nodes is False:
+        return False
+
+    nodes = material.node_tree.nodes
+    links = material.node_tree.links
+
+    def flatten(list : Iterable) -> Iterator: return (item for sublist in list for item in sublist)
+
+    texcoord_links = list(flatten((socket.links for socket in flatten((node.outputs for node in nodes if isinstance(node, bpy.types.ShaderNodeTexCoord))) if socket.is_linked)))
+
+    if len(texcoord_links) == 0:
+        return False
+
+    group = appendableNodeGroups.randomizeTiles()
+
+    group_node : bpy.types.ShaderNodeGroup = nodes.new("ShaderNodeGroup")
+    group_node.node_tree = group
+
+
 
 class PrincipledWorldWrapper:
     """This is a wrapper similar in use to PrincipledBSDFWrapper (located in bpy_extras.node_shader_utils) but for use with worlds.
@@ -92,7 +117,7 @@ class appendableNodeGroups:
     @staticmethod
     def __isAlreadyThere(name : str, id : str) -> Optional[bpy.types.ShaderNodeTree]:
         """Test and return for node groups.
-        
+
         Test if there is already a node group with the same ID
         as the label on the group input in the blend file. Kinda ghetto,
         but duplicates shouldn't be a problem with this approach anymore.
@@ -116,7 +141,7 @@ class appendableNodeGroups:
         not already in the curent file.
         """
         return appendableNodeGroups.__isAlreadyThere("Randomize Tiles", "ID-34GH89") or \
-            appendFromBlend(appendableNodeGroups.BLEND_FILE, datatype = "node_groups" , name = "Randomize Tiles")["Randomize Tiles"]
+            appendFromBlend(appendableNodeGroups.BLEND_FILE, datatype = "node_groups" , name = "Randomize Tiles")[0]
 
 def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = None,
     datatype: Optional[str] = None, link: bool = False) -> Union[List[bpy.types.ID], bpy.types.BlendData]:
