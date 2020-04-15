@@ -68,7 +68,7 @@ def toggleRandomizeTiles(material: bpy.types.Material) -> bool:
     if len(texcoord_links) == 0:
         return False
 
-    group = appendableNodeGroups.randomizeTiles()
+    group = RandomizeTiles.get()
 
     for link_tuple in texcoord_links:  # Every outgoing bundle
         mapping_node : bpy.types.ShaderNodeMapping = nodes.new("ShaderNodeMapping")
@@ -82,6 +82,8 @@ def toggleRandomizeTiles(material: bpy.types.Material) -> bool:
             links.remove(link)
             links.new(tiling_node.outputs["UV"], target)
         links.new(start, mapping_node.inputs["Vector"])
+    return True
+    # TODO Auto align here
 
 class PrincipledWorldWrapper:
     """This is a wrapper similar in use to PrincipledBSDFWrapper (located in bpy_extras.node_shader_utils) but for use with worlds.
@@ -113,7 +115,7 @@ def guessColorSpaceFromExtension(img: str) -> Dict[str, str]:
             "old_name": "NONE",
         }
 
-class appendableNodeGroups:
+class AppendableNodeGroup:
     """Use this as a wrapper for appendFromBlend to append one of the node groups included within node-groups.blend.
 
     When adding a new node group to the blend, make sure that you put
@@ -121,10 +123,12 @@ class appendableNodeGroups:
     """
 
     BLEND_FILE = Path(__file__).parent / "node-groups.blend"
+    ID: str
+    NAME: str
 
-    @staticmethod
-    def __isAlreadyThere(name : str, id : str) -> Optional[bpy.types.ShaderNodeTree]:
-        """Test and return for node groups.
+    @classmethod
+    def __isAlreadyThere(cls) -> Optional[bpy.types.ShaderNodeTree]:
+        """Return the node-group if it's already in the file.
 
         Test if there is already a node group with the same ID
         as the label on the group input in the blend file. Kinda ghetto,
@@ -132,7 +136,7 @@ class appendableNodeGroups:
         """
         def f(group : bpy.types.NodeTree) -> bool:
             if "Group Input" in group.nodes:
-                return group.nodes["Group Input"].label == id
+                return group.nodes["Group Input"].label == cls.ID
             return False
 
         try:
@@ -140,16 +144,19 @@ class appendableNodeGroups:
         except StopIteration:
             return None
 
-    # TODO Refactor this to be more generic
-    @staticmethod
-    def randomizeTiles() -> bpy.types.ShaderNodeTree:
-        """Return the Randomize Tiles node group.
+    @classmethod
+    def get(cls) -> bpy.types.ShaderNodeTree:
+        """Return the node group.
 
         Will append it from node-groups.blend if it's
         not already in the curent file.
         """
-        return appendableNodeGroups.__isAlreadyThere("Randomize Tiles", "ID-34GH89") or \
-            appendFromBlend(appendableNodeGroups.BLEND_FILE, datatype = "node_groups" , name = "Randomize Tiles")[0]
+        return cls.__isAlreadyThere() or \
+            appendFromBlend(cls.BLEND_FILE, datatype="node_groups", name=cls.NAME)[0]
+
+class RandomizeTiles(AppendableNodeGroup):
+    ID = "ID-34GH89"
+    NAME = "Randomize Tiles"
 
 def appendFromBlend(filepath: Path, name: Optional[Union[Iterable[str], str]] = None,
     datatype: Optional[str] = None, link: bool = False) -> Union[List[bpy.types.ID], bpy.types.BlendData]:

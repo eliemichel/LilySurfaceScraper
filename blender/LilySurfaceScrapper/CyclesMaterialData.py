@@ -7,7 +7,7 @@
 import bpy
 from bpy_extras.node_shader_utils import PrincipledBSDFWrapper
 from .MaterialData import MaterialData
-from .cycles_utils import getCyclesImage, autoAlignNodes, appendableNodeGroups
+from .cycles_utils import getCyclesImage, autoAlignNodes
 
 class CyclesMaterialData(MaterialData):
     # Translate our internal map names into cycles principled inputs
@@ -57,28 +57,20 @@ class CyclesMaterialData(MaterialData):
         texgroup : bpy.types.ShaderNodeGroup = mat_nodes.new("ShaderNodeGroup")
         texgroup.node_tree = group
         texcoords : bpy.types.ShaderNodeTexCoord = principled_mat.node_texcoords
-        if True:
-            mapping_node : bpy.types.ShaderNodeMapping = mat_nodes.new("ShaderNodeMapping")
-            tiling_node : bpy.types.ShaderNodeGroup = mat_nodes.new("ShaderNodeGroup")
-            tiling_node.node_tree = appendableNodeGroups.randomizeTiles()
-            mat_links.new(texcoords.outputs["UV"], mapping_node.inputs["Vector"])
-            mat_links.new(mapping_node.outputs["Vector"], tiling_node.inputs["UV"])
-            mat_links.new(tiling_node.outputs["UV"], texgroup.inputs["UV"])
-        else:    
-            mat_links.new(texcoords.outputs["UV"], texgroup.inputs["UV"])
+        mat_links.new(texcoords.outputs["UV"], texgroup.inputs["UV"])
 
         # Create all of the texture nodes
         for map_name, img in self.maps.items():
             if img is None or map_name.split("_")[0] not in __class__.input_tr:
                 continue
-            
+
             texture_node : bpy.types.ShaderNodeTexImage = nodes.new(type="ShaderNodeTexImage")
             if map_name.endswith("_back"):
                 map_name = map_name[:-5] # remove "_back"
                 back[map_name] = texture_node
             else:
                 front[map_name] = texture_node
-            
+
             texture_node.image = getCyclesImage(img)
             texture_node.image.colorspace_settings.name = "sRGB" if map_name == "baseColor" or map_name == "diffuse" else "Non-Color"
             if hasattr(texture_node, "color_space"):
@@ -137,7 +129,7 @@ class CyclesMaterialData(MaterialData):
                     math_node.inputs[2].default_value = 1
 
                     links.new(node.outputs["Color"], separate_node.inputs["Image"])
-                    
+
                     links.new(separate_node.outputs["R"], combine_node.inputs[0])
                     links.new(separate_node.outputs["G"], math_node.inputs[0])
                     links.new(math_node.outputs["Value"], combine_node.inputs[1])
@@ -158,7 +150,7 @@ class CyclesMaterialData(MaterialData):
             for name, node in front.items():
                 if back.get(name):
                     pre_setup(name, node, back[name], nodes.new(type="ShaderNodeMixRGB"))
-        
+
         autoAlignNodes(group_outputs)
         autoAlignNodes(mat_output)
 
