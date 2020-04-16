@@ -54,14 +54,15 @@ class MATERIAL_OT_LilyMaterialHelper_RandomizeTiles(bpy.types.Operator):
     bl_idname = "material.lily_helper_tiles"
     bl_label = "Add Randomize Tiles"
 
+    __last_function = None
+
     @classmethod
-    def poll(cls, context):
-        return context.active_object.active_material is not None
+    def poll(cls, context) -> bool:
+        cls.__last_function = addRandomizeTiles(context.active_object.active_material)
+        return cls.__last_function
 
     def execute(self, context):
-        if context.active_object.active_material is None:
-            return {'CANCELLED'}
-        return {'FINISHED'} if addRandomizeTiles(context.active_object.active_material) else {'CANCELLED'}
+        return {'FINISHED'} if MATERIAL_OT_LilyMaterialHelper_RandomizeTiles.__last_function() else {'CANCELLED'}
 
     def invoke(self, context, event):
         return self.execute(context)
@@ -314,7 +315,7 @@ class MATERIAL_PT_LilySurfaceScrapper(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         pref = getPreferences(context)
-        if bpy.context.active_object.active_material is not None:
+        if MATERIAL_OT_LilyMaterialHelper_RandomizeTiles.poll(context):
             layout.label(text="Material helpers:")
             layout.operator("material.lily_helper_tiles")
             layout.label(text="Import textures:")

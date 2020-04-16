@@ -52,8 +52,12 @@ def autoAlignNodes(root: bpy.types.Node):
 
     placeNodes(tree, Vector((0,0)))
 
-def addRandomizeTiles(material: bpy.types.Material) -> bool:
+def flatten(list: Iterable) -> Iterator: return (item for sublist in list for item in sublist)
+
+def addRandomizeTiles(material: bpy.types.Material):
     """Place a Randomize Tiles node group and a mapping node between each linked Texture Coordinates output.
+
+    If this operation can be executed successfully it will return a function to do that, otherwise False will be returned.
     """
     if material.use_nodes is False:
         return False
@@ -61,30 +65,31 @@ def addRandomizeTiles(material: bpy.types.Material) -> bool:
     nodes = material.node_tree.nodes
     links = material.node_tree.links
 
-    def flatten(list : Iterable) -> Iterator: return (item for sublist in list for item in sublist)
-
-    texcoord_links = list(socket.links for socket in flatten(node.outputs for node in nodes if isinstance(node, bpy.types.ShaderNodeTexCoord)) if socket.is_linked)
+    texcoord_links = list(socket.links for socket in flatten(node.outputs for node in nodes if isinstance(
+        node, bpy.types.ShaderNodeTexCoord)) if socket.is_linked)
 
     if len(texcoord_links) == 0:
         return False
 
-    group = RandomizeTiles.get()
+    def do():
+        group = RandomizeTiles.get()
 
-    # TODO This could be turned into a toggle. (Remove the setup if it's already there.)
-    for link_tuple in texcoord_links:  # Every outgoing bundle
-        mapping_node : bpy.types.ShaderNodeMapping = nodes.new("ShaderNodeMapping")
-        tiling_node : bpy.types.ShaderNodeGroup = nodes.new("ShaderNodeGroup")
-        tiling_node.node_tree = group
-        links.new(mapping_node.outputs["Vector"], tiling_node.inputs["UV"])
-        start : bpy.types.NodeSocket
-        for link in link_tuple:
-            start = link.from_socket
-            target = link.to_socket
-            links.remove(link)
-            links.new(tiling_node.outputs["UV"], target)
-        links.new(start, mapping_node.inputs["Vector"])
-        # TODO Auto align here
-    return True
+        # TODO This could be turned into a toggle. (Remove the setup if it's already there.)
+        for link_tuple in texcoord_links:  # Every outgoing bundle
+            mapping_node : bpy.types.ShaderNodeMapping = nodes.new("ShaderNodeMapping")
+            tiling_node : bpy.types.ShaderNodeGroup = nodes.new("ShaderNodeGroup")
+            tiling_node.node_tree = group
+            links.new(mapping_node.outputs["Vector"], tiling_node.inputs["UV"])
+            start : bpy.types.NodeSocket
+            for link in link_tuple:
+                start = link.from_socket
+                target = link.to_socket
+                links.remove(link)
+                links.new(tiling_node.outputs["UV"], target)
+            links.new(start, mapping_node.inputs["Vector"])
+            # TODO Auto align here
+            return True
+    return do
 
 class PrincipledWorldWrapper:
     """This is a wrapper similar in use to PrincipledBSDFWrapper (located in bpy_extras.node_shader_utils) but for use with worlds.
