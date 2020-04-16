@@ -11,7 +11,7 @@ from .CyclesWorldData import CyclesWorldData
 from .ScrappersManager import ScrappersManager
 from .callback import register_callback, get_callback
 from .preferences import getPreferences
-from .cycles_utils import toggleRandomizeTiles
+from .cycles_utils import addRandomizeTiles
 
 ## Operators
 
@@ -52,7 +52,7 @@ class MATERIAL_OT_LilyMaterialHelper_RandomizeTiles(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     bl_idname = "material.lily_helper_tiles"
-    bl_label = "Toggle Randomize Tiles"
+    bl_label = "Add Randomize Tiles"
 
     @classmethod
     def poll(cls, context):
@@ -61,7 +61,7 @@ class MATERIAL_OT_LilyMaterialHelper_RandomizeTiles(bpy.types.Operator):
     def execute(self, context):
         if context.active_object.active_material is None:
             return {'CANCELLED'}
-        return {'FINISHED'} if toggleRandomizeTiles(context.active_object.active_material) else {'CANCELLED'}
+        return {'FINISHED'} if addRandomizeTiles(context.active_object.active_material) else {'CANCELLED'}
 
     def invoke(self, context, event):
         return self.execute(context)

@@ -52,7 +52,7 @@ def autoAlignNodes(root: bpy.types.Node):
 
     placeNodes(tree, Vector((0,0)))
 
-def toggleRandomizeTiles(material: bpy.types.Material) -> bool:
+def addRandomizeTiles(material: bpy.types.Material) -> bool:
     """Place a Randomize Tiles node group and a mapping node between each linked Texture Coordinates output.
     """
     if material.use_nodes is False:
@@ -70,6 +70,7 @@ def toggleRandomizeTiles(material: bpy.types.Material) -> bool:
 
     group = RandomizeTiles.get()
 
+    # TODO This could be turned into a toggle. (Remove the setup if it's already there.)
     for link_tuple in texcoord_links:  # Every outgoing bundle
         mapping_node : bpy.types.ShaderNodeMapping = nodes.new("ShaderNodeMapping")
         tiling_node : bpy.types.ShaderNodeGroup = nodes.new("ShaderNodeGroup")
@@ -82,8 +83,8 @@ def toggleRandomizeTiles(material: bpy.types.Material) -> bool:
             links.remove(link)
             links.new(tiling_node.outputs["UV"], target)
         links.new(start, mapping_node.inputs["Vector"])
+        # TODO Auto align here
     return True
-    # TODO Auto align here
 
 class PrincipledWorldWrapper:
     """This is a wrapper similar in use to PrincipledBSDFWrapper (located in bpy_extras.node_shader_utils) but for use with worlds.
