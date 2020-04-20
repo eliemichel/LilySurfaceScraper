@@ -46,15 +46,21 @@ class Cc0texturesScrapper(AbstractScrapper):
         The list may be empty, and must be None in case of error."""
         html = self.fetchHtml(url)
         if html is None:
+            print("URL not found! " + url)
             return None
 
         base_name = html.xpath("//div[@class='View-Title']/text()")[0].strip()
-        variants_html = html.xpath("//div[@class='View-DownloadButton']")
+        variants_html = html.xpath("//a[@class='View-DownloadButton']")
         variants = [v.xpath(".//div[@class='View-DownloadAttribute']/text()")[0] for v in variants_html]
         variants_urls = [
-            urljoin(url, v.xpath(".//a/@href")[0])
+            urljoin(url, v.xpath(".//@href")[0])
             for v in variants_html
         ]
+
+        print("base_name: {}".format(base_name))
+        print("variants_html: {}".format(variants_html))
+        print("variants: {}".format(variants))
+        print("variants_urls: {}".format(variants_urls))
 
         self._variants_urls = variants_urls
         self._variants = variants
