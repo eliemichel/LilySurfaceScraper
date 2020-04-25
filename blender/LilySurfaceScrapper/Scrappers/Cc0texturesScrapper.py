@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Elie Michel
+# Copyright (c) 2019-2020 Elie Michel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -35,30 +35,30 @@ class Cc0texturesScrapper(AbstractScrapper):
     def canHandleUrl(cls, url):
         """Return true if the URL can be scrapped by this scrapper."""
         return (
-        	url.startswith("https://cc0textures.com/view.php?tex=")
-        	or url.startswith("https://cc0textures.com/view?tex=")
+            url.startswith("https://cc0textures.com/view.php?tex=")
+            or url.startswith("https://cc0textures.com/view?tex=")
             or url.startswith("https://www.cc0textures.com/view?id=")
-        	or url.startswith("https://cc0textures.com/view?id=")
+            or url.startswith("https://cc0textures.com/view?id=")
         )
 
     def fetchVariantList(self, url):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
-        html = self.fetchHtml(url)
-        if html is None:
-            return None
 
-        base_name = html.xpath("//div[@class='View-Title']/text()")[0].strip()
-        variants_html = html.xpath("//div[@class='View-DownloadButton']")
-        variants = [v.xpath(".//div[@class='View-DownloadAttribute']/text()")[0] for v in variants_html]
-        variants_urls = [
-            urljoin(url, v.xpath(".//a/@href")[0])
-            for v in variants_html
-        ]
+        query = parse_qs(urlparse(url).query)
+        asset_id = query.get('id', query.get('tex', [None]))[0]
+        api_url = f"https://cc0textures.com/api/v1/full_json?id={asset_id}"
+        data = self.fetchJson(api_url)
+        if data is None:
+            return None
+        
+        variants_data = data["Assets"][asset_id]["Downloads"]
+        variants = list(variants_data.keys())
+        variants_urls = [ variants_data[v]["RawDownloadLink"] for v in variants ]
 
         self._variants_urls = variants_urls
         self._variants = variants
-        self._base_name = base_name
+        self._base_name = asset_id
         return variants
 
     def fetchVariant(self, variant_index, material_data):

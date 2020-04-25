@@ -27,7 +27,7 @@ import string
 import sys
 try:
     from lxml import etree
-except (ImportError, ModuleNotFoundError):
+except ImportError:
     print("No system-wide installation of lxml found. Installing it...")
     import subprocess
     binary_path_python = sys.executable
@@ -58,25 +58,34 @@ class AbstractScrapper():
     def __init__(self, texture_root=""):
         self.error = None
         self.texture_root = texture_root
+
+    @classmethod
+    def _fetch(cls, url):
+        headers = {"User-Agent":"Mozilla/5.0"}  # fake user agent
+        r = requests.get(url if "https://" in url else "https://" + url, headers=headers)
+        if r.status_code != 200:
+            self.error = "URL not found: {}".format(url)
+            return None
+        else:
+            return r
         
     def fetchHtml(self, url):
         """Get a lxml.etree object representing the scrapped page.
         Use xpath queries to browse it."""
-        headers = {"User-Agent":"Mozilla/5.0"}  # fake user agent
-        r = requests.get(url if "https://" in url else "https://" + url, headers=headers)
-        if r.status_code != 200:
-            self.error = "URL not found: {}".format(url)
-            return None
-        else:
+        r = __class__._fetch(url)
+        if r is not None:
             return etree.HTML(r.text)
+
+    def fetchJson(self, url):
+        r = __class__._fetch(url)
+        if r is not None:
+            return r.json()
     
     def fetchXml(self, url):
-        headers = {"User-Agent":"Mozilla/5.0"}  # fake user agent
-        r = requests.get(url if "https://" in url else "https://" + url, headers=headers)
-        if r.status_code != 200:
-            self.error = "URL not found: {}".format(url)
-            return None
-        else:
+        """Get a lxml.etree object representing the scrapped page.
+        Use xpath queries to browse it."""
+        r = __class__._fetch(url)
+        if r is not None:
             return etree.fromstring(r.text)
 
     def getTextureDirectory(self, material_name):
