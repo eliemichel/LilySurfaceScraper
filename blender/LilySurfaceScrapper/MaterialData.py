@@ -54,6 +54,7 @@ class MaterialData(ScrappedData):
     def makeScrapper(cls, url):
         for S in ScrappersManager.getScrappersList():
             if 'MATERIAL' in S.scrapped_type and S.canHandleUrl(url):
+                print("Using scrapper '{}'".format(S.__name__))
                 return S()
         return None
     

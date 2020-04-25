@@ -48,6 +48,7 @@ class Cc0texturesScrapper(AbstractScrapper):
         query = parse_qs(urlparse(url).query)
         asset_id = query.get('id', query.get('tex', [None]))[0]
         api_url = f"https://cc0textures.com/api/v1/full_json?id={asset_id}"
+        
         data = self.fetchJson(api_url)
         if data is None:
             return None
