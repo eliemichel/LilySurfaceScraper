@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Elie Michel
+# Copyright (c) 2019-2020 Elie Michel
 #
 # This file is part of LilySurfaceScrapper, a Blender add-on to import
 # materials from a single URL. It is released under the terms of the GPLv3
@@ -8,6 +8,23 @@ import bpy
 from bpy_extras.node_shader_utils import PrincipledBSDFWrapper
 from .MaterialData import MaterialData
 from .cycles_utils import getCyclesImage, autoAlignNodes
+
+def listAvailableColorSpaces(image):
+    # Warning: hack ahead
+    try:
+        image.colorspace_settings.name = ''
+    except TypeError as e:
+        s = str(e)
+    return eval(s[s.find('('):])
+
+def findBaseColorSpace(image):
+    availableColorSpaces = listAvailableColorSpaces(image)
+    if 'sRGB' in availableColorSpaces:
+        return 'sRGB'
+    for cs in availableColorSpaces:
+        if 'sRGB' in cs:
+            return cs
+    return availableColorSpaces[0]
 
 class CyclesMaterialData(MaterialData):
     # Translate our internal map names into cycles principled inputs
@@ -60,7 +77,10 @@ class CyclesMaterialData(MaterialData):
                 front[map_name] = texture_node
             
             texture_node.image = getCyclesImage(img)
-            texture_node.image.colorspace_settings.name = "sRGB" if map_name == "baseColor" or map_name == "diffuse" else "Non-Color"
+
+            baseColorSpace = findBaseColorSpace(texture_node.image)
+
+            texture_node.image.colorspace_settings.name = baseColorSpace if map_name == "baseColor" or map_name == "diffuse" else "Non-Color"
             if hasattr(texture_node, "color_space"):
                 texture_node.color_space = "COLOR" if map_name == "baseColor" or map_name == "diffuse" else "NONE"
             if map_name == "opacity":
