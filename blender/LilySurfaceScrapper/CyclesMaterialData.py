@@ -17,12 +17,13 @@ def listAvailableColorSpaces(image):
         s = str(e)
     return eval(s[s.find('('):])
 
-def findBaseColorSpace(image):
+def findColorSpace(image, key):
+    """This is important for custom OCIO config"""
     availableColorSpaces = listAvailableColorSpaces(image)
-    if 'sRGB' in availableColorSpaces:
-        return 'sRGB'
+    if key in availableColorSpaces:
+        return key
     for cs in availableColorSpaces:
-        if 'sRGB' in cs:
+        if key in cs:
             return cs
     return availableColorSpaces[0]
 
@@ -78,9 +79,10 @@ class CyclesMaterialData(MaterialData):
             
             texture_node.image = getCyclesImage(img)
 
-            baseColorSpace = findBaseColorSpace(texture_node.image)
+            baseColorSpace = findColorSpace(texture_node.image, 'sRGB')
+            nonColorSpace = findColorSpace(texture_node.image, 'Non-Color')
 
-            texture_node.image.colorspace_settings.name = baseColorSpace if map_name == "baseColor" or map_name == "diffuse" else "Non-Color"
+            texture_node.image.colorspace_settings.name = baseColorSpace if map_name == "baseColor" or map_name == "diffuse" else nonColorSpace
             if hasattr(texture_node, "color_space"):
                 texture_node.color_space = "COLOR" if map_name == "baseColor" or map_name == "diffuse" else "NONE"
             if map_name == "opacity":
