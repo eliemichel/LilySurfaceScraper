@@ -7,7 +7,7 @@
 bl_info = {
     "name": "Lily Surface Scrapper",
     "author": "Élie Michel <elie.michel@exppad.com>",
-    "version": (1, 3, 3),
+    "version": (1, 3, 2),
     "blender": (2, 82, 0),
     "location": "Properties > Material",
     "description": "Import material from a single URL",
@@ -25,9 +25,11 @@ def isImportedInBlender():
     except ImportError:
         return False
 
+
 if isImportedInBlender():
-    from . import frontend
     from . import preferences
+    preferences.ensureLxmlInstalled()
+    from . import frontend
     from .callback import register_callback
 
     def register():

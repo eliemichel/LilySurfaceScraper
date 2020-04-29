@@ -25,17 +25,7 @@ import os
 import string
 
 import sys
-try:
-    from lxml import etree
-except ImportError:
-    print("No system-wide installation of lxml found. Installing it...")
-    import subprocess
-    binary_path_python = sys.executable
-    if binary_path_python.endswith(("blender", "blender.exe")):
-        import bpy
-        binary_path_python = bpy.app.binary_path_python
-    subprocess.check_call([binary_path_python, "-m", "pip", "install", "--user", "lxml"]) # TODO Use a requirements.txt instead
-    from lxml import etree
+from lxml import etree
 
 import requests
 import shutil
