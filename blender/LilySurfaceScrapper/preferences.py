@@ -39,7 +39,11 @@ def ensureLxmlInstalled():
         if binary_path_python.endswith(("blender", "blender.exe")):
             import bpy
             binary_path_python = bpy.app.binary_path_python
-        #subprocess.check_call([binary_path_python, "-m", "ensurepip"])
+        try:
+            # Not all releases have ensurepip, but if they don't they have pip
+            subprocess.check_call([binary_path_python, "-m", "ensurepip"])
+        except subprocess.CalledProcessError:
+            pass
         subprocess.check_call([binary_path_python, "-m", "pip", "install", "--user", "--upgrade", "pip"]) # upgrading pip
         subprocess.check_call([binary_path_python, "-m", "pip", "install", "--user", "lxml"]) # TODO Use a requirements.txt instead
         importlib.invalidate_caches()
