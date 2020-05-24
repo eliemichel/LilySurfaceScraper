@@ -42,21 +42,16 @@ def modules_path():
             "modules"
         )
     )
+
     if not os.path.exists(modulespath):
         os.makedirs(modulespath)
 
-    # set user modules path at beginning of paths for earlier hit
-    if sys.path[1] != modulespath:
-        sys.path.insert(1, modulespath)
-
     return modulespath
 
-modules_path()
-
 def install_dependencies():
-    # Copied and adapted from https://github.com/jesterKing/import_3dm/blob/9f96e644e40edd571829cbaf777d6bda63dbb5db/import_3dm/read3dm.py
     modulespath = modules_path()
 
+    # Copied and adapted from https://github.com/jesterKing/import_3dm/blob/9f96e644e40edd571829cbaf777d6bda63dbb5db/import_3dm/read3dm.py
     try:
         from subprocess import run as sprun
         try:
