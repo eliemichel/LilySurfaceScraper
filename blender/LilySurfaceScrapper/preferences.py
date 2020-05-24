@@ -87,17 +87,6 @@ def install_dependencies():
 
         print("LilySurfaceScrapper: Installing lxml to {}... ".format(modulespath)),
 
-        pip3 = "pip3"
-        if sys.platform=="darwin":
-            pip3 = os.path.normpath(
-                os.path.join(
-                os.path.dirname(bpy.app.binary_path_python),
-                "..",
-                "bin",
-                pip3
-                )
-            )
-
         # call pip in a subprocess so we don't have to mess
         # with internals. Also, this ensures the Python used to
         # install pip is going to be used
