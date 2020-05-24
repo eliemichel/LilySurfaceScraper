@@ -49,9 +49,9 @@ def modules_path():
     return modulespath
 
 def install_dependencies():
+    # Copied and adapted from https://github.com/jesterKing/import_3dm/blob/9f96e644e40edd571829cbaf777d6bda63dbb5db/import_3dm/read3dm.py
     modulespath = modules_path()
 
-    # Copied and adapted from https://github.com/jesterKing/import_3dm/blob/9f96e644e40edd571829cbaf777d6bda63dbb5db/import_3dm/read3dm.py
     try:
         from subprocess import run as sprun
         try:
