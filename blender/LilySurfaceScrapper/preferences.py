@@ -30,9 +30,8 @@ addon_idname = __package__.split(".")[0]
 
 # -----------------------------------------------------------------------------
 
-# --- Block Shamelessly copied from https://github.com/jesterKing/import_3dm/blob/master/import_3dm/read3dm.py
-
 def modules_path():
+    # Copied and adapted from https://github.com/jesterKing/import_3dm/blob/9f96e644e40edd571829cbaf777d6bda63dbb5db/import_3dm/read3dm.py
     # set up addons/modules under the user
     # script path. Here we'll install the
     # dependencies
@@ -55,6 +54,7 @@ def modules_path():
 modules_path()
 
 def install_dependencies():
+    # Copied and adapted from https://github.com/jesterKing/import_3dm/blob/9f96e644e40edd571829cbaf777d6bda63dbb5db/import_3dm/read3dm.py
     modulespath = modules_path()
 
     try:
