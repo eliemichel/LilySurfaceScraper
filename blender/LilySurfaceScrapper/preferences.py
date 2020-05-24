@@ -21,31 +21,102 @@
 # This file is part of LilySurfaceScrapper, a Blender add-on to import materials
 # from a single URL
 
+import os.path
 import bpy
+import sys
+import os
 
 addon_idname = __package__.split(".")[0]
 
 # -----------------------------------------------------------------------------
+
+# --- Block Shamelessly copied from https://github.com/jesterKing/import_3dm/blob/master/import_3dm/read3dm.py
+
+def modules_path():
+    # set up addons/modules under the user
+    # script path. Here we'll install the
+    # dependencies
+    modulespath = os.path.normpath(
+        os.path.join(
+            bpy.utils.script_path_user(),
+            "addons",
+            "modules"
+        )
+    )
+    if not os.path.exists(modulespath):
+        os.makedirs(modulespath)
+
+    # set user modules path at beginning of paths for earlier hit
+    if sys.path[1] != modulespath:
+        sys.path.insert(1, modulespath)
+
+    return modulespath
+
+modules_path()
+
+def install_dependencies():
+    modulespath = modules_path()
+
+    try:
+        from subprocess import run as sprun
+        try:
+            import pip
+        except:
+            print("LilySurfaceScrapper: Installing pip... "),
+            pyver = ""
+            if sys.platform != "win32":
+                pyver = "python{}.{}".format(
+                    sys.version_info.major,
+                    sys.version_info.minor
+                )
+
+            ensurepip = os.path.normpath(
+                os.path.join(
+                    os.path.dirname(bpy.app.binary_path_python),
+                    "..", "lib", pyver, "ensurepip"
+                )
+            )
+            # install pip using the user scheme using the Python
+            # version bundled with Blender
+            res = sprun([bpy.app.binary_path_python, ensurepip, "--user"])
+
+            if res.returncode == 0:
+                import pip
+            else:
+                raise Exception("Failed to install pip.")
+
+        print("LilySurfaceScrapper: Installing lxml to {}... ".format(modulespath)),
+
+        pip3 = "pip3"
+        if sys.platform=="darwin":
+            pip3 = os.path.normpath(
+                os.path.join(
+                os.path.dirname(bpy.app.binary_path_python),
+                "..",
+                "bin",
+                pip3
+                )
+            )
+
+        # call pip in a subprocess so we don't have to mess
+        # with internals. Also, this ensures the Python used to
+        # install pip is going to be used
+        res = sprun([bpy.app.binary_path_python, "-m", "pip", "install", "--upgrade", "--target", modulespath, "lxml"])
+        if res.returncode!=0:
+            print("LilySurfaceScrapper: Please try manually installing lxml with: pip3 install --upgrade --target {} lxml".format(modulespath))
+            raise Exception("Failed to install lxml. See console for manual install instruction.")
+    except:
+        raise Exception("Failed to install dependencies. Please make sure you have pip installed.")
 
 def ensureLxmlInstalled():
     try:
         from lxml import etree
     except (ImportError, ModuleNotFoundError):
         print("LilySurfaceScrapper: No system-wide installation of lxml found. Installing it...")
-        import sys
-        import subprocess
         import importlib
-        binary_path_python = sys.executable
-        if binary_path_python.endswith(("blender", "blender.exe")):
-            import bpy
-            binary_path_python = bpy.app.binary_path_python
-        try:
-            # Not all releases have ensurepip, but if they don't they have pip
-            subprocess.check_call([binary_path_python, "-m", "ensurepip"])
-        except subprocess.CalledProcessError:
-            pass
-        subprocess.check_call([binary_path_python, "-m", "pip", "install", "--user", "--upgrade", "pip"]) # upgrading pip
-        subprocess.check_call([binary_path_python, "-m", "pip", "install", "--user", "lxml"]) # TODO Use a requirements.txt instead
+        
+        install_dependencies()
+        
         importlib.invalidate_caches()
         from lxml import etree
 
