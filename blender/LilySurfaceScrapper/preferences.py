@@ -27,29 +27,6 @@ addon_idname = __package__.split(".")[0]
 
 # -----------------------------------------------------------------------------
 
-def ensureLxmlInstalled():
-    try:
-        from lxml import etree
-    except (ImportError, ModuleNotFoundError):
-        print("LilySurfaceScrapper: No system-wide installation of lxml found. Installing it...")
-        import sys
-        import subprocess
-        import importlib
-        binary_path_python = sys.executable
-        if binary_path_python.endswith(("blender", "blender.exe")):
-            import bpy
-            binary_path_python = bpy.app.binary_path_python
-        try:
-            # Not all releases have ensurepip, but if they don't they have pip
-            subprocess.check_call([binary_path_python, "-m", "ensurepip"])
-        except subprocess.CalledProcessError:
-            pass
-        subprocess.check_call([binary_path_python, "-m", "pip", "install", "--user", "--upgrade", "pip"]) # upgrading pip
-        subprocess.check_call([binary_path_python, "-m", "pip", "install", "--user", "lxml"]) # TODO Use a requirements.txt instead
-        importlib.invalidate_caches()
-        from lxml import etree
-
-
 def getPreferences(context=None):
     if context is None: context = bpy.context
     preferences = context.preferences

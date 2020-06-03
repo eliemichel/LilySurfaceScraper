@@ -28,7 +28,6 @@ def isImportedInBlender():
 
 if isImportedInBlender():
     from . import preferences
-    preferences.ensureLxmlInstalled()
     from . import frontend
     from .callback import register_callback
 
