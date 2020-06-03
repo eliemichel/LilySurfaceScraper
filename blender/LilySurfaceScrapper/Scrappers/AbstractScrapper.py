@@ -54,7 +54,6 @@ class AbstractScrapper():
         headers = {"User-Agent":"Mozilla/5.0"}  # fake user agent
         r = requests.get(url if "https://" in url else "https://" + url, headers=headers)
         if r.status_code != 200:
-            self.error = "URL not found: {}".format(url)
             return None
         else:
             return r
@@ -65,11 +64,15 @@ class AbstractScrapper():
         r = __class__._fetch(url)
         if r is not None:
             return etree.HTML(r.text)
+        else:
+            self.error = "URL not found: {}".format(url)
 
     def fetchJson(self, url):
         r = __class__._fetch(url)
         if r is not None:
             return r.json()
+        else:
+            self.error = "URL not found: {}".format(url)
     
     def fetchXml(self, url):
         """Get a lxml.etree object representing the scrapped page.
@@ -77,6 +80,8 @@ class AbstractScrapper():
         r = __class__._fetch(url)
         if r is not None:
             return etree.fromstring(r.text)
+        else:
+            self.error = "URL not found: {}".format(url)
 
     def getTextureDirectory(self, material_name):
         """Return the texture dir, relative to the blend file, dependent on material's name"""
