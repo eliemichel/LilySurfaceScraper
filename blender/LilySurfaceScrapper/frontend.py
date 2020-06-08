@@ -43,7 +43,6 @@ class CallbackProps:
         default=-1
     )
 
-
 ### Material
 
 class OBJECT_OT_LilySurfaceScrapper(ObjectPopupOperator, CallbackProps):
@@ -68,6 +67,13 @@ class OBJECT_OT_LilySurfaceScrapper(ObjectPopupOperator, CallbackProps):
         default=True
     )
 
+    variant: bpy.props.StringProperty(
+        name="Variant",
+        description="Look for the variant that has this name (for scripting access only)",
+        options={'HIDDEN', 'SKIP_SAVE'},
+        default=""
+    )
+
     def execute(self, context):
         pref = getPreferences(context)
         if bpy.data.filepath == '' and not os.path.isabs(pref.texture_dir):
@@ -81,7 +87,17 @@ class OBJECT_OT_LilySurfaceScrapper(ObjectPopupOperator, CallbackProps):
             return {'CANCELLED'}
         
         variants = data.getVariantList()
-        if variants and len(variants) > 1:
+
+        selected_variant = -1
+        if not variants or len(variants) == 1:
+            selected_variant = 0
+        elif self.variant != "":
+            for i, v in enumerate(variants):
+                if v == self.variant:
+                    selected_variant = i
+                    break
+        
+        if selected_variant == -1:
             # More than one variant, prompt the user for which one she wants
             internal_states['skjhnvjkbg'] = data
             bpy.ops.object.lily_surface_prompt_variant('INVOKE_DEFAULT',
@@ -89,7 +105,7 @@ class OBJECT_OT_LilySurfaceScrapper(ObjectPopupOperator, CallbackProps):
                 create_material=self.create_material,
                 callback_handle=self.callback_handle)
         else:
-            data.selectVariant(0)
+            data.selectVariant(selected_variant)
             if self.create_material:
                 mat = data.createMaterial()
                 context.object.active_material = mat
@@ -186,6 +202,13 @@ class OBJECT_OT_LilyWorldScrapper(PopupOperator, CallbackProps):
         default=True
     )
 
+    variant: bpy.props.StringProperty(
+        name="Variant",
+        description="Look for the variant that has this name (for scripting access only)",
+        options={'HIDDEN', 'SKIP_SAVE'},
+        default=""
+    )
+
     def execute(self, context):
         pref = getPreferences(context)
         if bpy.data.filepath == '' and not os.path.isabs(pref.texture_dir):
@@ -199,7 +222,17 @@ class OBJECT_OT_LilyWorldScrapper(PopupOperator, CallbackProps):
             return {'CANCELLED'}
         
         variants = data.getVariantList()
-        if variants and len(variants) > 1:
+
+        selected_variant = -1
+        if not variants or len(variants) == 1:
+            selected_variant = 0
+        elif self.variant != "":
+            for i, v in enumerate(variants):
+                if v == self.variant:
+                    selected_variant = i
+                    break
+        
+        if selected_variant == -1:
             # More than one variant, prompt the user for which one she wants
             internal_states['zeilult'] = data
             bpy.ops.object.lily_world_prompt_variant('INVOKE_DEFAULT',
@@ -207,7 +240,7 @@ class OBJECT_OT_LilyWorldScrapper(PopupOperator, CallbackProps):
                 create_world=self.create_world,
                 callback_handle=self.callback_handle)
         else:
-            data.selectVariant(0)
+            data.selectVariant(selected_variant)
             if self.create_world:
                 world = data.createWorld()
                 context.scene.world = world

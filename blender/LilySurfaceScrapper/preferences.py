@@ -42,7 +42,12 @@ class LilySurfaceScrapperPreferences(bpy.types.AddonPreferences):
         name="Texture Directory",
         subtype='DIR_PATH',
         default="LilySurface",
-        )
+    )
+
+    use_ao: bpy.props.BoolProperty(
+        name="Use AO map",
+        default=False,
+    )
 
     def draw(self, context):
         layout = self.layout
@@ -50,6 +55,11 @@ class LilySurfaceScrapperPreferences(bpy.types.AddonPreferences):
         layout.label(text="It can either be relative to the blend file, or global to all files.")
         layout.label(text="If it is relative, you must always save the blend file before importing materials and worlds.")
         layout.prop(self, "texture_dir")
+
+        layout.label(text="The AO map provided with some material must not be used")
+        layout.label(text="in a standard surface shader. Nevertheless, you can enable")
+        layout.label(text="using it as a multiplicator over base color.")
+        layout.prop(self, "use_ao")
 
 # -----------------------------------------------------------------------------
 
