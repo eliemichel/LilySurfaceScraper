@@ -170,17 +170,19 @@ class CyclesMaterialData(MaterialData):
                     links.new(normal_node.outputs["Normal"], self.principled_node.inputs["Normal"])
 
         # Second pass, inserting AO requires that everything else (base color) is wired
-        for name, node in mixed.items():
-            if name == "ambientOcclusion":
-                basecolor_links = self.principled_node.inputs["Base Color"].links
-                if len(basecolor_links) == 0:
-                    continue
-                base_color_output = basecolor_links[0].from_socket
-                mix_node = nodes.new(type="ShaderNodeMixRGB")
-                mix_node.blend_type = 'MULTIPLY'
-                links.new(base_color_output, mix_node.inputs[1])
-                links.new(node.outputs["Color"], mix_node.inputs[2])
-                links.new(mix_node.outputs["Color"], self.principled_node.inputs["Base Color"])
+        pref = getPreferences()
+        if pref.use_ao:
+            for name, node in mixed.items():
+                if name == "ambientOcclusion":
+                    basecolor_links = self.principled_node.inputs["Base Color"].links
+                    if len(basecolor_links) == 0:
+                        continue
+                    base_color_output = basecolor_links[0].from_socket
+                    mix_node = nodes.new(type="ShaderNodeMixRGB")
+                    mix_node.blend_type = 'MULTIPLY'
+                    links.new(base_color_output, mix_node.inputs[1])
+                    links.new(node.outputs["Color"], mix_node.inputs[2])
+                    links.new(mix_node.outputs["Color"], self.principled_node.inputs["Base Color"])
 
         autoAlignNodes(self.mat_output)
 
