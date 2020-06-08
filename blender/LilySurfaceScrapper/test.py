@@ -13,7 +13,7 @@ bpy.ops.object.lily_surface_import(
 )
 
 # Test World
- bpy.ops.object.lily_world_import(
- 	url="https://hdrihaven.com/hdri/?h=the_lost_city",
- 	variant=""
- )
+bpy.ops.object.lily_world_import(
+	url="https://hdrihaven.com/hdri/?h=the_lost_city",
+	variant="4k"
+)
