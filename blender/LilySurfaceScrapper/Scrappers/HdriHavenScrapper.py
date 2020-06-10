@@ -40,6 +40,12 @@ class HdriHavenScrapper(AbstractScrapper):
         names = d.xpath(".//div[@class='button']/text()")
         if len(names) >= 1:
             return names[0].split("⋅")[0].strip()
+        names = d.xpath(".//div[@class='dl-btn']/b/text()")
+        if len(names) >= 1:
+            return names[0]
+        names = d.xpath(".//div[@class='dl-btn']/text()")
+        if len(names) >= 1:
+            return names[0].split("⋅")[0].strip()
         return "(unrecognized option)"
 
 
