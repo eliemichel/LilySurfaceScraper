@@ -44,7 +44,7 @@ class CyclesMaterialData(MaterialData):
         'ambientOcclusion': '', # FIXME Handle this better https://github.com/KhronosGroup/glTF-Blender-IO/issues/123
         'ambientOcclusionRough': '', # TODO Do something with this
         'glossiness': '',
-    }
+    }    
 
     def loadImages(self):
         """This is not needed by createMaterial, but is called when
@@ -53,6 +53,9 @@ class CyclesMaterialData(MaterialData):
             if img is None or map_name.split("_")[0] not in __class__.input_tr:
                 continue
             getCyclesImage(img)
+
+    def getGraph(self):
+        return self.material.node_tree.nodes, self.material.node_tree.links
 
     def initMaterial(self):
         """Create the empty material at the core Principled Node"""
@@ -64,9 +67,16 @@ class CyclesMaterialData(MaterialData):
         self.mat_output = principled_mat.node_out
 
     def makeTextureNode(self, img, map_name):
-        nodes = self.material.node_tree.nodes
+        nodes, links = self.getGraph()
+        if self.mapping_node is None:
+            texcoord_node = nodes.new(type="ShaderNodeTexCoord")
+            self.mapping_node = nodes.new(type="ShaderNodeMapping")
+            links.new(texcoord_node.outputs["UV"], self.mapping_node.inputs["Vector"])
+
         texture_node = nodes.new(type="ShaderNodeTexImage")
         texture_node.image = getCyclesImage(img)
+
+        links.new(self.mapping_node.outputs[0], texture_node.inputs["Vector"])
 
         baseColorSpace = findColorSpace(texture_node.image, 'sRGB')
         nonColorSpace = findColorSpace(texture_node.image, 'Non-Color')
@@ -88,8 +98,7 @@ class CyclesMaterialData(MaterialData):
 
     def mixFrontBack(self, front_node, back_node):
         """Mix front and back node in the case of two-sided materials"""
-        nodes = self.material.node_tree.nodes
-        links = self.material.node_tree.links
+        nodes, links = self.getGraph()
         if self.geometry_node is None:
             self.geometry_node = nodes.new("ShaderNodeNewGeometry")
         mix_node = nodes.new(type="ShaderNodeMixRGB")
@@ -118,8 +127,8 @@ class CyclesMaterialData(MaterialData):
         self.front = {}
         self.back = {}
         self.geometry_node = None
-        nodes = self.material.node_tree.nodes
-        links = self.material.node_tree.links
+        self.mapping_node = None
+        nodes, links = self.getGraph()
 
         # Create all of the texture nodes
         for map_name, img in self.maps.items():

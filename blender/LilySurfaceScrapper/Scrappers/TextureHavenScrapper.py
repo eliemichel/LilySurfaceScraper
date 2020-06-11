@@ -76,6 +76,7 @@ class TextureHavenScrapper(AbstractScrapper):
             'Col 3': 'baseColor_03',
             'Col 03': 'baseColor_03',
             'Diffuse': 'diffuse',
+            'Diff Png': 'diffuse',
             'Normal': 'normal',
             'Specular': 'specular',
             'Roughness': 'roughness',

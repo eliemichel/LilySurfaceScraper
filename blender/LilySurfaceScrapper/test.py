@@ -17,3 +17,9 @@ bpy.ops.object.lily_world_import(
 	url="https://hdrihaven.com/hdri/?h=the_lost_city",
 	variant="4k"
 )
+
+# Test multiple base colors
+bpy.ops.object.lily_world_import(
+	url="https://texturehaven.com/tex/?t=fabric_pattern_05",
+	variant="1k JPG 4 MB"
+)
