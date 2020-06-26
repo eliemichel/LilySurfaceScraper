@@ -99,7 +99,9 @@ class CgbookcaseScrapper(AbstractScrapper):
         }
         for variant_html_data, is_back_side in selected_variants:
             for m in variant_html_data.xpath(".//a"):
-                map_url = "https://www.cgbookcase.com" + m.attrib['href']
+                map_url = m.attrib['href']
+                if not map_url.startswith("http"):
+                    map_url = "https://www.cgbookcase.com" + map_url
 
                 temp = map_url[map_url.find("K_") + 2:-4].split("_")
                 map_name = " ".join(temp[1:]).title() if double_sided else " ".join(temp).title()
