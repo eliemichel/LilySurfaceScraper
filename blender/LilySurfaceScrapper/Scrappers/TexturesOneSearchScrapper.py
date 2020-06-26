@@ -21,6 +21,7 @@
 from .TexturesOneScrapper import TexturesOneMaterialScrapper, TexturesOneWorldScrapper
 from .AbstractScrapper import AbstractScrapper
 from random import choice
+import requests
 
 class TexturesOneSearchScrapper(TexturesOneMaterialScrapper):
     scrapped_type = "NONE"
@@ -31,15 +32,30 @@ class TexturesOneSearchScrapper(TexturesOneMaterialScrapper):
     @classmethod
     def findSource(cls, search_term: str) -> str:
         """Search and pick a random result from the results site"""
-        url = "https://textures.one/search/?q=" + search_term + "&" + cls.scrapped_type_name
+        creator_filter = "&".join(["creator[]=" + x for x in cls.supported_creators])
+        url = "https://textures.one/search/?query=" + search_term + "&" + cls.scrapped_type_name + "&" + creator_filter
         html = AbstractScrapper.fetchHtml(None, url)
+        print("url: {}".format(url))
         if html is None: raise ConnectionError
-        options = html.xpath("//div[@class='indexBox']")
-        options = list(filter(lambda o : any("/" + str(p) + "/" in str(o.xpath(".//div/div")[1].xpath(".//img/@src")) for p in cls.supported_creators) , options))
-        links = list(map(lambda o : str(o.xpath(".//a/@href")[0]), options))
+        print("html: {}".format(html))
+        links = html.xpath("//div[@class='asset-container']/a/@href")
+        print("links: {}".format(links))
         if links == []:
             return None
-        return choice(links)
+
+        url = choice(links)
+
+        # resolve URL
+        if not url.startswith("http"):
+            url = "https://www.3dassets.one" + url
+
+        r = requests.get(url, headers={"User-Agent":"Mozilla/5.0"}, allow_redirects=False)
+        if r.status_code == 200:
+            return url
+        elif 'Location' in r.headers:
+            return r.headers['Location']
+        else:
+            return None
 
     @classmethod
     def canHandleUrl(cls, url: str) -> bool:
@@ -51,9 +67,9 @@ class TexturesOneSearchScrapper(TexturesOneMaterialScrapper):
 class TexturesOneSearchMaterialScrapper(TexturesOneSearchScrapper):
     scrapped_type = "MATERIAL"
     scrapped_type_name = "tex-pbr"
-    supported_creators = [1, 2, 4] # IDs of the websites on Textures.one that we support
+    supported_creators = ['cc0textures', 'cgbookcase', 'texturehaven'] # IDs of the websites on Textures.one that we support
 
 class TexturesOneSearchWorldScrapper(TexturesOneSearchScrapper):
     scrapped_type = "WORLD"
     scrapped_type_name = "hdri-sphere"
-    supported_creators = [3]
+    supported_creators = ['hdrihaven']
