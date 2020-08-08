@@ -22,8 +22,8 @@ from .AbstractScrapper import AbstractScrapper
 from ..ScrappersManager import ScrappersManager
 
 class TexturesOneMaterialScrapper(AbstractScrapper):  
-    source_name = "Textures.one"
-    home_url = "https://www.textures.one"
+    source_name = "3DAssets.one"
+    home_url = "https://www.3dassets.one"
     scrapped_type = "MATERIAL"
 
     url_cache = {}
@@ -31,11 +31,7 @@ class TexturesOneMaterialScrapper(AbstractScrapper):
     @classmethod
     def findSource(cls, url: str) -> str:
         """Find the original page from where the texture is being distributed via scraping."""
-        html = AbstractScrapper.fetchHtml(None, url)
-        if html is None: raise ConnectionError
-        
-        # Scrape the url
-        return html.xpath("//span[@class='goLink']/a")[0].get("href")
+        return cls.getRedirection(None, url)
 
     @classmethod
     def cacheSourceUrl(cls, url) -> bool:
@@ -43,6 +39,7 @@ class TexturesOneMaterialScrapper(AbstractScrapper):
         result for further use."""
         source_url = cls.findSource(url)
         if source_url is None:
+            print("source url is none")
             return False
         for S in ScrappersManager.getScrappersList():
             if cls.scrapped_type in S.scrapped_type and S.canHandleUrl(source_url):
@@ -50,12 +47,13 @@ class TexturesOneMaterialScrapper(AbstractScrapper):
                 scrapped_type: str = scrapper_class.scrapped_type
                 cls.url_cache[url] = (source_url, scrapper_class, scrapped_type)
                 return True
+        print("no scrapper could handle {}".format(source_url))
         return False
 
     @classmethod
     def canHandleUrl(cls, url :str) -> bool:
         """Return true if the URL can be scrapped by this scrapper."""
-        if "textures.one/go" in url and "?id=" in url:
+        if ("textures.one/go" in url or "3dassets.one/go" in url) and "?id=" in url:
             return cls.cacheSourceUrl(url)
         return False
 

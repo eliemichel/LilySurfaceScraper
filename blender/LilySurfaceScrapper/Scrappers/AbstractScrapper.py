@@ -84,6 +84,15 @@ class AbstractScrapper():
         else:
             self.error = "URL not found: {}".format(url)
 
+    def getRedirection(self, url):
+        headers = {"User-Agent":"Mozilla/5.0"}  # fake user agent
+        url = url if "https://" in url else "https://" + url
+        r = requests.get(url, headers=headers, allow_redirects=False)
+        if r.status_code == 302:
+            return r.headers.get("Location")
+        else:
+            return None
+
     def getTextureDirectory(self, material_name):
         """Return the texture dir, relative to the blend file, dependent on material's name"""
         texture_dir = getPreferences().texture_dir
