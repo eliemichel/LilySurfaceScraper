@@ -49,6 +49,11 @@ class LilySurfaceScrapperPreferences(bpy.types.AddonPreferences):
         default=False,
     )
 
+    use_ground_hdri: bpy.props.BoolProperty(
+        name="Use Ground HDRI",
+        default=False,
+    )
+
     def draw(self, context):
         layout = self.layout
         layout.label(text="The texture directory where the textures are downloaded.")
@@ -56,10 +61,15 @@ class LilySurfaceScrapperPreferences(bpy.types.AddonPreferences):
         layout.label(text="If it is relative, you must always save the blend file before importing materials and worlds.")
         layout.prop(self, "texture_dir")
 
+        layout.separator()
         layout.label(text="The AO map provided with some material must not be used")
         layout.label(text="in a standard surface shader. Nevertheless, you can enable")
         layout.label(text="using it as a multiplicator over base color.")
         layout.prop(self, "use_ao")
+
+        layout.separator()
+        layout.label(text="Ground HDRI projects the environment maps so that it creates a proper ground.")
+        layout.prop(self, "use_ground_hdri")
 
 # -----------------------------------------------------------------------------
 
