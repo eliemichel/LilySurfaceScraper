@@ -98,6 +98,8 @@ class AbstractScrapper():
         texture_dir = getPreferences().texture_dir
         if texture_dir == "":
             texture_dir = TEXTURE_DIR
+        if texture_dir.startswith("//"):
+            texture_dir = texture_dir[2:]
         if not os.path.isabs(texture_dir):
             texture_dir = os.path.realpath(os.path.join(self.texture_root, texture_dir))
         name_path = material_name.replace('/',os.path.sep)
