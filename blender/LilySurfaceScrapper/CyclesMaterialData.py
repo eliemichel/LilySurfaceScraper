@@ -66,15 +66,25 @@ class CyclesMaterialData(MaterialData):
         self.principled_node = principled_mat.node_principled_bsdf
         self.mat_output = principled_mat.node_out
 
+    def frameNodes(self, label, framed_nodes):
+        nodes, links = self.getGraph()
+        frame = nodes.new(type='NodeFrame')
+        frame.label = label
+        for n in framed_nodes:
+            n.parent = frame
+        frame.update()
+
     def makeTextureNode(self, img, map_name):
         nodes, links = self.getGraph()
         if self.mapping_node is None:
             texcoord_node = nodes.new(type="ShaderNodeTexCoord")
             self.mapping_node = nodes.new(type="ShaderNodeMapping")
             links.new(texcoord_node.outputs["UV"], self.mapping_node.inputs["Vector"])
+            self.frameNodes('Texture Coordinates', (texcoord_node, self.mapping_node))
 
         texture_node = nodes.new(type="ShaderNodeTexImage")
         texture_node.image = getCyclesImage(img)
+        texture_node.location.y += 300
 
         links.new(self.mapping_node.outputs[0], texture_node.inputs["Vector"])
 
