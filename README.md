@@ -170,4 +170,3 @@ h = LilySurfaceScrapper.register_callback(c)
 bpy.ops.object.lily_surface_import(url="https://cc0textures.com/view.php?tex=Metal01", callback_handle=h)
 ```
 
-## TODO
