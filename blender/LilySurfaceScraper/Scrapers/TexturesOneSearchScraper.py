@@ -1,4 +1,5 @@
 # Copyright (c) 2019 Bent Hillerkus
+# Edited in 2020 by Elie Michel
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,23 +19,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from .TexturesOneScrapper import TexturesOneMaterialScrapper, TexturesOneWorldScrapper
-from .AbstractScrapper import AbstractScrapper
+from .TexturesOneScraper import TexturesOneMaterialScraper, TexturesOneWorldScraper
+from .AbstractScraper import AbstractScraper
 from random import choice
 import requests
 
-class TexturesOneSearchScrapper(TexturesOneMaterialScrapper):
-    scrapped_type = "NONE"
-    home_url = None  # Prevent double with TexturesOneMaterialScrapper in UI
-    scrapped_type_name = ""
+class TexturesOneSearchScraper(TexturesOneMaterialScraper):
+    scraped_type = "NONE"
+    home_url = None  # Prevent double with TexturesOneMaterialScraper in UI
+    scraped_type_name = ""
     supported_creators = []
 
     @classmethod
     def findSource(cls, search_term: str) -> str:
         """Search and pick a random result from the results site"""
         creator_filter = "&".join(["creator[]=" + x for x in cls.supported_creators])
-        url = "https://textures.one/search/?query=" + search_term + "&" + cls.scrapped_type_name + "&" + creator_filter
-        html = AbstractScrapper.fetchHtml(None, url)
+        url = "https://textures.one/search/?query=" + search_term + "&" + cls.scraped_type_name + "&" + creator_filter
+        html = AbstractScraper.fetchHtml(None, url)
         print("url: {}".format(url))
         if html is None: raise ConnectionError
         print("html: {}".format(html))
@@ -64,12 +65,12 @@ class TexturesOneSearchScrapper(TexturesOneMaterialScrapper):
             return False
         return cls.cacheSourceUrl(url)
 
-class TexturesOneSearchMaterialScrapper(TexturesOneSearchScrapper):
-    scrapped_type = "MATERIAL"
-    scrapped_type_name = "tex-pbr"
+class TexturesOneSearchMaterialScraper(TexturesOneSearchScraper):
+    scraped_type = "MATERIAL"
+    scraped_type_name = "tex-pbr"
     supported_creators = ['cc0textures', 'cgbookcase', 'texturehaven'] # IDs of the websites on Textures.one that we support
 
-class TexturesOneSearchWorldScrapper(TexturesOneSearchScrapper):
-    scrapped_type = "WORLD"
-    scrapped_type_name = "hdri-sphere"
+class TexturesOneSearchWorldScraper(TexturesOneSearchScraper):
+    scraped_type = "WORLD"
+    scraped_type_name = "hdri-sphere"
     supported_creators = ['hdrihaven']

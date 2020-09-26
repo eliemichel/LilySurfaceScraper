@@ -1,4 +1,5 @@
 # Copyright (c) 2019 Bent Hillerkus
+# Edited in 2020 by Elie Michel
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,13 +19,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from .AbstractScrapper import AbstractScrapper
-from ..ScrappersManager import ScrappersManager
+from .AbstractScraper import AbstractScraper
+from ..ScrapersManager import ScrapersManager
 
-class TexturesOneMaterialScrapper(AbstractScrapper):  
+class TexturesOneMaterialScraper(AbstractScraper):  
     source_name = "3DAssets.one"
     home_url = "https://www.3dassets.one"
-    scrapped_type = "MATERIAL"
+    scraped_type = "MATERIAL"
 
     url_cache = {}
 
@@ -35,24 +36,24 @@ class TexturesOneMaterialScrapper(AbstractScrapper):
 
     @classmethod
     def cacheSourceUrl(cls, url) -> bool:
-        """Look for a scrapper that can scrap the source page, and if so caches the
+        """Look for a scraper that can scrap the source page, and if so caches the
         result for further use."""
         source_url = cls.findSource(url)
         if source_url is None:
             print("source url is none")
             return False
-        for S in ScrappersManager.getScrappersList():
-            if cls.scrapped_type in S.scrapped_type and S.canHandleUrl(source_url):
-                scrapper_class: AbstractScrapper = S
-                scrapped_type: str = scrapper_class.scrapped_type
-                cls.url_cache[url] = (source_url, scrapper_class, scrapped_type)
+        for S in ScrapersManager.getScrapersList():
+            if cls.scraped_type in S.scraped_type and S.canHandleUrl(source_url):
+                scraper_class: AbstractScraper = S
+                scraped_type: str = scraper_class.scraped_type
+                cls.url_cache[url] = (source_url, scraper_class, scraped_type)
                 return True
-        print("no scrapper could handle {}".format(source_url))
+        print("no scraper could handle {}".format(source_url))
         return False
 
     @classmethod
     def canHandleUrl(cls, url :str) -> bool:
-        """Return true if the URL can be scrapped by this scrapper."""
+        """Return true if the URL can be scraped by this scraper."""
         if ("textures.one/go" in url or "3dassets.one/go" in url) and "?id=" in url:
             return cls.cacheSourceUrl(url)
         return False
@@ -61,13 +62,13 @@ class TexturesOneMaterialScrapper(AbstractScrapper):
         cls = self.__class__
         if url not in cls.url_cache:
             return []
-        source_url, scrapper_class, scrapped_type = cls.url_cache[url]
-        self.scrapped_type = scrapped_type
-        self.source_scrapper = scrapper_class(self.texture_root)
-        return self.source_scrapper.fetchVariantList(source_url)
+        source_url, scraper_class, scraped_type = cls.url_cache[url]
+        self.scraped_type = scraped_type
+        self.source_scraper = scraper_class(self.texture_root)
+        return self.source_scraper.fetchVariantList(source_url)
 
     def fetchVariant(self, variant_index, material_data):
-        return self.source_scrapper.fetchVariant(variant_index, material_data)
+        return self.source_scraper.fetchVariant(variant_index, material_data)
 
-class TexturesOneWorldScrapper(TexturesOneMaterialScrapper):
-    scrapped_type = "WORLD"
+class TexturesOneWorldScraper(TexturesOneMaterialScraper):
+    scraped_type = "WORLD"

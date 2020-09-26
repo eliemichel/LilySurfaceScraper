@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Elie Michel
+# Copyright (c) 2019 - 2020 Elie Michel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -18,18 +18,18 @@
 # out of or in connection with the software or the use or other dealings in the
 # Software.
 #
-# This file is part of LilySurfaceScrapper, a Blender add-on to import materials
+# This file is part of LilySurfaceScraper, a Blender add-on to import materials
 # from a single URL
 
-from .AbstractScrapper import AbstractScrapper
+from .AbstractScraper import AbstractScraper
 
-class CgbookcaseScrapper(AbstractScrapper):
+class CgbookcaseScraper(AbstractScraper):
     source_name = "cgbookcase.com"
     home_url = "https://www.cgbookcase.com/textures/"
 
     @classmethod
     def canHandleUrl(cls, url):
-        """Return true if the URL can be scrapped by this scrapper."""
+        """Return true if the URL can be scraped by this scraper."""
         return "cgbookcase.com/textures/" in url
     
     def fetchVariantList(self, url):

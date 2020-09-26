@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Elie Michel
+# Copyright (c) 2019 - 2020 Elie Michel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -18,40 +18,40 @@
 # out of or in connection with the software or the use or other dealings in the
 # Software.
 #
-# This file is part of LilySurfaceScrapper, a Blender add-on to import materials
+# This file is part of LilySurfaceScraper, a Blender add-on to import materials
 # from a single URL
 
 import os
 
-from .Scrappers.AbstractScrapper import AbstractScrapper
+from .Scrapers.AbstractScraper import AbstractScraper
 
-class ScrappersManager():
-    all_scrappers = None
+class ScrapersManager():
+    all_scrapers = None
 
     @staticmethod
-    def makeScrappersList():
+    def makeScrapersList():
         """dirty but useful, for one to painlessly write scrapping class
-        and just drop them in the scrappers dir"""
+        and just drop them in the scrapers dir"""
         import importlib
-        scrappers_names = []
-        scrappers_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Scrappers")
+        scrapers_names = []
+        scrapers_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Scrapers")
         package = __name__[:__name__.rfind('.')]
-        for f in os.listdir(scrappers_dir):
-            if f.endswith(".py") and os.path.isfile(os.path.join(scrappers_dir, f)):
-                scrappers_names.append(f[:-3])
-        scrappers = []
-        for s in scrappers_names:
-            module = importlib.import_module('.Scrappers.' + s, package=package)
+        for f in os.listdir(scrapers_dir):
+            if f.endswith(".py") and os.path.isfile(os.path.join(scrapers_dir, f)):
+                scrapers_names.append(f[:-3])
+        scrapers = []
+        for s in scrapers_names:
+            module = importlib.import_module('.Scrapers.' + s, package=package)
             for x in dir(module):
-                if x == 'AbstractScrapper':
+                if x == 'AbstractScraper':
                     continue
                 m = getattr(module, x)
-                if isinstance(m, type) and issubclass(m, AbstractScrapper):
-                    scrappers.append(m)
-        return scrappers
+                if isinstance(m, type) and issubclass(m, AbstractScraper):
+                    scrapers.append(m)
+        return scrapers
 
     @classmethod
-    def getScrappersList(cls):
-        if cls.all_scrappers is None:
-            cls.all_scrappers = ScrappersManager.makeScrappersList()
-        return cls.all_scrappers
+    def getScrapersList(cls):
+        if cls.all_scrapers is None:
+            cls.all_scrapers = ScrapersManager.makeScrapersList()
+        return cls.all_scrapers

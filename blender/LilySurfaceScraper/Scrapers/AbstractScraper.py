@@ -1,4 +1,4 @@
-# Copyright (c) 2019-2020 Elie Michel
+# Copyright (c) 2019 - 2020 Elie Michel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -18,7 +18,7 @@
 # out of or in connection with the software or the use or other dealings in the
 # Software.
 #
-# This file is part of LilySurfaceScrapper, a Blender add-on to import materials
+# This file is part of LilySurfaceScraper, a Blender add-on to import materials
 # from a single URL
 
 import os
@@ -34,10 +34,10 @@ import shutil
 from ..settings import TEXTURE_DIR
 from ..preferences import getPreferences
 
-class AbstractScrapper():
+class AbstractScraper():
     # Can be 'MATERIAL', 'WORLD'
-    scrapped_type = {'MATERIAL'}
-    # The name of the scrapped source, displayed in UI
+    scraped_type = {'MATERIAL'}
+    # The name of the scraped source, displayed in UI
     source_name = "<Abstract>"
     # The URL of the source's home, used for the list of availabel sources in panels
     home_url = None
@@ -60,7 +60,7 @@ class AbstractScrapper():
             return r
         
     def fetchHtml(self, url):
-        """Get a lxml.etree object representing the scrapped page.
+        """Get a lxml.etree object representing the scraped page.
         Use xpath queries to browse it."""
         r = __class__._fetch(url)
         if r is not None:
@@ -76,7 +76,7 @@ class AbstractScrapper():
             self.error = "URL not found: {}".format(url)
     
     def fetchXml(self, url):
-        """Get a lxml.etree object representing the scrapped page.
+        """Get a lxml.etree object representing the scraped page.
         Use xpath queries to browse it."""
         r = __class__._fetch(url)
         if r is not None:

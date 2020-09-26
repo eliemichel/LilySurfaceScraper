@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Elie Michel
+# Copyright (c) 2019 - 2020 Elie Michel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -18,53 +18,36 @@
 # out of or in connection with the software or the use or other dealings in the
 # Software.
 #
-# This file is part of LilySurfaceScrapper, a Blender add-on to import materials
+# This file is part of LilySurfaceScraper, a Blender add-on to import materials
 # from a single URL
 
-from .ScrappersManager import ScrappersManager
-from .ScrappedData import ScrappedData
+from .ScrapersManager import ScrapersManager
+from .ScrapedData import ScrapedData
 
-class MaterialData(ScrappedData):
-    """Internal representation of materials, responsible on one side for
+class WorldData(ScrapedData):
+    """Internal representation of world, responsible on one side for
     scrapping texture providers and on the other side to build blender materials.
     This class must not use the Blender API. Put Blender related stuff in subclasses
     like CyclesMaterialData."""
     
     def reset(self):
-        self.name = "Lily Material"
-        # FIXME Maybe we can use Python enums instead?
+        self.name = "Lily World"
         self.maps = {
-            'baseColor': None,
-            'diffuse': None,
-            'normal': None,
-            'normalInvertedY': None, # https://help.cc0textures.com/doku.php?id=usage:directx-opengl
-            'opacity': None,
-            'roughness': None,
-            'glossiness': None,
-            'metallic': None,
-            'specular': None,
-            'height': None,
-            'vectorDisplacement': None,
-            'emission': None,
-            'ambientOcclusion': None,
-            'ambientOcclusionRough': None,
+            'sky': None,
         }
 
     @classmethod
-    def makeScrapper(cls, url):
-        for S in ScrappersManager.getScrappersList():
-            if 'MATERIAL' in S.scrapped_type and S.canHandleUrl(url):
-                print("Using scrapper '{}'".format(S.__name__))
+    def makeScraper(cls, url):
+        for S in ScrapersManager.getScrapersList():
+            if 'WORLD' in S.scraped_type and S.canHandleUrl(url):
                 return S()
         return None
     
     def loadImages(self):
-        """This is not needed by createMaterial, but is called when
-        create_material is false to load images anyway
-        Implement this in derived classes"""
+        """Implement this in derived classes"""
         raise NotImplementedError
 
-    def createMaterial(self):
+    def createWorld(self):
         """Implement this in derived classes"""
         raise NotImplementedError
     

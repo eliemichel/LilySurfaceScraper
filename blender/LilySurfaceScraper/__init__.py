@@ -1,19 +1,19 @@
-# Copyright (c) 2019-2020 Elie Michel
+# Copyright (c) 2019 - 2020 Elie Michel
 #
-# This file is part of LilySurfaceScrapper, a Blender add-on to import
+# This file is part of LilySurfaceScraper, a Blender add-on to import
 # materials from a single URL. It is released under the terms of the GPLv3
 # license. See the LICENSE.md file for the full text.
 
 bl_info = {
-    "name": "Lily Surface Scrapper",
+    "name": "Lily Surface Scraper",
     "author": "Élie Michel <elie.michel@exppad.com>",
-    "version": (1, 5, 1),
+    "version": (1, 5, 2),
     "blender": (2, 82, 0),
     "location": "Properties > Material",
     "description": "Import material from a single URL",
     "warning": "",
     "wiki_url": "",
-    "tracker_url": "https://github.com/eliemichel/LilySurfaceScrapper/issues",
+    "tracker_url": "https://github.com/eliemichel/LilySurfaceScraper/issues",
     "support": "COMMUNITY",
     "category": "Import",
 }
@@ -45,4 +45,4 @@ if isImportedInBlender():
 else:
     from .WorldData import WorldData
     from .MaterialData import MaterialData
-    from .ScrappersManager import ScrappersManager
+    from .ScrapersManager import ScrapersManager

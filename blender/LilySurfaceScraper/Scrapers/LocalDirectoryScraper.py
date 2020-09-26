@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Elie Michel
+# Copyright (c) 2019 - 2020 Elie Michel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -18,7 +18,7 @@
 # out of or in connection with the software or the use or other dealings in the
 # Software.
 #
-# This file is part of LilySurfaceScrapper, a Blender add-on to import materials
+# This file is part of LilySurfaceScraper, a Blender add-on to import materials
 # from a single URL
 
 import zipfile
@@ -26,11 +26,11 @@ import os
 from os import path
 import re
 from urllib.parse import urlparse, parse_qs, urlencode, urljoin
-from .AbstractScrapper import AbstractScrapper
+from .AbstractScraper import AbstractScraper
 
-class LocalDirectoryScrapper(AbstractScrapper):
+class LocalDirectoryScraper(AbstractScraper):
     """
-    This scrapper does not actually scrap a website, it links textures from a
+    This scraper does not actually scrap a website, it links textures from a
     local directory, trying to guess the meaning of textures from their names.
     """
     source_name = "Local Directory"
@@ -40,7 +40,7 @@ class LocalDirectoryScrapper(AbstractScrapper):
 
     @classmethod
     def canHandleUrl(cls, url):
-        """Return true if the URL can be scrapped by this scrapper."""
+        """Return true if the URL can be scraped by this scraper."""
         print("test: {}" + url)
         return path.isdir(url)
 

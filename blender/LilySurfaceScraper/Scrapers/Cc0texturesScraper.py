@@ -1,4 +1,4 @@
-# Copyright (c) 2019-2020 Elie Michel
+# Copyright (c) 2019 - 2020 Elie Michel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -18,22 +18,22 @@
 # out of or in connection with the software or the use or other dealings in the
 # Software.
 #
-# This file is part of LilySurfaceScrapper, a Blender add-on to import materials
+# This file is part of LilySurfaceScraper, a Blender add-on to import materials
 # from a single URL
 
 import zipfile
 import os
 import re
 from urllib.parse import urlparse, parse_qs, urlencode, urljoin
-from .AbstractScrapper import AbstractScrapper
+from .AbstractScraper import AbstractScraper
 
-class Cc0texturesScrapper(AbstractScrapper):
+class Cc0texturesScraper(AbstractScraper):
     source_name = "CC0 Textures"
     home_url = "https://cc0textures.com"
 
     @classmethod
     def canHandleUrl(cls, url):
-        """Return true if the URL can be scrapped by this scrapper."""
+        """Return true if the URL can be scraped by this scraper."""
         return (
             url.startswith("https://cc0textures.com/view.php?tex=")
             or url.startswith("https://cc0textures.com/view?tex=")

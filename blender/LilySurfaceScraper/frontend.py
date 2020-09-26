@@ -1,6 +1,6 @@
-# Copyright (c) 2019 Elie Michel
+# Copyright (c) 2019 - 2020 Elie Michel
 #
-# This file is part of LilySurfaceScrapper, a Blender add-on to import
+# This file is part of LilySurfaceScraper, a Blender add-on to import
 # materials from a single URL. It is released under the terms of the GPLv3
 # license. See the LICENSE.md file for the full text.
 
@@ -8,7 +8,7 @@ import os
 import bpy
 from .CyclesMaterialData import CyclesMaterialData
 from .CyclesWorldData import CyclesWorldData
-from .ScrappersManager import ScrappersManager
+from .ScrapersManager import ScrapersManager
 from .callback import register_callback, get_callback
 from .preferences import getPreferences
     
@@ -37,7 +37,7 @@ class CallbackProps:
         name="Callback Handle",
         description=(
             "Handle to a callback to call once the operator is done." +
-            "Use LilySurfaceScrapper.register_callback(cb) to get such a handle."
+            "Use LilySurfaceScraper.register_callback(cb) to get such a handle."
         ),
         options={'HIDDEN', 'SKIP_SAVE'},
         default=-1
@@ -45,7 +45,7 @@ class CallbackProps:
 
 ### Material
 
-class OBJECT_OT_LilySurfaceScrapper(ObjectPopupOperator, CallbackProps):
+class OBJECT_OT_LilySurfaceScraper(ObjectPopupOperator, CallbackProps):
     """Import a material just by typing its URL. See documentation for a list of supported material providers."""
     bl_idname = "object.lily_surface_import"
     bl_label = "Import Surface"
@@ -77,7 +77,7 @@ class OBJECT_OT_LilySurfaceScrapper(ObjectPopupOperator, CallbackProps):
     def execute(self, context):
         pref = getPreferences(context)
         if bpy.data.filepath == '' and not os.path.isabs(pref.texture_dir):
-            self.report({'ERROR'}, 'You must save the file before using LilySurfaceScrapper')
+            self.report({'ERROR'}, 'You must save the file before using LilySurfaceScraper')
             return {'CANCELLED'}
 
         texdir = os.path.dirname(bpy.data.filepath)
@@ -115,7 +115,7 @@ class OBJECT_OT_LilySurfaceScrapper(ObjectPopupOperator, CallbackProps):
             cb(context)
         return {'FINISHED'}
 
-class OBJECT_OT_LilyClipboardSurfaceScrapper(ObjectPopupOperator, CallbackProps):
+class OBJECT_OT_LilyClipboardSurfaceScraper(ObjectPopupOperator, CallbackProps):
     """Same as lily_surface_import except that it gets the URL from clipboard."""
     bl_idname = "object.lily_surface_import_from_clipboard"
     bl_label = "Import from clipboard"
@@ -180,7 +180,7 @@ class OBJECT_OT_LilySurfacePromptVariant(ObjectPopupOperator, CallbackProps):
 
 ### World
 
-class OBJECT_OT_LilyWorldScrapper(PopupOperator, CallbackProps):
+class OBJECT_OT_LilyWorldScraper(PopupOperator, CallbackProps):
     """Import a world just by typing its URL. See documentation for a list of supported world providers."""
     bl_idname = "object.lily_world_import"
     bl_label = "Import World"
@@ -212,7 +212,7 @@ class OBJECT_OT_LilyWorldScrapper(PopupOperator, CallbackProps):
     def execute(self, context):
         pref = getPreferences(context)
         if bpy.data.filepath == '' and not os.path.isabs(pref.texture_dir):
-            self.report({'ERROR'}, 'You must save the file before using LilySurfaceScrapper')
+            self.report({'ERROR'}, 'You must save the file before using LilySurfaceScraper')
             return {'CANCELLED'}
 
         texdir = os.path.dirname(bpy.data.filepath)
@@ -250,7 +250,7 @@ class OBJECT_OT_LilyWorldScrapper(PopupOperator, CallbackProps):
             cb(context)
         return {'FINISHED'}
         
-class OBJECT_OT_LilyClipboardWorldScrapper(PopupOperator, CallbackProps):
+class OBJECT_OT_LilyClipboardWorldScraper(PopupOperator, CallbackProps):
     """Same as lily_world_import except that it gets the URL from clipboard."""
     bl_idname = "object.lily_world_import_from_clipboard"
     bl_label = "Import from clipboard"
@@ -316,10 +316,10 @@ class OBJECT_OT_LilyWorldPromptVariant(PopupOperator, CallbackProps):
 
 ## Panels
 
-class MATERIAL_PT_LilySurfaceScrapper(bpy.types.Panel):
-    """Panel with the Lily Scrapper button"""
-    bl_label = "Lily Surface Scrapper"
-    bl_idname = "MATERIAL_PT_LilySurfaceScrapper"
+class MATERIAL_PT_LilySurfaceScraper(bpy.types.Panel):
+    """Panel with the Lily Scraper button"""
+    bl_label = "Lily Surface Scraper"
+    bl_idname = "MATERIAL_PT_LilySurfaceScraper"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = "material"
@@ -328,22 +328,22 @@ class MATERIAL_PT_LilySurfaceScrapper(bpy.types.Panel):
         layout = self.layout
         pref = getPreferences(context)
         if bpy.data.filepath == '' and not os.path.isabs(pref.texture_dir):
-            layout.label(text="You must save the file to use Lily Surface Scrapper")
+            layout.label(text="You must save the file to use Lily Surface Scraper")
             layout.label(text="or setup a texture directory in preferences.")
         else:
             layout.operator("object.lily_surface_import")
             layout.operator("object.lily_surface_import_from_clipboard")
             layout.label(text="Available sources:")
             urls = {None}  # avoid doubles
-            for S in ScrappersManager.getScrappersList():
-                if 'MATERIAL' in S.scrapped_type and S.home_url not in urls:
+            for S in ScrapersManager.getScrapersList():
+                if 'MATERIAL' in S.scraped_type and S.home_url not in urls:
                     layout.operator("wm.url_open", text=S.source_name).url = S.home_url
                     urls.add(S.home_url)
 
-class WORLD_PT_LilySurfaceScrapper(bpy.types.Panel):
-    """Panel with the Lily Scrapper button"""
-    bl_label = "Lily Surface Scrapper"
-    bl_idname = "WORLD_PT_LilySurfaceScrapper"
+class WORLD_PT_LilySurfaceScraper(bpy.types.Panel):
+    """Panel with the Lily Scraper button"""
+    bl_label = "Lily Surface Scraper"
+    bl_idname = "WORLD_PT_LilySurfaceScraper"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = "world"
@@ -352,36 +352,36 @@ class WORLD_PT_LilySurfaceScrapper(bpy.types.Panel):
         layout = self.layout
         pref = getPreferences(context)
         if bpy.data.filepath == '' and not os.path.isabs(pref.texture_dir):
-            layout.label(text="You must save the file to use Lily Surface Scrapper")
+            layout.label(text="You must save the file to use Lily Surface Scraper")
             layout.label(text="or setup a texture directory in preferences.")
         else:
             layout.operator("object.lily_world_import")
             layout.operator("object.lily_world_import_from_clipboard")
             layout.label(text="Available sources:")
             urls = {None}  # avoid doubles
-            for S in ScrappersManager.getScrappersList():
-                if 'WORLD' in S.scrapped_type and S.home_url not in urls:
+            for S in ScrapersManager.getScrapersList():
+                if 'WORLD' in S.scraped_type and S.home_url not in urls:
                     layout.operator("wm.url_open", text=S.source_name).url = S.home_url
                     urls.add(S.home_url)
 
 ## Registration
 
 def register():
-    bpy.utils.register_class(OBJECT_OT_LilySurfaceScrapper)
-    bpy.utils.register_class(OBJECT_OT_LilyClipboardSurfaceScrapper)
+    bpy.utils.register_class(OBJECT_OT_LilySurfaceScraper)
+    bpy.utils.register_class(OBJECT_OT_LilyClipboardSurfaceScraper)
     bpy.utils.register_class(OBJECT_OT_LilySurfacePromptVariant)
-    bpy.utils.register_class(OBJECT_OT_LilyWorldScrapper)
-    bpy.utils.register_class(OBJECT_OT_LilyClipboardWorldScrapper)
+    bpy.utils.register_class(OBJECT_OT_LilyWorldScraper)
+    bpy.utils.register_class(OBJECT_OT_LilyClipboardWorldScraper)
     bpy.utils.register_class(OBJECT_OT_LilyWorldPromptVariant)
-    bpy.utils.register_class(MATERIAL_PT_LilySurfaceScrapper)
-    bpy.utils.register_class(WORLD_PT_LilySurfaceScrapper)
+    bpy.utils.register_class(MATERIAL_PT_LilySurfaceScraper)
+    bpy.utils.register_class(WORLD_PT_LilySurfaceScraper)
 
 def unregister():
-    bpy.utils.unregister_class(OBJECT_OT_LilySurfaceScrapper)
-    bpy.utils.unregister_class(OBJECT_OT_LilyClipboardSurfaceScrapper)
+    bpy.utils.unregister_class(OBJECT_OT_LilySurfaceScraper)
+    bpy.utils.unregister_class(OBJECT_OT_LilyClipboardSurfaceScraper)
     bpy.utils.unregister_class(OBJECT_OT_LilySurfacePromptVariant)
-    bpy.utils.unregister_class(OBJECT_OT_LilyWorldScrapper)
-    bpy.utils.unregister_class(OBJECT_OT_LilyClipboardWorldScrapper)
+    bpy.utils.unregister_class(OBJECT_OT_LilyWorldScraper)
+    bpy.utils.unregister_class(OBJECT_OT_LilyClipboardWorldScraper)
     bpy.utils.unregister_class(OBJECT_OT_LilyWorldPromptVariant)
-    bpy.utils.unregister_class(MATERIAL_PT_LilySurfaceScrapper)
-    bpy.utils.unregister_class(WORLD_PT_LilySurfaceScrapper)
+    bpy.utils.unregister_class(MATERIAL_PT_LilySurfaceScraper)
+    bpy.utils.unregister_class(WORLD_PT_LilySurfaceScraper)

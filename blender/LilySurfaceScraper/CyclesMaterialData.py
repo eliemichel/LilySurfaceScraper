@@ -1,6 +1,6 @@
-# Copyright (c) 2019-2020 Elie Michel
+# Copyright (c) 2019 - 2020 Elie Michel
 #
-# This file is part of LilySurfaceScrapper, a Blender add-on to import
+# This file is part of LilySurfaceScraper, a Blender add-on to import
 # materials from a single URL. It is released under the terms of the GPLv3
 # license. See the LICENSE.md file for the full text.
 

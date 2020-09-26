@@ -1,4 +1,4 @@
-# Copyright (c) 2019-2020 Elie Michel
+# Copyright (c) 2019 - 2020 Elie Michel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -18,10 +18,35 @@
 # out of or in connection with the software or the use or other dealings in the
 # Software.
 #
-# This file is part of LilySurfaceScrapper, a Blender add-on to import materials
+# This file is part of LilySurfaceScraper, a Blender add-on to import materials
 # from a single URL
 
-## Constants
+import random
 
-TEXTURE_DIR = "LilySurface"
-UNSUPPORTED_PROVIDER_ERR = "Material provider not supported. See the documentation for a list of supported material providers."
+"""
+This module is used to register callbacks that operators will call once they are done.
+It works around a bpy API issue which is that it makes very hard to wait for an
+operator to finish. It converts callbacks into numeric handles that can be provided
+through operator properties.
+"""
+
+callback_dict = {}
+
+def register_callback(callback):
+	"""
+	@param callback: a function to call after.an operator is done,
+	taking a unique argument which is the context
+	@return: a handle to the callback, to be provided to the operator
+	"""
+	limit = 1677216
+	if len(callback_dict) > limit / 4:
+		print("Too many callback registered")
+		return -1
+	handle = random.randint(0,limit)
+	while handle in callback_dict:
+		handle = random.randint(0,limit)
+	callback_dict[handle] = callback
+	return handle
+
+def get_callback(handle):
+	return callback_dict.get(handle, lambda context: None)

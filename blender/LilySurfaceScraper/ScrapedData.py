@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Elie Michel
+# Copyright (c) 2019 - 2020 Elie Michel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -18,19 +18,19 @@
 # out of or in connection with the software or the use or other dealings in the
 # Software.
 #
-# This file is part of LilySurfaceScrapper, a Blender add-on to import materials
+# This file is part of LilySurfaceScraper, a Blender add-on to import materials
 # from a single URL
 
 from .settings import UNSUPPORTED_PROVIDER_ERR
 
-class ScrappedData():
+class ScrapedData():
     """Internal representation of materials and worlds, responsible on one side for
     scrapping texture providers and on the other side to build blender materials.
     This class must not use the Blender API. Put Blender related stuff in subclasses
     like CyclesMaterialData."""
 
     @classmethod
-    def makeScrapper(cls, url):
+    def makeScraper(cls, url):
         raise NotImplementedError
 
     def reset(self):
@@ -45,11 +45,11 @@ class ScrappedData():
         self.texture_root = texture_root
         self.error = None
         self._variants = None
-        self._scrapper = type(self).makeScrapper(url)
-        if self._scrapper is None:
+        self._scraper = type(self).makeScraper(url)
+        if self._scraper is None:
             self.error = UNSUPPORTED_PROVIDER_ERR
         else:
-            self._scrapper.texture_root = texture_root
+            self._scraper.texture_root = texture_root
         self.reset()
 
     def getVariantList(self):
@@ -57,9 +57,9 @@ class ScrappedData():
             return None
         if self._variants is not None:
             return self._variants
-        self._variants = self._scrapper.fetchVariantList(self.url)
+        self._variants = self._scraper.fetchVariantList(self.url)
         if self._variants is None:
-            self.error = self._scrapper.error
+            self.error = self._scraper.error
         return self._variants
 
     def selectVariant(self, variant_index):
@@ -67,6 +67,6 @@ class ScrappedData():
             return False
         if self._variants is None:
             self.getVariantList()
-        if not self._scrapper.fetchVariant(variant_index, self):
+        if not self._scraper.fetchVariant(variant_index, self):
             return False
         return True

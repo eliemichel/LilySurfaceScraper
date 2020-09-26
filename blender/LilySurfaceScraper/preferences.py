@@ -1,4 +1,4 @@
-# Copyright (c) 2019-2020 Elie Michel
+# Copyright (c) 2019 - 2020 Elie Michel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -18,7 +18,7 @@
 # out of or in connection with the software or the use or other dealings in the
 # Software.
 #
-# This file is part of LilySurfaceScrapper, a Blender add-on to import materials
+# This file is part of LilySurfaceScraper, a Blender add-on to import materials
 # from a single URL
 
 import bpy
@@ -35,7 +35,7 @@ def getPreferences(context=None):
 
 # -----------------------------------------------------------------------------
 
-class LilySurfaceScrapperPreferences(bpy.types.AddonPreferences):
+class LilySurfaceScraperPreferences(bpy.types.AddonPreferences):
     bl_idname = addon_idname
 
     texture_dir: bpy.props.StringProperty(
@@ -73,6 +73,6 @@ class LilySurfaceScrapperPreferences(bpy.types.AddonPreferences):
 
 # -----------------------------------------------------------------------------
 
-classes = (LilySurfaceScrapperPreferences,)
+classes = (LilySurfaceScraperPreferences,)
 
 register, unregister = bpy.utils.register_classes_factory(classes)
