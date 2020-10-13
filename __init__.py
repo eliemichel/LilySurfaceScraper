@@ -28,7 +28,7 @@ module_root = os.path.join(os.path.dirname(os.path.realpath(__file__)), "blender
 if module_root not in sys.path:
     sys.path.append(module_root)
 
-from .blender.LilySurfaceScrapper import register, unregister, register_callback
+from .blender.LilySurfaceScraper import register, unregister, register_callback
 
 if __name__ == "__main__":
     register()
