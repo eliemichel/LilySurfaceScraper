@@ -41,7 +41,6 @@ class LocalDirectoryScraper(AbstractScraper):
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scraped by this scraper."""
-        print("test: {}" + url)
         return path.isdir(url)
 
     def fetchVariantList(self, url):

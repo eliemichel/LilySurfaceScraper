@@ -54,6 +54,21 @@ class LilySurfaceScraperPreferences(bpy.types.AddonPreferences):
         default=False,
     )
 
+    ies_use_strength: bpy.props.BoolProperty(
+        name="Use Energy Value",
+        default=True,
+    )
+
+    ies_light_strength: bpy.props.BoolProperty(
+        name="Use in strength node",
+        default=False,
+    )
+
+    ies_pack_files: bpy.props.BoolProperty(
+        name="Pack IES files internally",
+        default=True,
+    )
+
     def draw(self, context):
         layout = self.layout
         layout.label(text="The texture directory where the textures are downloaded.")
@@ -70,6 +85,14 @@ class LilySurfaceScraperPreferences(bpy.types.AddonPreferences):
         layout.separator()
         layout.label(text="Ground HDRI projects the environment maps so that it creates a proper ground.")
         layout.prop(self, "use_ground_hdri")
+
+        layout.separator()
+        layout.label(text="Use the energy value from the IES library to determine the strength of the lamp")
+        layout.prop(self, "ies_use_strength")
+        if bool(self.ies_use_strength):
+            layout.label(text="Put the energy value in the strength socket of the IES map instead of the lamp energy")
+            layout.prop(self, "ies_light_strength")
+        layout.prop(self, "ies_pack_files")
 
 # -----------------------------------------------------------------------------
 
