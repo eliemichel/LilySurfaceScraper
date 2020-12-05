@@ -14,7 +14,7 @@ class IesLibraryScraper(AbstractScraper):
     home_url = "https://ieslibrary.com"
     home_dir = "ieslibrary"
 
-    pattern = r"https://ieslibrary\.com/en/browse#ies-(.+)"
+    pattern = r"https://ieslibrary\.com/.*#ies-(.+)"
 
     @classmethod
     def canHandleUrl(cls, url):
