@@ -81,7 +81,7 @@ class HdriHavenScraper(AbstractScraper):
         var_name = variants[variant_index]
         material_data.name = "hdrihaven/" + base_name + '/' + var_name
 
-        url = "https://hdrihaven.com" + variant_data[variant_index].attrib['href']
+        url = variant_data[variant_index].attrib['href']
         if url.endswith('.exr') or url.endswith('.hdr') or url.endswith('.jpg'):
             map_url = url
         else:
