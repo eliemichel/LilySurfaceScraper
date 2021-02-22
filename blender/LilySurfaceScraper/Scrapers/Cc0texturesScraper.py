@@ -24,6 +24,7 @@
 import zipfile
 import os
 import re
+import json
 from urllib.parse import urlparse, parse_qs, urlencode, urljoin
 from .AbstractScraper import AbstractScraper
 
@@ -49,7 +50,9 @@ class Cc0texturesScraper(AbstractScraper):
         asset_id = query.get('id', query.get('tex', [None]))[0]
         api_url = f"https://cc0textures.com/api/v1/full_json?id={asset_id}"
         
-        data = self.fetchJson(api_url)
+        #data = self.fetchJson(api_url)
+        text = self.fetchText(api_url) #This is a temperary problem at cc0materials.
+        data = json.loads(dataa[text.find("{"):])
         if data is None:
             return None
         
