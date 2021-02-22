@@ -67,6 +67,14 @@ class AbstractScraper():
             return etree.HTML(r.text)
         else:
             self.error = "URL not found: {}".format(url)
+    def fetchText(self, url):
+        """Get a lxml.etree object representing the scraped page.
+        Use xpath queries to browse it."""
+        r = __class__._fetch(url)
+        if r is not None:
+            return r.text
+        else:
+            self.error = "URL not found: {}".format(url)
 
     def fetchJson(self, url):
         r = __class__._fetch(url)
