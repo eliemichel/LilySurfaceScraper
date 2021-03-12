@@ -87,6 +87,8 @@ class HdriHavenScraper(AbstractScraper):
         else:
             redirect_html = self.fetchHtml(url)
             map_url = "https://hdrihaven.com" + redirect_html.xpath("//a[@download]/@href")[0]
+        if url.startswith("//"):
+            url = "https:" + url
         material_data.maps['sky'] = self.fetchImage(map_url, material_data.name, 'sky')
         
         return True
