@@ -37,7 +37,7 @@ __all__ = [
     'document_fromstring', 'fragment_fromstring', 'fragments_fromstring', 'fromstring',
     'tostring', 'Element', 'defs', 'open_in_browser', 'submit_form',
     'find_rel_links', 'find_class', 'make_links_absolute',
-    'resolve_base_href', 'iterlinks', 'rewrite_links', 'open_in_browser', 'parse']
+    'resolve_base_href', 'iterlinks', 'rewrite_links', 'parse']
 
 
 import copy
@@ -1176,15 +1176,13 @@ class InputGetter(object):
     ``form.inputs['field_name']``.  If there are a set of checkboxes
     with the same name, they are returned as a list (a `CheckboxGroup`
     which also allows value setting).  Radio inputs are handled
-    similarly.
+    similarly.  Use ``.keys()`` and ``.items()`` to process all fields
+    in this way.
 
     You can also iterate over this to get all input elements.  This
     won't return the same thing as if you get all the names, as
     checkboxes and radio elements are returned individually.
     """
-
-    _name_xpath = etree.XPath(".//*[@name = $name and (local-name(.) = 'select' or local-name(.) = 'input' or local-name(.) = 'textarea')]")
-    _all_xpath = etree.XPath(".//*[local-name() = 'select' or local-name() = 'input' or local-name() = 'textarea']")
 
     def __init__(self, form):
         self.form = form
@@ -1198,40 +1196,64 @@ class InputGetter(object):
     ## a dictionary-like object or list-like object
 
     def __getitem__(self, name):
-        results = self._name_xpath(self.form, name=name)
-        if results:
-            type = results[0].get('type')
-            if type == 'radio' and len(results) > 1:
-                group = RadioGroup(results)
-                group.name = name
-                return group
-            elif type == 'checkbox' and len(results) > 1:
-                group = CheckboxGroup(results)
-                group.name = name
-                return group
-            else:
-                # I don't like throwing away elements like this
-                return results[0]
+        fields = [field for field in self if field.name == name]
+        if not fields:
+            raise KeyError("No input element with the name %r" % name)
+
+        input_type = fields[0].get('type')
+        if input_type == 'radio' and len(fields) > 1:
+            group = RadioGroup(fields)
+            group.name = name
+            return group
+        elif input_type == 'checkbox' and len(fields) > 1:
+            group = CheckboxGroup(fields)
+            group.name = name
+            return group
         else:
-            raise KeyError(
-                "No input element with the name %r" % name)
+            # I don't like throwing away elements like this
+            return fields[0]
 
     def __contains__(self, name):
-        results = self._name_xpath(self.form, name=name)
-        return bool(results)
+        for field in self:
+            if field.name == name:
+                return True
+        return False
 
     def keys(self):
-        names = set()
+        """
+        Returns all unique field names, in document order.
+
+        :return: A list of all unique field names.
+        """
+        names = []
+        seen = {None}
         for el in self:
-            names.add(el.name)
-        if None in names:
-            names.remove(None)
-        return list(names)
+            name = el.name
+            if name not in seen:
+                names.append(name)
+                seen.add(name)
+        return names
+
+    def items(self):
+        """
+        Returns all fields with their names, similar to dict.items().
+
+        :return: A list of (name, field) tuples.
+        """
+        items = []
+        seen = set()
+        for el in self:
+            name = el.name
+            if name not in seen:
+                seen.add(name)
+                items.append((name, self[name]))
+        return items
 
     def __iter__(self):
-        ## FIXME: kind of dumb to turn a list into an iterator, only
-        ## to have it likely turned back into a list again :(
-        return iter(self._all_xpath(self.form))
+        return self.form.iter('select', 'input', 'textarea')
+
+    def __len__(self):
+        return sum(1 for _ in self)
 
 
 class InputMixin(object):
