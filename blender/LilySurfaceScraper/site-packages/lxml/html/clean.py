@@ -1,4 +1,4 @@
-# cython: language_level=2
+# cython: language_level=3str
 
 """A cleanup tool for HTML.
 
@@ -8,8 +8,9 @@ details.
 
 from __future__ import absolute_import
 
-import re
 import copy
+import re
+import sys
 try:
     from urlparse import urlsplit
     from urllib import unquote_plus
@@ -61,12 +62,16 @@ __all__ = ['clean_html', 'clean', 'Cleaner', 'autolink', 'autolink_html',
 
 # This is an IE-specific construct you can have in a stylesheet to
 # run some Javascript:
-_css_javascript_re = re.compile(
-    r'expression\s*\(.*?\)', re.S|re.I)
+_replace_css_javascript = re.compile(
+    r'expression\s*\(.*?\)', re.S|re.I).sub
 
 # Do I have to worry about @\nimport?
-_css_import_re = re.compile(
-    r'@\s*import', re.I)
+_replace_css_import = re.compile(
+    r'@\s*import', re.I).sub
+
+_looks_like_tag_content = re.compile(
+    r'</?[a-zA-Z]+|\son[a-zA-Z]+\s*=',
+    *((re.ASCII,) if sys.version_info[0] >= 3 else ())).search
 
 # All kinds of schemes besides just javascript: that can cause
 # execution:
@@ -215,13 +220,22 @@ class Cleaner(object):
     whitelist_tags = {'iframe', 'embed'}
 
     def __init__(self, **kw):
+        not_an_attribute = object()
         for name, value in kw.items():
-            if not hasattr(self, name):
+            default = getattr(self, name, not_an_attribute)
+            if (default is not None and default is not True and default is not False
+                    and not isinstance(default, (frozenset, set, tuple, list))):
                 raise TypeError(
                     "Unknown parameter: %s=%r" % (name, value))
             setattr(self, name, value)
         if self.inline_style is None and 'inline_style' not in kw:
             self.inline_style = self.style
+
+        if kw.get("allow_tags"):
+            if kw.get("remove_unknown_tags"):
+                raise ValueError("It does not make sense to pass in both "
+                                 "allow_tags and remove_unknown_tags")
+            self.remove_unknown_tags = False
 
     # Used to lookup the primary URL for a given tag that is up for
     # removal:
@@ -249,9 +263,12 @@ class Cleaner(object):
         """
         Cleans the document.
         """
-        if hasattr(doc, 'getroot'):
-            # ElementTree instance, instead of an element
-            doc = doc.getroot()
+        try:
+            getroot = doc.getroot
+        except AttributeError:
+            pass  # Element instance
+        else:
+            doc = getroot()  # ElementTree instance, instead of an element
         # convert XHTML to HTML
         xhtml_to_html(doc)
         # Normalize a case that IE treats <image> like <img>, and that
@@ -292,8 +309,8 @@ class Cleaner(object):
             if not self.inline_style:
                 for el in _find_styled_elements(doc):
                     old = el.get('style')
-                    new = _css_javascript_re.sub('', old)
-                    new = _css_import_re.sub('', new)
+                    new = _replace_css_javascript('', old)
+                    new = _replace_css_import('', new)
                     if self._has_sneaky_javascript(new):
                         # Something tricky is going on...
                         del el.attrib['style']
@@ -305,18 +322,15 @@ class Cleaner(object):
                         el.drop_tree()
                         continue
                     old = el.text or ''
-                    new = _css_javascript_re.sub('', old)
+                    new = _replace_css_javascript('', old)
                     # The imported CSS can do anything; we just can't allow:
-                    new = _css_import_re.sub('', old)
+                    new = _replace_css_import('', new)
                     if self._has_sneaky_javascript(new):
                         # Something tricky is going on...
                         el.text = '/* deleted */'
                     elif new != old:
                         el.text = new
-        if self.comments or self.processing_instructions:
-            # FIXME: why either?  I feel like there's some obscure reason
-            # because you can put PIs in comments...?  But I've already
-            # forgotten it
+        if self.comments:
             kill_tags.add(etree.Comment)
         if self.processing_instructions:
             kill_tags.add(etree.ProcessingInstruction)
@@ -343,7 +357,6 @@ class Cleaner(object):
             # We should get rid of any <param> tags not inside <applet>;
             # These are not really valid anyway.
             for el in list(doc.iter('param')):
-                found_parent = False
                 parent = el.getparent()
                 while parent is not None and parent.tag not in ('applet', 'object'):
                     parent = parent.getparent()
@@ -401,6 +414,12 @@ class Cleaner(object):
                     "It does not make sense to pass in both allow_tags and remove_unknown_tags")
             allow_tags = set(defs.tags)
         if allow_tags:
+            # make sure we do not remove comments/PIs if users want them (which is rare enough)
+            if not self.comments:
+                allow_tags.add(etree.Comment)
+            if not self.processing_instructions:
+                allow_tags.add(etree.ProcessingInstruction)
+
             bad = []
             for el in doc.iter():
                 if el.tag not in allow_tags:
@@ -480,9 +499,9 @@ class Cleaner(object):
         doesn't normally see.  We can't allow anything like that, so
         we'll kill any comments that could be conditional.
         """
-        bad = []
+        has_conditional_comment = _conditional_comment_re.search
         self._kill_elements(
-            doc, lambda el: _conditional_comment_re.search(el.text),
+            doc, lambda el: has_conditional_comment(el.text),
             etree.Comment)                
 
     def _kill_elements(self, doc, condition, iterate=None):
@@ -521,6 +540,12 @@ class Cleaner(object):
         if 'javascript:' in style:
             return True
         if 'expression(' in style:
+            return True
+        if '</noscript' in style:
+            # e.g. '<noscript><style><a title="</noscript><img src=x onerror=alert(1)>">'
+            return True
+        if _looks_like_tag_content(style):
+            # e.g. '<math><style><img src=x onerror=alert(1)></style></math>'
             return True
         return False
 
