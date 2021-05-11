@@ -80,6 +80,8 @@ Worlds:
 
 ## Troubleshooting
 
+*Blender hangs forever when downloading the files* If you are using a VPN, try to disable it.
+
 If you run into any sort of trouble running this add-on, please fill an [issue](https://github.com/eliemichel/LilySurfaceScrapper/issues/new) on this repository.
 Please, do not attempt to report problems with the addon to the material and sky sources' websites as they are not involved in this project and I don't want them to receive undue "spam" because of me.
 
