@@ -28,17 +28,17 @@ from urllib.parse import urlparse, parse_qs, urlencode, urljoin
 from .AbstractScraper import AbstractScraper
 
 class Cc0texturesScraper(AbstractScraper):
-    source_name = "CC0 Textures"
-    home_url = "https://cc0textures.com"
+    source_name = "ambientCG"
+    home_url = "https://ambientcg.com"
 
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scraped by this scraper."""
         return (
-            url.startswith("https://cc0textures.com/view.php?tex=")
-            or url.startswith("https://cc0textures.com/view?tex=")
-            or url.startswith("https://www.cc0textures.com/view?id=")
-            or url.startswith("https://cc0textures.com/view?id=")
+            url.startswith("https://ambientcg.com/view.php?tex=")
+            or url.startswith("https://ambientcg.com/view?tex=")
+            or url.startswith("https://www.ambientcg.com/view?id=")
+            or url.startswith("https://ambientcg.com/view?id=")
         )
 
     def fetchVariantList(self, url):
@@ -47,7 +47,7 @@ class Cc0texturesScraper(AbstractScraper):
 
         query = parse_qs(urlparse(url).query)
         asset_id = query.get('id', query.get('tex', [None]))[0]
-        api_url = f"https://cc0textures.com/api/v1/full_json?id={asset_id}"
+        api_url = f"https://ambientcg.com/api/v1/full_json?id={asset_id}"
         
         data = self.fetchJson(api_url)
         if data is None:
@@ -77,7 +77,7 @@ class Cc0texturesScraper(AbstractScraper):
         variant = variants[variant_index]
         zip_url = variants_urls[variant_index]
 
-        material_data.name = "CC0Textures/" + self._base_name + "/" + variant
+        material_data.name = "ambientCG/" + self._base_name + "/" + variant
         zip_path = self.fetchZip(zip_url, material_data.name, "textures.zip")
         zip_dir = os.path.dirname(zip_path)
         namelist = []
