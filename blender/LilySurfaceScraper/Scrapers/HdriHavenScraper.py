@@ -82,13 +82,17 @@ class HdriHavenScraper(AbstractScraper):
         material_data.name = "hdrihaven/" + base_name + '/' + var_name
 
         url = variant_data[variant_index].attrib['href']
+        if url.startswith("//"):
+            url = "https:" + url
         if url.endswith('.exr') or url.endswith('.hdr') or url.endswith('.jpg'):
             map_url = url
         else:
             redirect_html = self.fetchHtml(url)
-            map_url = "https://hdrihaven.com" + redirect_html.xpath("//a[@download]/@href")[0]
-        if url.startswith("//"):
-            url = "https:" + url
+            map_url = redirect_html.xpath("//a[@download]/@href")[0]
+            if map_url.startswith("//"):
+            	map_url = "https:" + map_url
+            elif not map_url.startswith("http"):
+            	map_url = "https://hdrihaven.com" + map_url
         material_data.maps['sky'] = self.fetchImage(map_url, material_data.name, 'sky')
         
         return True
