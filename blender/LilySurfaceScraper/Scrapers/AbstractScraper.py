@@ -1,4 +1,5 @@
 # Copyright (c) 2019 - 2020 Elie Michel
+# Edited in 2021 by Zivoy
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
@@ -30,6 +31,7 @@ from lxml import etree
 
 import requests
 import shutil
+import re
 
 from ..settings import TEXTURE_DIR
 from ..preferences import getPreferences
@@ -42,6 +44,10 @@ class AbstractScraper:
     source_name = "<Abstract>"
     # The URL of the source's home, used for the list of availabel sources in panels
     home_url = None
+
+    @staticmethod
+    def sortSizes(sizeList):
+        return sorted(sizeList, key=lambda text: [int(i) if i.isdigit() else i for i in re.split(r'(\d+)', text)])
 
     @classmethod
     def canHandleUrl(cls, url):

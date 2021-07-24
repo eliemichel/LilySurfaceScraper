@@ -59,7 +59,7 @@ class PolyHavenAbstract(AbstractScraper):
         data = self.fetchJson(f"{self.apiBase}/files/{uid}")
 
         firstVal = "hdri" if self.target == 0 else "arm"
-        variants = sorted(list(data[firstVal].keys()))
+        variants = self.sortSizes(list(data[firstVal].keys()))
         imageTypes = list(data[firstVal][variants[0]].keys())
 
         self._json = data
