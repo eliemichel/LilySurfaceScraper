@@ -47,7 +47,8 @@ class PolyHavenHdriScraper(AbstractScraper):
         api_url = f"https://api.polyhaven.com/files/{identifier}"
         data = self.fetchJson(api_url)
         if data is None or 'hdri' not in data:
-            raise ValueError("API error")
+            self.error = "API error"
+            return None
 
         variants = sorted(data['hdri'].keys(), key=lambda x: x.zfill(3))
 
