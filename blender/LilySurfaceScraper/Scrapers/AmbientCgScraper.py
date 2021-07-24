@@ -24,7 +24,7 @@
 import zipfile
 import os
 import re
-from urllib.parse import urlparse, parse_qs, urlencode, urljoin
+from urllib.parse import urlparse, parse_qs
 from .AbstractScraper import AbstractScraper
 
 class AmbientCgScraper(AbstractScraper):
@@ -34,12 +34,7 @@ class AmbientCgScraper(AbstractScraper):
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scraped by this scraper."""
-        return (
-            url.startswith("https://ambientcg.com/view.php?tex=")
-            or url.startswith("https://ambientcg.com/view?tex=")
-            or url.startswith("https://www.ambientcg.com/view?id=")
-            or url.startswith("https://ambientcg.com/view?id=")
-        )
+        return re.match(r"https:\/\/(?:www\.)?ambientcg\.com\/view(?:\.php)?\?(?:tex|id)=(.+)", url) is not None
 
     def fetchVariantList(self, url):
         """Get a list of available variants.
