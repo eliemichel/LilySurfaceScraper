@@ -23,7 +23,8 @@
 
 from .AbstractScraper import AbstractScraper
 
-from urllib.parse import urlparse
+import re
+import requests
 from collections import defaultdict
 
 class PolyHavenTextureScraper(AbstractScraper):
@@ -58,10 +59,23 @@ class PolyHavenTextureScraper(AbstractScraper):
         'translucent': 'opacity',
     }
 
+    polyHavenUrl = re.compile(r"(?:https:\/\/)?polyhaven\.com\/a\/([^\/]+)")
+
+    @classmethod
+    def getUid(cls, url):
+        match = cls.polyHavenUrl.match(url)
+        if match is not None:
+            return match.group(1)
+        return None
+
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scraped by this scraper."""
-        return url.startswith("https://polyhaven.com/a")
+        uid = cls.getUid(url)
+        if uid is not None:
+            req = requests.get(f"https://api.polyhaven.com/info/{uid}")
+            return req.status_code == 200 and req.json()["type"] == 1  # 1 for textures
+        return False
     
     def fetchVariantList(self, url):
         """Get a list of available variants.
@@ -70,8 +84,7 @@ class PolyHavenTextureScraper(AbstractScraper):
         if html is None:
             return None
 
-        parsed_url = urlparse(url)
-        identifier = parsed_url.path.strip('/').split('/')[-1]
+        identifier = self.getUid(url)
 
         api_url = f"https://api.polyhaven.com/files/{identifier}"
         data = self.fetchJson(api_url)
@@ -110,7 +123,7 @@ class PolyHavenTextureScraper(AbstractScraper):
             return False
         
         var_name = variants[variant_index]
-        material_data.name = "polyhaven/" + identifier + '/' + var_name
+        material_data.name = "texturehaven/" + identifier + '/' + var_name
         
         maps = variant_data[variant_index][2]
 

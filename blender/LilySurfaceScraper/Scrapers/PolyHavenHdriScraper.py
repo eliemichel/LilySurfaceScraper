@@ -22,17 +22,31 @@
 # from a single URL
 
 from .AbstractScraper import AbstractScraper
-from urllib.parse import urlparse
+import requests
+import re
 
 class PolyHavenHdriScraper(AbstractScraper):
     scraped_type = {'WORLD'}
     source_name = "Poly Haven HDRI"
     home_url = "https://polyhaven.com/hdris"
 
+    polyHavenUrl = re.compile(r"(?:https:\/\/)?polyhaven\.com\/a\/([^\/]+)")
+
+    @classmethod
+    def getUid(cls, url):
+        match = cls.polyHavenUrl.match(url)
+        if match is not None:
+            return match.group(1)
+        return None
+
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scraped by this scraper."""
-        return url.startswith("https://polyhaven.com/a")
+        uid = cls.getUid(url)
+        if uid is not None:
+            req = requests.get(f"https://api.polyhaven.com/info/{uid}")
+            return req.status_code == 200 and req.json()["type"] == 0  # 0 for hdris
+        return False
     
     def fetchVariantList(self, url):
         """Get a list of available variants.
@@ -41,8 +55,7 @@ class PolyHavenHdriScraper(AbstractScraper):
         if html is None:
             return None
 
-        parsed_url = urlparse(url)
-        identifier = parsed_url.path.strip('/').split('/')[-1]
+        identifier = self.getUid(url)
 
         api_url = f"https://api.polyhaven.com/files/{identifier}"
         data = self.fetchJson(api_url)
@@ -71,7 +84,7 @@ class PolyHavenHdriScraper(AbstractScraper):
             return False
         
         var_name = variants[variant_index]
-        material_data.name = "polyhaven/" + identifier + '/' + var_name
+        material_data.name = "hdrihaven/" + identifier + '/' + var_name
 
         map_url = variant_data[var_name]['exr']['url']
         material_data.maps['sky'] = self.fetchImage(map_url, material_data.name, 'sky')
