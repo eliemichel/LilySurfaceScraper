@@ -77,7 +77,7 @@ class PolyHavenTextureScraper(AbstractScraper):
             return req.status_code == 200 and req.json()["type"] == 1  # 1 for textures
         return False
     
-    def fetchVariantList(self, url):
+    def _fetchVariantList(self, url):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
         html = self.fetchHtml(url)
@@ -104,7 +104,7 @@ class PolyHavenTextureScraper(AbstractScraper):
         variant_data.sort(key=lambda x: self.sortTextWithNumbers(f"{x[0]} ({x[1]})"))
         variants = [f"{res} ({fmt})" for res, fmt, _ in variant_data]
 
-        self._identifier = identifier
+        self._asset_name = identifier
         self._variant_data = variant_data
         self._variants = variants
         return variants
@@ -114,7 +114,7 @@ class PolyHavenTextureScraper(AbstractScraper):
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
-        identifier = self._identifier
+        identifier = self._asset_name
         variant_data = self._variant_data
         variants = self._variants
         

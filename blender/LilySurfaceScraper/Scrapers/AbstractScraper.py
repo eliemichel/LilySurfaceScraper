@@ -40,8 +40,10 @@ class AbstractScraper():
     scraped_type = {'MATERIAL'}
     # The name of the scraped source, displayed in UI
     source_name = "<Abstract>"
-    # The URL of the source's home, used for the list of availabel sources in panels
+    # The URL of the source's home, used for the list of available sources in panels
     home_url = None
+    # directory of textures
+    home_dir = None
 
     @staticmethod
     def sortTextWithNumbers(text):
@@ -67,14 +69,14 @@ class AbstractScraper():
     def fetchHtml(self, url):
         """Get a lxml.etree object representing the scraped page.
         Use xpath queries to browse it."""
-        r = __class__._fetch(url)
+        r = self._fetch(url)
         if r is not None:
             return etree.HTML(r.text)
         else:
             self.error = "URL not found: {}".format(url)
 
     def fetchJson(self, url):
-        r = __class__._fetch(url)
+        r = self._fetch(url)
         if r is not None:
             return r.json()
         else:
@@ -83,7 +85,7 @@ class AbstractScraper():
     def fetchXml(self, url):
         """Get a lxml.etree object representing the scraped page.
         Use xpath queries to browse it."""
-        r = __class__._fetch(url)
+        r = self._fetch(url)
         if r is not None:
             return etree.fromstring(r.text)
         else:
@@ -171,6 +173,12 @@ class AbstractScraper():
         return ''.join(filter(lambda x: x in printable, s))
 
     def fetchVariantList(self, url):
+        # must have self._asset_name
+        variants = self._fetchVariantList(url)
+        directory = self._asset_name
+        return variants
+
+    def _fetchVariantList(self, url):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
         raise NotImplementedError

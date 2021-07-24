@@ -36,7 +36,7 @@ class CgbookcaseScraper(AbstractScraper):
         """Return true if the URL can be scraped by this scraper."""
         return "cgbookcase.com/textures/" in url
     
-    def fetchVariantList(self, url):
+    def _fetchVariantList(self, url):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
         html = self.fetchHtml(url)
@@ -62,7 +62,7 @@ class CgbookcaseScraper(AbstractScraper):
         else:
             variants = resolutions
         
-        self._title = data['title']
+        self._asset_name = data['title']
         self._variants = variants
         self._resolutions = resolutions
         self._data = data
@@ -74,7 +74,7 @@ class CgbookcaseScraper(AbstractScraper):
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
-        title = self._title
+        title = self._asset_name
         resolutions = self._resolutions
         variants = self._variants
         data = self._data

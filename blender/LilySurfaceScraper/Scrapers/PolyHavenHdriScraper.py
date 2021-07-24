@@ -48,7 +48,7 @@ class PolyHavenHdriScraper(AbstractScraper):
             return req.status_code == 200 and req.json()["type"] == 0  # 0 for hdris
         return False
     
-    def fetchVariantList(self, url):
+    def _fetchVariantList(self, url):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
         html = self.fetchHtml(url)
@@ -65,7 +65,7 @@ class PolyHavenHdriScraper(AbstractScraper):
 
         variants = sorted(data['hdri'].keys(), key=self.sortTextWithNumbers)
 
-        self._identifier = identifier
+        self._asset_name = identifier
         self._variant_data = data['hdri']
         self._variants = variants
         return variants
@@ -75,7 +75,7 @@ class PolyHavenHdriScraper(AbstractScraper):
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
-        identifier = self._identifier
+        identifier = self._asset_name
         variant_data = self._variant_data
         variants = self._variants
         

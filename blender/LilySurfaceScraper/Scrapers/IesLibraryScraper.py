@@ -21,7 +21,7 @@ class IesLibraryScraper(AbstractScraper):
         """Return true if the URL can be scrapped by this scraper."""
         return re.match(cls.pattern, url) is not None
 
-    def fetchVariantList(self, url):
+    def _fetchVariantList(self, url):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
 
@@ -36,7 +36,7 @@ class IesLibraryScraper(AbstractScraper):
 
         self._download_url = data["downloadUrlIes"]
         self._blender_energy = data["energy"]
-        self._base_name = asset_id
+        self._asset_name = asset_id
         self._variant = data["lumcat"]
         return [self._variant,]
 
@@ -53,7 +53,7 @@ class IesLibraryScraper(AbstractScraper):
             self.error = "Invalid variant index: {}".format(variant_index)
             return False
 
-        material_data.name = os.path.join(self.home_dir, self._base_name, variant)
+        material_data.name = os.path.join(self.home_dir, self._asset_name, variant)
 
         data_file = self.fetchFile(download_url, material_data.name, "lightData.ies")
         data_dir = os.path.dirname(data_file)
