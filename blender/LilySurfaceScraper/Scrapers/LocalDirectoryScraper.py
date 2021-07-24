@@ -43,7 +43,7 @@ class LocalDirectoryScraper(AbstractScraper):
         """Return true if the URL can be scraped by this scraper."""
         return path.isdir(url)
 
-    def _fetchVariantList(self, url):
+    def fetchVariantList(self, url):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
         self._directory = url
