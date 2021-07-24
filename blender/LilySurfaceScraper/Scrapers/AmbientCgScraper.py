@@ -54,7 +54,7 @@ class AmbientCgScraper(AbstractScraper):
             return None
         
         variants_data = data["Assets"][asset_id]["Downloads"]
-        variants = list(variants_data.keys())
+        variants = sorted(list(variants_data.keys()), key=self.sortTextWithNumbers)
         variants_urls = [ variants_data[v]["RawDownloadLink"] for v in variants ]
 
         self._variants_urls = variants_urls

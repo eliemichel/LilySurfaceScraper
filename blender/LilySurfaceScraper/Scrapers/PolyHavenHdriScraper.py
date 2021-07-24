@@ -50,7 +50,7 @@ class PolyHavenHdriScraper(AbstractScraper):
             self.error = "API error"
             return None
 
-        variants = sorted(data['hdri'].keys(), key=lambda x: x.zfill(3))
+        variants = sorted(data['hdri'].keys(), key=self.sortTextWithNumbers)
 
         self._identifier = identifier
         self._variant_data = data['hdri']

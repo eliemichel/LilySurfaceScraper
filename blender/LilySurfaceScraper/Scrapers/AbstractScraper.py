@@ -30,6 +30,7 @@ from lxml import etree
 
 import requests
 import shutil
+import re
 
 from ..settings import TEXTURE_DIR
 from ..preferences import getPreferences
@@ -41,6 +42,10 @@ class AbstractScraper():
     source_name = "<Abstract>"
     # The URL of the source's home, used for the list of availabel sources in panels
     home_url = None
+
+    @staticmethod
+    def sortTextWithNumbers(text):
+        return [int(i) if i.isdigit() else i for i in re.split(r'(\d+)', text)]
 
     @classmethod
     def canHandleUrl(cls, url):
