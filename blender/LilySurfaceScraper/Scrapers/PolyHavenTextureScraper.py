@@ -22,12 +22,41 @@
 # from a single URL
 
 from .AbstractScraper import AbstractScraper
-from urllib.parse import urlparse
 
-class PolyHavenHdriScraper(AbstractScraper):
-    scraped_type = {'WORLD'}
-    source_name = "Poly Haven HDRI"
-    home_url = "https://polyhaven.com/hdris"
+from urllib.parse import urlparse
+from collections import defaultdict
+
+class PolyHavenTextureScraper(AbstractScraper):
+    source_name = "Poly Haven Texture"
+    home_url = "https://polyhaven.com/textures"
+
+    # Translate TextureHaven map names into our internal map names
+    maps_tr = {
+        'albedo': 'baseColor',
+        'col 1': 'baseColor',
+        'col 01': 'baseColor',
+        'col 2': 'baseColor_02',
+        'col 02': 'baseColor_02',
+        'col 3': 'baseColor_03',
+        'col 03': 'baseColor_03',
+        'diffuse': 'diffuse',
+        'diff png': 'diffuse',
+        'diff_png': 'diffuse',
+        'normal': 'normal',
+        'nor_gl': 'normal',
+        'specular': 'specular',
+        'spec': 'specular',
+        'ref': 'specular',
+        'roughness': 'roughness',
+        'rough': 'roughness',
+        'metallic': 'metallic',
+        'metal': 'metallic',
+        'ao': 'ambientOcclusion',
+        'rough ao': 'ambientOcclusionRough',
+        'rough_ao': 'ambientOcclusionRough',
+        'displacement': 'height',
+        'translucent': 'opacity',
+    }
 
     @classmethod
     def canHandleUrl(cls, url):
@@ -46,13 +75,24 @@ class PolyHavenHdriScraper(AbstractScraper):
 
         api_url = f"https://api.polyhaven.com/files/{identifier}"
         data = self.fetchJson(api_url)
-        if data is None or 'hdri' not in data:
-            raise ValueError("API error")
+        if data is None:
+            self.error = "API error"
+            return None
 
-        variants = sorted(data['hdri'].keys(), key=lambda x: x.zfill(3))
+        variant_data = defaultdict(dict)
+        for map_type, maps in data.items():
+            if map_type.lower() not in self.maps_tr.keys():
+                continue
+            for res, formats in maps.items():
+                for fmt, map_data in formats.items():
+                    variant_data[(res, fmt)][map_type] = map_data['url']
+
+        variant_data = [ (*k, v) for k, v in variant_data.items() ]
+        variant_data.sort(key=lambda x: (x[1].zfill(3), x[0]))
+        variants = [ f"{res} ({fmt})" for res, fmt, _ in variant_data ]
 
         self._identifier = identifier
-        self._variant_data = data['hdri']
+        self._variant_data = variant_data
         self._variants = variants
         return variants
     
@@ -71,8 +111,13 @@ class PolyHavenHdriScraper(AbstractScraper):
         
         var_name = variants[variant_index]
         material_data.name = "polyhaven/" + identifier + '/' + var_name
+        
+        maps = variant_data[variant_index][2]
 
-        map_url = variant_data[var_name]['exr']['url']
-        material_data.maps['sky'] = self.fetchImage(map_url, material_data.name, 'sky')
+        for map_name, map_url in maps.items():
+            map_name = map_name.lower()
+            if map_name in self.maps_tr:
+                map_name = self.maps_tr[map_name]
+                material_data.maps[map_name] = self.fetchImage(map_url, material_data.name, map_name)
         
         return True
