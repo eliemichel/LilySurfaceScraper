@@ -71,7 +71,7 @@ class PolyHavenTextureScraper(AbstractScraper):
             return None
 
         parsed_url = urlparse(url)
-        identifier = parsed_url.path.split('/')[-1]
+        identifier = parsed_url.path.strip('/').split('/')[-1]
 
         api_url = f"https://api.polyhaven.com/files/{identifier}"
         data = self.fetchJson(api_url)
