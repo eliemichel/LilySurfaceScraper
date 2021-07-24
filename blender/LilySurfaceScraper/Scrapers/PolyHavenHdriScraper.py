@@ -86,7 +86,7 @@ class PolyHavenHdriScraper(AbstractScraper):
         var_name = variants[variant_index]
         material_data.name = "hdrihaven/" + identifier + '/' + var_name
 
-        map_url = variant_data[var_name]['exr']['url']
+        map_url = variant_data[var_name]['hdr']['url']
         material_data.maps['sky'] = self.fetchImage(map_url, material_data.name, 'sky')
         
         return True
