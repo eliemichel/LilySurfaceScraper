@@ -22,16 +22,17 @@
 # from a single URL
 
 from .AbstractScraper import AbstractScraper
+from urllib.parse import urlparse
 
-class HdriHavenScraper(AbstractScraper):
+class PolyHavenHdriScraper(AbstractScraper):
     scraped_type = {'WORLD'}
-    source_name = "HDRI Haven"
-    home_url = "https://hdrihaven.com/hdris/"
+    source_name = "Poly Haven HDRI"
+    home_url = "https://polyhaven.com/hdris"
 
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scraped by this scraper."""
-        return url.startswith("https://hdrihaven.com/hdri")
+        return url.startswith("https://polyhaven.com/a")
     
     def extractButtonName(self, d):
         names = d.xpath(".//div[@class='button']/b/text()")
@@ -56,11 +57,18 @@ class HdriHavenScraper(AbstractScraper):
         if html is None:
             return None
 
-        variant_data = html.xpath("//div[@class='download-buttons']/a")
-        variants = [self.clearString(self.extractButtonName(d)) for d in variant_data]
+        parsed_url = urlparse(url)
+        identifier = parsed_url.path.split('/')[-1]
 
-        self._html = html
-        self._variant_data = variant_data
+        api_url = f"https://api.polyhaven.com/files/{identifier}"
+        data = self.fetchJson(api_url)
+        if data is None or 'hdri' not in data:
+            raise ValueError("API error")
+
+        variants = sorted(data['hdri'].keys(), key=lambda x: x.zfill(3))
+
+        self._identifier = identifier
+        self._variant_data = data['hdri']
         self._variants = variants
         return variants
     
@@ -69,7 +77,7 @@ class HdriHavenScraper(AbstractScraper):
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
-        html = self._html
+        identifier = self._identifier
         variant_data = self._variant_data
         variants = self._variants
         
@@ -77,22 +85,10 @@ class HdriHavenScraper(AbstractScraper):
             self.error = "Invalid variant index: {}".format(variant_index)
             return False
         
-        base_name = html.xpath('//h1/b/text()')[0]
         var_name = variants[variant_index]
-        material_data.name = "hdrihaven/" + base_name + '/' + var_name
+        material_data.name = "polyhaven/" + identifier + '/' + var_name
 
-        url = variant_data[variant_index].attrib['href']
-        if url.startswith("//"):
-            url = "https:" + url
-        if url.endswith('.exr') or url.endswith('.hdr') or url.endswith('.jpg'):
-            map_url = url
-        else:
-            redirect_html = self.fetchHtml(url)
-            map_url = redirect_html.xpath("//a[@download]/@href")[0]
-            if map_url.startswith("//"):
-            	map_url = "https:" + map_url
-            elif not map_url.startswith("http"):
-            	map_url = "https://hdrihaven.com" + map_url
+        map_url = variant_data[var_name]['exr']['url']
         material_data.maps['sky'] = self.fetchImage(map_url, material_data.name, 'sky')
         
         return True
