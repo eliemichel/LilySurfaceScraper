@@ -30,6 +30,7 @@ from urllib.parse import urlparse
 class CgbookcaseScraper(AbstractScraper):
     source_name = "cgbookcase.com"
     home_url = "https://www.cgbookcase.com/textures/"
+    home_dir = "cgbookcase"
 
     @classmethod
     def canHandleUrl(cls, url):
@@ -47,9 +48,7 @@ class CgbookcaseScraper(AbstractScraper):
         identifier = parsed_url.path.strip('/').split('/')[-1]
         api_url = f"https://www.cgbookcase.com/textures/{identifier}/LilySurfaceScraper.json"
 
-        print(api_url)
         data = self.fetchJson(api_url)
-        print(data)
 
         resolutions = sorted(data['files'].keys(), key=lambda x: x.zfill(3))
 
@@ -68,7 +67,10 @@ class CgbookcaseScraper(AbstractScraper):
         self._data = data
         self._doublesided = data['doublesided']
         return variants
-    
+
+    def getThumbnail(self, assetName):
+        return None #todo
+
     def fetchVariant(self, variant_index, material_data):
         """Fill material_data with data from the selected variant.
         Must fill material_data.name and material_data.maps.
@@ -85,13 +87,13 @@ class CgbookcaseScraper(AbstractScraper):
             return False
 
         variant_name = variants[variant_index]
-        material_data.name = "cgbookcase/" + title + "/" + variant_name
+        material_data.name = os.path.join(self.home_dir, title, variant_name)
 
         res = resolutions[variant_index % len(resolutions)]
         sideness = variant_index // len(resolutions)
         zip_url = data['files'][res]
 
-        zip_path = self.fetchZip(zip_url, title, "textures.zip")
+        zip_path = self.fetchZip(zip_url, material_data.name, "textures.zip")
         zip_dir = os.path.dirname(zip_path)
         if os.path.getsize(zip_path) == 0:
             # maps already exist

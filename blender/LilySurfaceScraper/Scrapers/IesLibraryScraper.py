@@ -7,7 +7,7 @@
 import os
 import re
 from .AbstractScraper import AbstractScraper
-
+#todo make material name better
 class IesLibraryScraper(AbstractScraper):
     scraped_type = {'LIGHT'}
     source_name = "IES Library"
@@ -33,12 +33,15 @@ class IesLibraryScraper(AbstractScraper):
         if data is None:
             return None
 
-
         self._download_url = data["downloadUrlIes"]
         self._blender_energy = data["energy"]
         self._asset_name = asset_id
         self._variant = data["lumcat"]
-        return [self._variant,]
+        self._thumbnailURL = data["preview"]
+        return [self._variant]
+
+    def getThumbnail(self, _):
+        return self._thumbnailURL
 
     def fetchVariant(self, variant_index, material_data, reinstall=False):
         """Fill material_data with data from the selected variant.

@@ -31,6 +31,7 @@ from lxml import etree
 import requests
 import shutil
 import re
+import json
 
 from ..settings import TEXTURE_DIR
 from ..preferences import getPreferences
@@ -175,7 +176,37 @@ class AbstractScraper():
     def fetchVariantList(self, url):
         # must have self._asset_name
         variants = self._fetchVariantList(url)
-        directory = self._asset_name
+        assetName = self._asset_name
+
+        root = self.getTextureDirectory(os.path.join(self.home_dir, assetName))
+
+        metadataFile = os.path.join(root, ".meta")
+        if not os.path.exists(metadataFile):
+            thumbnailUrl = self.getThumbnail(assetName)
+            ext = None
+            if thumbnailUrl is not None:
+                thumbnailReq = requests.get(thumbnailUrl)
+                thumbnailType = thumbnailReq.headers["Content-Type"]
+                if thumbnailType == 'image/png':
+                    ext = "png"
+                elif thumbnailType == "image/jpeg":
+                    ext = "jpg"
+
+            if ext is None:
+                thumbnailName = None
+            else:
+                thumbnailName = f"thumb.{ext}"
+                with open(os.path.join(root, thumbnailName), "wb") as f:
+                    f.write(thumbnailReq.content)
+
+            metadata = {
+                "name": assetName,
+                "fetchUrl": url,
+                "thumbnail": thumbnailName,
+                "variants": variants,
+            }
+            with open(metadataFile, "w") as f:
+                json.dump(metadata, f, indent=4)
         return variants
 
     def _fetchVariantList(self, url):
@@ -187,4 +218,11 @@ class AbstractScraper():
         """Fill material_data with data from the selected variant.
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
+        raise NotImplementedError
+
+    def getThumbnail(self, assetName):
+        """Function for getting a thumnbail for the texture, preferably using only the assetName (_asset_name)
+         but you can pass more arguments with self.*** as its called after _fetchVariantList
+         returns: url
+         """
         raise NotImplementedError

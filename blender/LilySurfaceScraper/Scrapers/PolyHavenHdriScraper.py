@@ -24,11 +24,13 @@
 from .AbstractScraper import AbstractScraper
 import requests
 import re
+import os
 
 class PolyHavenHdriScraper(AbstractScraper):
     scraped_type = {'WORLD'}
     source_name = "Poly Haven HDRI"
     home_url = "https://polyhaven.com/hdris"
+    home_dir = "hdrihaven"
 
     polyHavenUrl = re.compile(r"(?:https:\/\/)?polyhaven\.com\/a\/([^\/]+)")
 
@@ -69,7 +71,10 @@ class PolyHavenHdriScraper(AbstractScraper):
         self._variant_data = data['hdri']
         self._variants = variants
         return variants
-    
+
+    def getThumbnail(self, assetName):
+        return f"https://cdn.polyhaven.com/asset_img/thumbs/{assetName}.png?width=512&height=512"
+
     def fetchVariant(self, variant_index, material_data):
         """Fill material_data with data from the selected variant.
         Must fill material_data.name and material_data.maps.
@@ -84,7 +89,7 @@ class PolyHavenHdriScraper(AbstractScraper):
             return False
         
         var_name = variants[variant_index]
-        material_data.name = "hdrihaven/" + identifier + '/' + var_name
+        material_data.name = os.path.join(self.home_dir, identifier, var_name)
 
         map_url = variant_data[var_name]['hdr']['url']
         material_data.maps['sky'] = self.fetchImage(map_url, material_data.name, 'sky')

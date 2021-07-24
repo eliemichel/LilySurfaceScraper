@@ -25,11 +25,14 @@ from .AbstractScraper import AbstractScraper
 
 import re
 import requests
+import os
 from collections import defaultdict
+
 
 class PolyHavenTextureScraper(AbstractScraper):
     source_name = "Poly Haven Texture"
     home_url = "https://polyhaven.com/textures"
+    home_dir = "texturehaven"
 
     # Translate TextureHaven map names into our internal map names
     maps_tr = {
@@ -108,6 +111,9 @@ class PolyHavenTextureScraper(AbstractScraper):
         self._variant_data = variant_data
         self._variants = variants
         return variants
+
+    def getThumbnail(self, assetName):
+        return f"https://cdn.polyhaven.com/asset_img/thumbs/{assetName}.png?width=512&height=512"
     
     def fetchVariant(self, variant_index, material_data):
         """Fill material_data with data from the selected variant.
@@ -123,7 +129,7 @@ class PolyHavenTextureScraper(AbstractScraper):
             return False
         
         var_name = variants[variant_index]
-        material_data.name = "texturehaven/" + identifier + '/' + var_name
+        material_data.name = os.path.join(self.home_dir, identifier, var_name)
         
         maps = variant_data[variant_index][2]
 
