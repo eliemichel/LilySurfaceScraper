@@ -43,7 +43,7 @@ class ScrapersManager():
         for s in scrapers_names:
             module = importlib.import_module('.Scrapers.' + s, package=package)
             for x in dir(module):
-                if x == 'AbstractScraper':
+                if x in ['AbstractScraper', "PolyHavenAbstract"]:
                     continue
                 m = getattr(module, x)
                 if isinstance(m, type) and issubclass(m, AbstractScraper):

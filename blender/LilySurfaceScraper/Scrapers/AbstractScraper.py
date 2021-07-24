@@ -34,7 +34,8 @@ import shutil
 from ..settings import TEXTURE_DIR
 from ..preferences import getPreferences
 
-class AbstractScraper():
+
+class AbstractScraper:
     # Can be 'MATERIAL', 'WORLD', 'LIGHT'
     scraped_type = {'MATERIAL'}
     # The name of the scraped source, displayed in UI

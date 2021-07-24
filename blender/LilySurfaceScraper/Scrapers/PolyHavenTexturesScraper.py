@@ -21,76 +21,69 @@
 # This file is part of LilySurfaceScraper, a Blender add-on to import materials
 # from a single URL
 
-from .AbstractScraper import AbstractScraper
+from .PolyHavenAbstractScraper import PolyHavenAbstract
 
-class TextureHavenScraper(AbstractScraper):
-    source_name = "Texture Haven"
-    home_url = "https://texturehaven.com/textures/"
 
-    @classmethod
-    def canHandleUrl(cls, url):
-        """Return true if the URL can be scraped by this scraper."""
-        return url.startswith("https://texturehaven.com/tex")
-    
-    def fetchVariantList(self, url):
-        """Get a list of available variants.
-        The list may be empty, and must be None in case of error."""
-        html = self.fetchHtml(url)
-        if html is None:
-            return None
-
-        maps = html.xpath("//div[@class='download-buttons']//div[@class='map-type']")
-
-        variants = maps[0].xpath(".//div[@class='res-item']/a/div/text()")
-        variants = [self.clearString(s) for s in variants]
-
-        self._html = html
-        self._maps = maps
-        self._variants = variants
-        return variants
+class TextureHavenScraper(PolyHavenAbstract):
+    source_name = "Poly Haven Textures"
+    home_url = "https://polyhaven.com/textures"
+    target = 1
     
     def fetchVariant(self, variant_index, material_data):
         """Fill material_data with data from the selected variant.
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
-        html = self._html
-        maps = self._maps
+        json = self._json
         variants = self._variants
         
         if variant_index < 0 or variant_index >= len(variants):
             self.error = "Invalid variant index: {}".format(variant_index)
             return False
         
-        base_name = html.xpath("//title/text()")[0].split('|')[0].strip().replace("_", " ").title()
+        base_name = self._id
         var_name = variants[variant_index]
         material_data.name = "texturehaven/" + base_name + '/' + var_name
 
         # Translate TextureHaven map names into our internal map names
         maps_tr = {
-            'Albedo': 'baseColor',
-            'Col 1': 'baseColor',
-            'Col 01': 'baseColor',
-            'Col 2': 'baseColor_02',
-            'Col 02': 'baseColor_02',
-            'Col 3': 'baseColor_03',
-            'Col 03': 'baseColor_03',
             'Diffuse': 'diffuse',
-            'Diff Png': 'diffuse',
-            'Normal': 'normal',
-            'Specular': 'specular',
-            'Roughness': 'roughness',
-            'Metallic': 'metallic',
+            'nor_gl': 'normal',
+            'Rough': 'roughness',
             'AO': 'ambientOcclusion',
-            'Rough Ao': 'ambientOcclusionRough',
-            'Specular': 'specular',
             'Displacement': 'height',
+            'spec': 'specular',
+            'Metal': 'metallic',
+            'rough_ao': 'ambientOcclusionRough',
+            "translucent": "opacity",
+            'col1': 'baseColor',
+            'col_01': 'baseColor',
+            'col_1': 'baseColor',
+            'coll1': 'baseColor',
+            'col2': 'baseColor_02',
+            'col_02': 'baseColor_02',
+            'col_2': 'baseColor_02',
+            'coll2': 'baseColor_02',
+            'col_03': 'baseColor_03',
+            "ref": 'specular',
+            'diff_png': 'diffuse',
+            "rough_diff": "diffuseRough",
+            # "Bump": "",
+            # "arm": "",  # AO/Rough/Metal todo probably make use of this
+            # "diff_polar": "",
+            # "rough_polar": "",
+            # "nor_polar": "",
+            # "page": "",  # only in 1 thing (book_pattern)
+            # "normal_gl": "",
         }
-        for m in maps:
-            map_name = m.xpath("div[@class='map-download']//text()")[0]
-            map_url = "https://texturehaven.com" + m.xpath(".//div[@class='res-item']/a/@href")[variant_index]
-            if map_name in maps_tr:
-                map_name = maps_tr[map_name]
+        for m in json.keys():
+            if m in maps_tr:
+                map_name = maps_tr[m]
+                map = json[m]
+                ext = "png"  # "jpg"
+                # prefer exr for normal maps
+                if map_name == "normal":
+                    ext = "exr"
+                map_url = map[var_name][ext]["url"]
                 material_data.maps[map_name] = self.fetchImage(map_url, material_data.name, map_name)
-        
         return True
