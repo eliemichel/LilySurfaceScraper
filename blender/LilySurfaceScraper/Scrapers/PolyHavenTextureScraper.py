@@ -60,6 +60,7 @@ class PolyHavenTextureScraper(AbstractScraper):
         'rough_ao': 'ambientOcclusionRough',
         'displacement': 'height',
         'translucent': 'opacity',
+        # "arm" AO/Rough/Metal todo do something with this
     }
 
     polyHavenUrl = re.compile(r"(?:https:\/\/)?polyhaven\.com\/a\/([^\/]+)")
