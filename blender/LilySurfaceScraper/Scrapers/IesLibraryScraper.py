@@ -7,7 +7,9 @@
 import os
 import re
 from .AbstractScraper import AbstractScraper
-#todo make material name better
+
+
+# todo make material name better
 class IesLibraryScraper(AbstractScraper):
     scraped_type = {'LIGHT'}
     source_name = "IES Library"

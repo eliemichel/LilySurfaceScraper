@@ -24,6 +24,7 @@ from .AbstractScraper import AbstractScraper
 from random import choice
 import requests
 
+
 class TexturesOneSearchScraper(TexturesOneMaterialScraper):
     scraped_type = "NONE"
     home_url = None  # Prevent double with TexturesOneMaterialScraper in UI
@@ -65,10 +66,12 @@ class TexturesOneSearchScraper(TexturesOneMaterialScraper):
             return False
         return cls.cacheSourceUrl(url)
 
+
 class TexturesOneSearchMaterialScraper(TexturesOneSearchScraper):
     scraped_type = "MATERIAL"
     scraped_type_name = "tex-pbr"
     supported_creators = ['cc0textures', 'cgbookcase', 'texturehaven'] # IDs of the websites on Textures.one that we support
+
 
 class TexturesOneSearchWorldScraper(TexturesOneSearchScraper):
     scraped_type = "WORLD"

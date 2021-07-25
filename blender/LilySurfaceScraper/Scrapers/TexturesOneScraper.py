@@ -70,5 +70,6 @@ class TexturesOneMaterialScraper(AbstractScraper):
     def fetchVariant(self, variant_index, material_data):
         return self.source_scraper.fetchVariant(variant_index, material_data)
 
+
 class TexturesOneWorldScraper(TexturesOneMaterialScraper):
     scraped_type = "WORLD"

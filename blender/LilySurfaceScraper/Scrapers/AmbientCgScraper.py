@@ -27,6 +27,7 @@ import re
 from urllib.parse import urlparse, parse_qs
 from .AbstractScraper import AbstractScraper
 
+
 class AmbientCgScraper(AbstractScraper):
     source_name = "ambientCG"
     home_url = "https://ambientcg.com"

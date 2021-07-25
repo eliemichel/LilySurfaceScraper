@@ -21,12 +21,10 @@
 # This file is part of LilySurfaceScraper, a Blender add-on to import materials
 # from a single URL
 
-import zipfile
 import os
 from os import path
-import re
-from urllib.parse import urlparse, parse_qs, urlencode, urljoin
 from .AbstractScraper import AbstractScraper
+
 
 class LocalDirectoryScraper(AbstractScraper):
     """
@@ -88,7 +86,6 @@ class LocalDirectoryScraper(AbstractScraper):
         }
         for name in namelist:
             base = os.path.splitext(name)[0]
-            map_type = base.split('_')[-1]
             for k, map_name in maps_tr.items():
                 if k in base:
                     map_name = maps_tr[k]

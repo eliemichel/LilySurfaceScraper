@@ -27,6 +27,7 @@ import zipfile
 import os
 from urllib.parse import urlparse
 
+
 class CgbookcaseScraper(AbstractScraper):
     source_name = "cgbookcase.com"
     home_url = "https://www.cgbookcase.com/textures/"
