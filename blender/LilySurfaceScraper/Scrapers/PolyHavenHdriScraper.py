@@ -22,7 +22,6 @@
 # from a single URL
 
 from .AbstractScraper import AbstractScraper
-import requests
 import re
 from collections import defaultdict
 
@@ -47,10 +46,10 @@ class PolyHavenHdriScraper(AbstractScraper):
         """Return true if the URL can be scraped by this scraper."""
         uid = cls.getUid(url)
         if uid is not None:
-            req = requests.get(f"https://api.polyhaven.com/info/{uid}")
-            return req.status_code == 200 and req.json()["type"] == 0  # 0 for hdris
+            data = cls.fetchJson(cls, f"https://api.polyhaven.com/info/{uid}")
+            return data is not None and data["type"] == 0  # 0 for hdris
         return False
-    
+
     def getVariantList(self, url):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""

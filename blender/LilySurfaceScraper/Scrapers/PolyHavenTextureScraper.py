@@ -24,7 +24,6 @@
 from .AbstractScraper import AbstractScraper
 
 import re
-import requests
 from collections import defaultdict
 
 
@@ -84,8 +83,8 @@ class PolyHavenTextureScraper(AbstractScraper):
         """Return true if the URL can be scraped by this scraper."""
         uid = cls.getUid(url)
         if uid is not None:
-            req = requests.get(f"https://api.polyhaven.com/info/{uid}")
-            return req.status_code == 200 and req.json()["type"] == 1  # 1 for textures
+            data = cls.fetchJson(cls, f"https://api.polyhaven.com/info/{uid}")
+            return data is not None and data["type"] == 1  # 1 for textures
         return False
     
     def getVariantList(self, url):
