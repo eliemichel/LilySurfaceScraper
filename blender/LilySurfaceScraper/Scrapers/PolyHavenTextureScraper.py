@@ -111,7 +111,7 @@ class PolyHavenTextureScraper(AbstractScraper):
                     variant_data[(res, fmt)][map_type] = map_data['url']
 
         variant_data = [(*k, v) for k, v in variant_data.items()]
-        variant_data.sort(key=lambda x: self.sortTextWithNumbers(f"{x[0]} ({x[1]})"))
+        variant_data.sort(key=lambda x: self.sortTextWithNumbers(f"{x[1]} {x[0]}"))
         variants = [f"{res} ({fmt})" for res, fmt, _ in variant_data]
 
         self.asset_name = identifier
