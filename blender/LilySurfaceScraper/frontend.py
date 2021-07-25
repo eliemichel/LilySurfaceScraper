@@ -84,11 +84,11 @@ class OBJECT_OT_LilySurfaceScraper(ObjectPopupOperator, CallbackProps):
 
         texdir = os.path.dirname(bpy.data.filepath)
         data = CyclesMaterialData(self.url, texture_root=texdir)
+        if data.error is None:
+            variants = data.getVariantList()
         if data.error is not None:
             self.report({'ERROR_INVALID_INPUT'}, data.error)
             return {'CANCELLED'}
-        
-        variants = data.getVariantList()
 
         selected_variant = -1
         if not variants or len(variants) == 1:
@@ -229,11 +229,11 @@ class OBJECT_OT_LilyWorldScraper(PopupOperator, CallbackProps):
 
         texdir = os.path.dirname(bpy.data.filepath)
         data = CyclesWorldData(self.url, texture_root=texdir)
+        if data.error is None:
+            variants = data.getVariantList()
         if data.error is not None:
             self.report({'ERROR_INVALID_INPUT'}, data.error)
             return {'CANCELLED'}
-        
-        variants = data.getVariantList()
 
         selected_variant = -1
         if not variants or len(variants) == 1:
@@ -374,11 +374,11 @@ class OBJECT_OT_LilyLightScraper(PopupOperator, CallbackProps):
 
         texdir = os.path.dirname(bpy.data.filepath)
         data = CyclesLightData(self.url, texture_root=texdir)
+        if data.error is None:
+            variants = data.getVariantList()
         if data.error is not None:
             self.report({'ERROR_INVALID_INPUT'}, data.error)
             return {'CANCELLED'}
-
-        variants = data.getVariantList()
 
         selected_variant = -1
         if not variants or len(variants) == 1:

@@ -81,20 +81,24 @@ class PolyHavenTextureScraper(AbstractScraper):
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scraped by this scraper."""
-        uid = cls.getUid(url)
-        if uid is not None:
-            data = cls.fetchJson(cls, f"https://api.polyhaven.com/info/{uid}")
-            return data is not None and data["type"] == 1  # 1 for textures
-        return False
+        return url.startswith("https://polyhaven.com/a/")
     
     def getVariantList(self, url):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
-        html = self.fetchHtml(url)
-        if html is None:
+        identifier = self.getUid(url)
+
+        if identifier is None:
+            self.error = "Bad Url"
             return None
 
-        identifier = self.getUid(url)
+        data = self.fetchJson(f"https://api.polyhaven.com/info/{identifier}")
+        if data is None:
+            self.error = "API error"
+            return None
+        elif data["type"] != 1:  # 1 for textures
+            self.error = "Not a texture"
+            return None
 
         api_url = f"https://api.polyhaven.com/files/{identifier}"
         data = self.fetchJson(api_url)

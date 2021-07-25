@@ -174,6 +174,8 @@ class AbstractScraper():
 
         # get asset name and variants
         variants = self.getVariantList(url)
+        if self.error is not None or variants is None:
+            return None
         asset_name = self.asset_name
 
         root = self.getTextureDirectory(os.path.join(self.home_dir, asset_name))
