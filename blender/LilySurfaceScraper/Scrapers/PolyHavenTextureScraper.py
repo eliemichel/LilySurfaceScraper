@@ -32,30 +32,39 @@ class PolyHavenTextureScraper(AbstractScraper):
 
     # Translate TextureHaven map names into our internal map names
     maps_tr = {
-        'albedo': 'baseColor',
-        'col 1': 'baseColor',
-        'col 01': 'baseColor',
-        'col 2': 'baseColor_02',
-        'col 02': 'baseColor_02',
-        'col 3': 'baseColor_03',
-        'col 03': 'baseColor_03',
-        'diffuse': 'diffuse',
-        'diff png': 'diffuse',
+        'diffuse':  'diffuse',
         'diff_png': 'diffuse',
-        'normal': 'normal',
-        'nor_gl': 'normal',
-        'specular': 'specular',
-        'spec': 'specular',
-        'ref': 'specular',
-        'roughness': 'roughness',
+        'normal':    'normal',
+        'nor_gl':    'normal',
+        'normal_gl': 'normal',
         'rough': 'roughness',
-        'metallic': 'metallic',
-        'metal': 'metallic',
         'ao': 'ambientOcclusion',
-        'rough ao': 'ambientOcclusionRough',
-        'rough_ao': 'ambientOcclusionRough',
         'displacement': 'height',
+        'bump':         'height',
+        'spec':     'specular',
+        'specular': 'specular',
+        'ref':      'specular',
+        'metal':    'metallic',
+        'metallic': 'metallic',
+        'rough_ao':   'ambientOcclusionRough',
+        'rough_diff': 'roughness',  # TODO: also use Diffuse
         'translucent': 'opacity',
+        'albedo': 'baseColor',
+        'col1':   'baseColor',
+        'col_01': 'baseColor',
+        'col_1':  'baseColor',
+        'coll1':  'baseColor',
+        'col2':   'baseColor_02',
+        'col_02': 'baseColor_02',
+        'col_2':  'baseColor_02',
+        'coll2':  'baseColor_02',
+        'col_03': 'baseColor_03',
+        # 'arm': '',  # AO/Rough/Metal todo probably make use of this
+        # 'diff_polar': '',
+        # 'rough_polar': '',
+        # 'nor_polar': '',
+        # 'page': '',  # only in 1 thing (book_pattern)
+        # 'nor_dx': '',  # what is this?
     }
 
     @classmethod
