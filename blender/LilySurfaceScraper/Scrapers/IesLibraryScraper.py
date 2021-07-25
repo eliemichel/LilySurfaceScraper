@@ -21,7 +21,7 @@ class IesLibraryScraper(AbstractScraper):
         """Return true if the URL can be scrapped by this scraper."""
         return re.match(cls.pattern, url) is not None
 
-    def _fetchVariantList(self, url):
+    def getVariantList(self, url):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
 

@@ -173,7 +173,7 @@ class AbstractScraper():
         # **must have self.asset_name**
 
         # get asset name and variants
-        variants = self._fetchVariantList(url)
+        variants = self.getVariantList(url)
         assetName = self.asset_name
 
         root = self.getTextureDirectory(os.path.join(self.home_dir, assetName))
@@ -218,8 +218,9 @@ class AbstractScraper():
             f.write(thumbnailReq.content)
         return thumbnailName
 
-    def _fetchVariantList(self, url):
+    def getVariantList(self, url):
         """Get a list of available variants.
+        also fill self.asset_name for metadata, otherwise implement fetchVariantList
         The list may be empty, and must be None in case of error."""
         raise NotImplementedError
 
@@ -231,7 +232,7 @@ class AbstractScraper():
 
     def getThumbnail(self, assetName):
         """Function for getting a thumnbail for the texture, preferably using only the assetName (asset_name)
-         but you can pass more arguments with self.*** as its called after _fetchVariantList
+         but you can pass more arguments with self.*** as its called after getVariantList
          returns: url
          """
         raise NotImplementedError

@@ -50,7 +50,7 @@ class PolyHavenHdriScraper(AbstractScraper):
             return req.status_code == 200 and req.json()["type"] == 0  # 0 for hdris
         return False
     
-    def _fetchVariantList(self, url):
+    def getVariantList(self, url):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
         html = self.fetchHtml(url)

@@ -37,7 +37,7 @@ class CgbookcaseScraper(AbstractScraper):
         """Return true if the URL can be scraped by this scraper."""
         return "cgbookcase.com/textures/" in url
     
-    def _fetchVariantList(self, url):
+    def getVariantList(self, url):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
         html = self.fetchHtml(url)
