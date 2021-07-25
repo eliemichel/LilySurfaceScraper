@@ -118,7 +118,7 @@ class AbstractScraper():
             os.makedirs(dirpath)
         return dirpath
 
-    def downloadFunc(self, url):
+    def _downloadFunc(self, url):
         def func(path):
             headers = {"User-Agent": "Mozilla/5.0"}  # fake user agent
             r = requests.get(url, stream=True, headers=headers)
@@ -138,19 +138,19 @@ class AbstractScraper():
             ext = os.path.splitext(url)[1]
             map_name = map_name + ext
         path = os.path.join(root, map_name)
-        return self.saveFile(path, self.downloadFunc(url))
+        return self.saveFile(path, self._downloadFunc(url))
 
     def fetchFile(self, url, material_name, filename):
         root = self.getTextureDirectory(material_name)
         path = os.path.join(root, filename)
 
-        return self.saveFile(path, self.downloadFunc(url))
+        return self.saveFile(path, self._downloadFunc(url))
 
     def fetchZip(self, url, material_name, zip_name):
         """Utility helper for download textures"""
         root = self.getTextureDirectory(material_name)
         path = os.path.join(root, zip_name)
-        return self.saveFile(path, self.downloadFunc(url))
+        return self.saveFile(path, self._downloadFunc(url))
 
     def saveFile(self, path, data_callback_function):
         """function for saving data, path is the location
@@ -183,7 +183,7 @@ class AbstractScraper():
         # download thumbnail and make metadata file if meta file is not present
         metadata_file = os.path.join(root, ".meta")
         if not os.path.isfile(metadata_file):
-            thumbnail_name = self.downloadThumbnail(root)
+            thumbnail_name = self._downloadThumbnail(root)
 
             metadata = {
                 "name": asset_name,
@@ -196,7 +196,7 @@ class AbstractScraper():
                 json.dump(metadata, f, indent=4)
         return variants
 
-    def downloadThumbnail(self, asset_path):
+    def _downloadThumbnail(self, asset_path):
         thumbnail_url = self.getThumbnail()
         ext = None
         if thumbnail_url is None:
