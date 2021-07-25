@@ -60,17 +60,17 @@ class IesLibraryScraper(AbstractScraper):
 
         data_file = self.fetchFile(download_url, "/".join(material_data.name.split("/")[:2]), f"{variant}.ies")
         data_dir = os.path.dirname(data_file)
-        energyPath = os.path.join(data_dir, "lightEnergy")
+        energy_path = os.path.join(data_dir, "lightEnergy")
 
         def saveEnergy(_):
-            with open(energyPath, "w") as f:
+            with open(energy_path, "w") as f:
                 f.write(str(blender_energy))
-        self.saveFile(energyPath, saveEnergy)
+        self.saveFile(energy_path, saveEnergy)
 
         material_data.maps["ies"] = os.path.join(data_dir, f"{variant}.ies")
-        material_data.maps["energy"] = energyPath
+        material_data.maps["energy"] = energy_path
         return True
 
-    def isDownloaded(self, asset, targetVariation):
+    def isDownloaded(self, asset, target_variation):
         root = self.getTextureDirectory(os.path.join(self.home_dir, asset))
-        return os.path.isfile(os.path.join(root, f"{targetVariation}.ies"))
+        return os.path.isfile(os.path.join(root, f"{target_variation}.ies"))

@@ -152,14 +152,14 @@ class AbstractScraper():
         path = os.path.join(root, zip_name)
         return self.saveFile(path, self.downloadFunc(url))
 
-    def saveFile(self, path, dataCallbackFunction):
+    def saveFile(self, path, data_callback_function):
         """function for saving data, path is the location
         dataCallbackFunction is a function that is used if file is not already present, return -1 if error occurred"""
         if os.path.isfile(path) and not self.reinstall:
             print("Using cached {}.".format(path))
         else:
             print("Downloading {}...".format(path))
-            r = dataCallbackFunction(path)
+            r = data_callback_function(path)
             if r == -1:
                 return None
         return path
@@ -174,49 +174,49 @@ class AbstractScraper():
 
         # get asset name and variants
         variants = self.getVariantList(url)
-        assetName = self.asset_name
+        asset_name = self.asset_name
 
-        root = self.getTextureDirectory(os.path.join(self.home_dir, assetName))
+        root = self.getTextureDirectory(os.path.join(self.home_dir, asset_name))
 
         # download thumbnail and make metadata file if meta file is not present
-        metadataFile = os.path.join(root, ".meta")
-        if not os.path.isfile(metadataFile):
-            thumbnailName = self.downloadThumbnail(root, assetName)
+        metadata_file = os.path.join(root, ".meta")
+        if not os.path.isfile(metadata_file):
+            thumbnail_name = self.downloadThumbnail(root)
 
             metadata = {
-                "name": assetName,
+                "name": asset_name,
                 "scraper": self.__class__.__name__,
                 "fetchUrl": url,
-                "thumbnail": thumbnailName,
+                "thumbnail": thumbnail_name,
                 "variants": variants,
             }
-            with open(metadataFile, "w") as f:
+            with open(metadata_file, "w") as f:
                 json.dump(metadata, f, indent=4)
         return variants
 
-    def downloadThumbnail(self, assetPath, assetName):
-        thumbnailUrl = self.getThumbnail()
+    def downloadThumbnail(self, asset_path):
+        thumbnail_url = self.getThumbnail()
         ext = None
-        if thumbnailUrl is None:
+        if thumbnail_url is None:
             print("no thumbnail found, not downloading")
         else:
-            thumbnailReq = self._fetch(thumbnailUrl)
-            if thumbnailReq is None:
+            thumbnail_req = self._fetch(thumbnail_url)
+            if thumbnail_req is None:
                 return None
-            thumbnailType = thumbnailReq.headers["Content-Type"]
-            if thumbnailType == 'image/png':
+            thumbnail_type = thumbnail_req.headers["Content-Type"]
+            if thumbnail_type == 'image/png':
                 ext = "png"
-            elif thumbnailType == "image/jpeg":
+            elif thumbnail_type == "image/jpeg":
                 ext = "jpg"
             else:
-                print(f"thumbnail type '{thumbnailType}' is not a valid type")
+                print(f"thumbnail type '{thumbnail_type}' is not a valid type")
 
         if ext is None:
             return None
-        thumbnailName = f"thumb.{ext}"
-        with open(os.path.join(assetPath, thumbnailName), "wb") as f:
-            f.write(thumbnailReq.content)
-        return thumbnailName
+        thumbnail_name = f"thumb.{ext}"
+        with open(os.path.join(asset_path, thumbnail_name), "wb") as f:
+            f.write(thumbnail_req.content)
+        return thumbnail_name
 
     def getVariantList(self, url):
         """Get a list of available variants.
@@ -238,7 +238,7 @@ class AbstractScraper():
          """
         raise NotImplementedError
 
-    def isDownloaded(self, asset, targetVariation):
+    def isDownloaded(self, asset, target_variation):
         """takes the asset and a variation name and checks if its installed, returns a boolean"""
         root = self.getTextureDirectory(os.path.join(self.home_dir, asset))
-        return os.path.exists(os.path.join(root, targetVariation))
+        return os.path.exists(os.path.join(root, target_variation))
