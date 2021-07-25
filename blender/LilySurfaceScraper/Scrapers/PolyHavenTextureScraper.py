@@ -25,7 +25,6 @@ from .AbstractScraper import AbstractScraper
 
 import re
 import requests
-import os
 from collections import defaultdict
 
 

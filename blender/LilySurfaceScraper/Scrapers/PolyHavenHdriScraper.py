@@ -24,7 +24,8 @@
 from .AbstractScraper import AbstractScraper
 import requests
 import re
-import os
+from collections import defaultdict
+
 
 class PolyHavenHdriScraper(AbstractScraper):
     scraped_type = {'WORLD'}
@@ -61,14 +62,21 @@ class PolyHavenHdriScraper(AbstractScraper):
 
         api_url = f"https://api.polyhaven.com/files/{identifier}"
         data = self.fetchJson(api_url)
-        if data is None or 'hdri' not in data:
+        if data is None:
             self.error = "API error"
             return None
 
-        variants = sorted(data['hdri'].keys(), key=self.sortTextWithNumbers)
+        variant_data = defaultdict(dict)
+        for res, maps in data["hdri"].items():
+            for fmt, dat in maps.items():
+                variant_data[(res, fmt)] = dat['url']
+
+        variant_data = [(*k, v) for k, v in variant_data.items()]
+        variant_data.sort(key=lambda x: self.sortTextWithNumbers(f"{x[0]} ({x[1]})"))
+        variants = [f"{res} ({fmt})" for res, fmt, _ in variant_data]
 
         self.asset_name = identifier
-        self._variant_data = data['hdri']
+        self._variant_data = variant_data
         self._variants = variants
         return variants
 
@@ -91,7 +99,7 @@ class PolyHavenHdriScraper(AbstractScraper):
         var_name = variants[variant_index]
         material_data.name = f"{self.home_dir}/{identifier}/{var_name}"
 
-        map_url = variant_data[var_name]['hdr']['url']
+        map_url = variant_data[variant_index][2]
         material_data.maps['sky'] = self.fetchImage(map_url, material_data.name, 'sky')
         
         return True
