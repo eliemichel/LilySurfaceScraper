@@ -118,6 +118,19 @@ class AbstractScraper():
             os.makedirs(dirpath)
         return dirpath
 
+    def downloadFunc(self, url, path):
+        def func():
+            headers = {"User-Agent": "Mozilla/5.0"}  # fake user agent
+            r = requests.get(url, stream=True, headers=headers)
+            if r.status_code == 200:
+                with open(path, 'wb') as f:
+                    r.raw.decode_content = True
+                    shutil.copyfileobj(r.raw, f)
+            else:
+                self.error = "URL not found: {}".format(url)
+                return -1
+        return func
+
     def fetchImage(self, url, material_name, map_name, force_ext=False):
         """Utility helper for download textures"""
         root = self.getTextureDirectory(material_name)
@@ -125,48 +138,35 @@ class AbstractScraper():
             ext = os.path.splitext(url)[1]
             map_name = map_name + ext
         path = os.path.join(root, map_name)
-        if os.path.isfile(path) and not self.reinstall:
-            print("Using cached {}.".format(url))
-        else:
-            print("Downloading {}...".format(url))
-            headers = {"User-Agent":"Mozilla/5.0"}  # fake user agent
-            r = requests.get(url, stream=True, headers=headers)
-            if r.status_code == 200:
-                with open(path, 'wb') as f:
-                    r.raw.decode_content = True
-                    shutil.copyfileobj(r.raw, f)
-            else:
-                self.error = "URL not found: {}".format(url)
-                return None
-        return path
+        return self.saveFile(path, self.downloadFunc(url, path))
 
     def fetchFile(self, url, material_name, filename):
         root = self.getTextureDirectory(material_name)
         path = os.path.join(root, filename)
-        if os.path.isfile(path) and not self.reinstall:
-            return path
-        data = self._fetch(url)
-        with open(path, "wb") as f:
-            f.write(data.content)
-        data.close()
-        return path
+
+        def saveFile():
+            data = self._fetch(url)
+            with open(path, "wb") as f:
+                f.write(data.content)
+            data.close()
+
+        return self.saveFile(path, saveFile)
 
     def fetchZip(self, url, material_name, zip_name):
         """Utility helper for download textures"""
         root = self.getTextureDirectory(material_name)
         path = os.path.join(root, zip_name)
+        return self.saveFile(path, self.downloadFunc(url, path))
+
+    def saveFile(self, path, getData):
+        """function for saving data, path is the location
+        getData is a function that is used if file is not already present, return -1 if error occurred"""
         if os.path.isfile(path) and not self.reinstall:
-            print("Using cached {}.".format(url))
+            print("Using cached {}.".format(path))
         else:
-            print("Downloading {}...".format(url))
-            headers = {"User-Agent":"Mozilla/5.0"}  # fake user agent
-            r = requests.get(url, stream=True, headers=headers)
-            if r.status_code == 200:
-                with open(path, 'wb') as f:
-                    r.raw.decode_content = True
-                    shutil.copyfileobj(r.raw, f)
-            else:
-                self.error = "URL not found: {}".format(url)
+            print("Downloading {}...".format(path))
+            r = getData()
+            if r == -1:
                 return None
         return path
 

@@ -60,9 +60,13 @@ class IesLibraryScraper(AbstractScraper):
 
         data_file = self.fetchFile(download_url, material_data.name, "lightData.ies")
         data_dir = os.path.dirname(data_file)
-        with open(os.path.join(data_dir, "lightEnergy"), "w+") as f:
-            f.write(str(blender_energy))
+        energyPath = os.path.join(data_dir, "lightEnergy")
+
+        def saveEnergy():
+            with open(energyPath, "w") as f:
+                f.write(str(blender_energy))
+        self.saveFile(energyPath, saveEnergy)
 
         material_data.maps["ies"] = os.path.join(data_dir, "lightData.ies")
-        material_data.maps["energy"] = os.path.join(data_dir, "lightEnergy")
+        material_data.maps["energy"] = energyPath
         return True
