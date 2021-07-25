@@ -35,7 +35,7 @@ class IesLibraryScraper(AbstractScraper):
 
         self._download_url = data["downloadUrlIes"]
         self._blender_energy = data["energy"]
-        self._asset_name = asset_id
+        self.asset_name = asset_id
         self._variant = data["lumcat"]
         self._thumbnailURL = data["preview"]
         return [self._variant]
@@ -56,7 +56,7 @@ class IesLibraryScraper(AbstractScraper):
             self.error = "Invalid variant index: {}".format(variant_index)
             return False
 
-        material_data.name = os.path.join(self.home_dir, self._asset_name, variant)
+        material_data.name = f"{self.home_dir}/{self.asset_name}/{variant}"
 
         data_file = self.fetchFile(download_url, material_data.name, "lightData.ies")
         data_dir = os.path.dirname(data_file)

@@ -46,6 +46,7 @@ class ScrapedData():
         self.error = None
         self._variants = None
         self._scraper = type(self).makeScraper(url)
+        self.reinstall = False
         if self._scraper is None:
             self.error = UNSUPPORTED_PROVIDER_ERR
         else:
@@ -70,3 +71,10 @@ class ScrapedData():
         if not self._scraper.fetchVariant(variant_index, self):
             return False
         return True
+
+    def setReinstall(self, value):
+        self.reinstall = value
+        self._scraper.reinstall = value
+
+    def isDownloaded(self, variant):
+        return self._scraper.isDownloaded(self._scraper.asset_name, variant)

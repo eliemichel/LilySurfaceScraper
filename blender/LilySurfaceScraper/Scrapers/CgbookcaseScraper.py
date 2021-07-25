@@ -61,7 +61,7 @@ class CgbookcaseScraper(AbstractScraper):
         else:
             variants = resolutions
         
-        self._asset_name = data['title']
+        self.asset_name = data['title']
         self._variants = variants
         self._resolutions = resolutions
         self._data = data
@@ -76,7 +76,7 @@ class CgbookcaseScraper(AbstractScraper):
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
-        title = self._asset_name
+        title = self.asset_name
         resolutions = self._resolutions
         variants = self._variants
         data = self._data
@@ -87,7 +87,7 @@ class CgbookcaseScraper(AbstractScraper):
             return False
 
         variant_name = variants[variant_index]
-        material_data.name = os.path.join(self.home_dir, title, variant_name)
+        material_data.name = f"{self.home_dir}/{title}/{variant_name}"
 
         res = resolutions[variant_index % len(resolutions)]
         sideness = variant_index // len(resolutions)

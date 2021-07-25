@@ -108,7 +108,7 @@ class PolyHavenTextureScraper(AbstractScraper):
         variant_data.sort(key=lambda x: self.sortTextWithNumbers(f"{x[0]} ({x[1]})"))
         variants = [f"{res} ({fmt})" for res, fmt, _ in variant_data]
 
-        self._asset_name = identifier
+        self.asset_name = identifier
         self._variant_data = variant_data
         self._variants = variants
         return variants
@@ -121,7 +121,7 @@ class PolyHavenTextureScraper(AbstractScraper):
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
-        identifier = self._asset_name
+        identifier = self.asset_name
         variant_data = self._variant_data
         variants = self._variants
         
@@ -130,7 +130,7 @@ class PolyHavenTextureScraper(AbstractScraper):
             return False
         
         var_name = variants[variant_index]
-        material_data.name = os.path.join(self.home_dir, identifier, var_name)
+        material_data.name = f"{self.home_dir}/{identifier}/{var_name}"
         
         maps = variant_data[variant_index][2]
 

@@ -55,7 +55,7 @@ class AmbientCgScraper(AbstractScraper):
 
         self._variants_urls = variants_urls
         self._variants = variants
-        self._asset_name = asset_id
+        self.asset_name = asset_id
         self._thumbnail_url = data["Assets"][asset_id]["PreviewSphere"]["512-PNG"]
         return variants
 
@@ -77,7 +77,7 @@ class AmbientCgScraper(AbstractScraper):
         variant = variants[variant_index]
         zip_url = variants_urls[variant_index]
 
-        material_data.name = os.path.join(self.home_dir, self._asset_name, variant)
+        material_data.name = f"{self.home_dir}/{self.asset_name}/{variant}"
         zip_path = self.fetchZip(zip_url, material_data.name, "textures.zip")
         zip_dir = os.path.dirname(zip_path)
         if os.path.getsize(zip_path) == 0:

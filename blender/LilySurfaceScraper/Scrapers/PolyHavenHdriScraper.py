@@ -67,7 +67,7 @@ class PolyHavenHdriScraper(AbstractScraper):
 
         variants = sorted(data['hdri'].keys(), key=self.sortTextWithNumbers)
 
-        self._asset_name = identifier
+        self.asset_name = identifier
         self._variant_data = data['hdri']
         self._variants = variants
         return variants
@@ -80,7 +80,7 @@ class PolyHavenHdriScraper(AbstractScraper):
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
-        identifier = self._asset_name
+        identifier = self.asset_name
         variant_data = self._variant_data
         variants = self._variants
         
@@ -89,7 +89,7 @@ class PolyHavenHdriScraper(AbstractScraper):
             return False
         
         var_name = variants[variant_index]
-        material_data.name = os.path.join(self.home_dir, identifier, var_name)
+        material_data.name = f"{self.home_dir}/{identifier}/{var_name}"
 
         map_url = variant_data[var_name]['hdr']['url']
         material_data.maps['sky'] = self.fetchImage(map_url, material_data.name, 'sky')

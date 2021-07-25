@@ -10,9 +10,9 @@ from .CyclesLightData import CyclesLightData
 from .CyclesMaterialData import CyclesMaterialData
 from .CyclesWorldData import CyclesWorldData
 from .ScrapersManager import ScrapersManager
-from .callback import register_callback, get_callback
+from .callback import get_callback
 from .preferences import getPreferences
-    
+
 ## Operators
 
 # I really wish there would be a cleaner way to do so: I need to prompt twice
@@ -135,12 +135,13 @@ def list_variant_enum(self, context):
     data = internal_states[self.internal_state]
     items = []
     for i, v in enumerate(data.getVariantList()):
-        items.append((str(i), v, v))
-    internal_states['kbjfknvglvhn'] = items # keep a reference to avoid a known crash of blander, says the doc
+        icon = "CHECKMARK" if data.isDownloaded(v) else "IMPORT"
+        items.append((str(i), v, v, icon, i))
+    internal_states['kbjfknvglvhn'] = items  # keep a reference to avoid a known crash of blander, says the doc
     return items
 
 class OBJECT_OT_LilySurfacePromptVariant(ObjectPopupOperator, CallbackProps):
-    """While importing a material, prompt the user for teh texture variant
+    """While importing a material, prompt the user for the texture variant
     if there are several materials provided by the URL"""
     bl_idname = "object.lily_surface_prompt_variant"
     bl_label = "Select Variant"
@@ -150,7 +151,14 @@ class OBJECT_OT_LilySurfacePromptVariant(ObjectPopupOperator, CallbackProps):
         description="Name of the material variant to load",
         items=list_variant_enum,
     )
-    
+
+    reisntall: bpy.props.BoolProperty(
+        name="Reinstall Textures",
+        description="Reinstall the textures instead of using the ones present on the system",
+        default=False,
+        options={"SKIP_SAVE"}
+    )
+
     internal_state: bpy.props.StringProperty(
         name="Internal State",
         description="System property used to transfer the state of the operator",
@@ -170,6 +178,7 @@ class OBJECT_OT_LilySurfacePromptVariant(ObjectPopupOperator, CallbackProps):
 
     def execute(self, context):
         data = internal_states[self.internal_state]
+        data.setReinstall(bool(self.reisntall))
         data.selectVariant(int(self.variant))
         if self.create_material:
             mat = data.createMaterial()
@@ -271,12 +280,13 @@ def list_variant_enum(self, context):
     data = internal_states[self.internal_state]
     items = []
     for i, v in enumerate(data.getVariantList()):
-        items.append((str(i), v, v))
-    internal_states['ikdrtvhdlvhn'] = items # keep a reference to avoid a known crash of blander, says the doc
+        icon = "CHECKMARK" if data.isDownloaded(v) else "IMPORT"
+        items.append((str(i), v, v, icon, i))
+    internal_states['ikdrtvhdlvhn'] = items  # keep a reference to avoid a known crash of blander, says the doc
     return items
 
 class OBJECT_OT_LilyWorldPromptVariant(PopupOperator, CallbackProps):
-    """While importing a world, prompt the user for teh texture variant
+    """While importing a world, prompt the user for the texture variant
     if there are several worlds provided by the URL"""
     bl_idname = "object.lily_world_prompt_variant"
     bl_label = "Select Variant"
@@ -286,7 +296,14 @@ class OBJECT_OT_LilyWorldPromptVariant(PopupOperator, CallbackProps):
         description="Name of the world variant to load",
         items=list_variant_enum,
     )
-    
+
+    reisntall: bpy.props.BoolProperty(
+        name="Reinstall Textures",
+        description="Reinstall the textures instead of using the ones present on the system",
+        default=False,
+        options={"SKIP_SAVE"}
+    )
+
     internal_state: bpy.props.StringProperty(
         name="Internal State",
         description="System property used to transfer the state of the operator",
@@ -306,6 +323,7 @@ class OBJECT_OT_LilyWorldPromptVariant(PopupOperator, CallbackProps):
 
     def execute(self, context):
         data = internal_states[self.internal_state]
+        data.setReinstall(bool(self.reisntall))
         data.selectVariant(int(self.variant))
         if self.create_world:
             world = data.createWorld()
@@ -404,7 +422,7 @@ def list_variant_enum(self, context):
     for i, v in enumerate(data.getVariantList()):
         icon = "CHECKMARK" if data.isDownloaded(v) else "IMPORT"
         items.append((str(i), v, v, icon, i))
-    internal_states['dsdweykgkbit'] = items # keep a reference to avoid a known crash of blander, says the doc
+    internal_states['dsdweykgkbit'] = items  # keep a reference to avoid a known crash of blander, says the doc
     return items
 
 class OBJECT_OT_LilyLightPromptVariant(PopupOperator, CallbackProps):

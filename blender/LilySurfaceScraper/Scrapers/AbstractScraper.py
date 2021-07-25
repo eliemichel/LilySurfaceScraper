@@ -55,8 +55,10 @@ class AbstractScraper():
         raise NotImplementedError
 
     def __init__(self, texture_root=""):
+        self.asset_name = None
         self.error = None
         self.texture_root = texture_root
+        self.reinstall = False
 
     @classmethod
     def _fetch(cls, url):
@@ -66,7 +68,7 @@ class AbstractScraper():
             return None
         else:
             return r
-        
+
     def fetchHtml(self, url):
         """Get a lxml.etree object representing the scraped page.
         Use xpath queries to browse it."""
@@ -82,7 +84,7 @@ class AbstractScraper():
             return r.json()
         else:
             self.error = "URL not found: {}".format(url)
-    
+
     def fetchXml(self, url):
         """Get a lxml.etree object representing the scraped page.
         Use xpath queries to browse it."""
@@ -110,7 +112,7 @@ class AbstractScraper():
             texture_dir = texture_dir[2:]
         if not os.path.isabs(texture_dir):
             texture_dir = os.path.realpath(os.path.join(self.texture_root, texture_dir))
-        name_path = material_name.replace('/',os.path.sep)
+        name_path = material_name.replace('/', os.path.sep)
         dirpath = os.path.join(texture_dir, name_path)
         if not os.path.isdir(dirpath):
             os.makedirs(dirpath)
@@ -123,7 +125,7 @@ class AbstractScraper():
             ext = os.path.splitext(url)[1]
             map_name = map_name + ext
         path = os.path.join(root, map_name)
-        if os.path.isfile(path):
+        if os.path.isfile(path) and not self.reinstall:
             print("Using cached {}.".format(url))
         else:
             print("Downloading {}...".format(url))
@@ -141,7 +143,7 @@ class AbstractScraper():
     def fetchFile(self, url, material_name, filename):
         root = self.getTextureDirectory(material_name)
         path = os.path.join(root, filename)
-        if os.path.isfile(path):
+        if os.path.isfile(path) and not self.reinstall:
             return path
         data = self._fetch(url)
         with open(path, "wb") as f:
@@ -153,7 +155,7 @@ class AbstractScraper():
         """Utility helper for download textures"""
         root = self.getTextureDirectory(material_name)
         path = os.path.join(root, zip_name)
-        if os.path.isfile(path):
+        if os.path.isfile(path) and not self.reinstall:
             print("Using cached {}.".format(url))
         else:
             print("Downloading {}...".format(url))
@@ -174,17 +176,22 @@ class AbstractScraper():
         return ''.join(filter(lambda x: x in printable, s))
 
     def fetchVariantList(self, url):
-        # must have self._asset_name
+        # **must have self.asset_name**
+
+        # get asset name and variants
         variants = self._fetchVariantList(url)
-        assetName = self._asset_name
+        assetName = self.asset_name
 
         root = self.getTextureDirectory(os.path.join(self.home_dir, assetName))
 
+        # download thumbnail and make metadata file if meta file is not present
         metadataFile = os.path.join(root, ".meta")
-        if not os.path.exists(metadataFile):
+        if not os.path.isfile(metadataFile):
             thumbnailUrl = self.getThumbnail(assetName)
             ext = None
-            if thumbnailUrl is not None:
+            if thumbnailUrl is None:
+                print("no thumbnail found, not downloading")
+            else:
                 thumbnailReq = requests.get(thumbnailUrl)
                 thumbnailType = thumbnailReq.headers["Content-Type"]
                 if thumbnailType == 'image/png':
@@ -201,6 +208,7 @@ class AbstractScraper():
 
             metadata = {
                 "name": assetName,
+                "scraper": self.__class__.__name__,
                 "fetchUrl": url,
                 "thumbnail": thumbnailName,
                 "variants": variants,
@@ -213,7 +221,7 @@ class AbstractScraper():
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
         raise NotImplementedError
-    
+
     def fetchVariant(self, variant_index, material_data):
         """Fill material_data with data from the selected variant.
         Must fill material_data.name and material_data.maps.
@@ -221,8 +229,13 @@ class AbstractScraper():
         raise NotImplementedError
 
     def getThumbnail(self, assetName):
-        """Function for getting a thumnbail for the texture, preferably using only the assetName (_asset_name)
+        """Function for getting a thumnbail for the texture, preferably using only the assetName (asset_name)
          but you can pass more arguments with self.*** as its called after _fetchVariantList
          returns: url
          """
         raise NotImplementedError
+
+    def isDownloaded(self, asset, targetVariation):
+        """takes the asset and a variation name and checks if its installed, returns a boolean"""
+        root = self.getTextureDirectory(os.path.join(self.home_dir, asset))
+        return os.path.exists(os.path.join(root, targetVariation))
