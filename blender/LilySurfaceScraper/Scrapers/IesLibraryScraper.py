@@ -62,7 +62,7 @@ class IesLibraryScraper(AbstractScraper):
         data_dir = os.path.dirname(data_file)
         energyPath = os.path.join(data_dir, "lightEnergy")
 
-        def saveEnergy():
+        def saveEnergy(_):
             with open(energyPath, "w") as f:
                 f.write(str(blender_energy))
         self.saveFile(energyPath, saveEnergy)

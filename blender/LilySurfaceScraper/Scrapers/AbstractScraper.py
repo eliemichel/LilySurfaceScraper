@@ -118,8 +118,8 @@ class AbstractScraper():
             os.makedirs(dirpath)
         return dirpath
 
-    def downloadFunc(self, url, path):
-        def func():
+    def downloadFunc(self, url):
+        def func(path):
             headers = {"User-Agent": "Mozilla/5.0"}  # fake user agent
             r = requests.get(url, stream=True, headers=headers)
             if r.status_code == 200:
@@ -138,13 +138,13 @@ class AbstractScraper():
             ext = os.path.splitext(url)[1]
             map_name = map_name + ext
         path = os.path.join(root, map_name)
-        return self.saveFile(path, self.downloadFunc(url, path))
+        return self.saveFile(path, self.downloadFunc(url))
 
     def fetchFile(self, url, material_name, filename):
         root = self.getTextureDirectory(material_name)
         path = os.path.join(root, filename)
 
-        def saveFile():
+        def saveFile(_):
             data = self._fetch(url)
             with open(path, "wb") as f:
                 f.write(data.content)
@@ -156,16 +156,16 @@ class AbstractScraper():
         """Utility helper for download textures"""
         root = self.getTextureDirectory(material_name)
         path = os.path.join(root, zip_name)
-        return self.saveFile(path, self.downloadFunc(url, path))
+        return self.saveFile(path, self.downloadFunc(url))
 
-    def saveFile(self, path, getData):
+    def saveFile(self, path, dataCallbackFunction):
         """function for saving data, path is the location
-        getData is a function that is used if file is not already present, return -1 if error occurred"""
+        dataCallbackFunction is a function that is used if file is not already present, return -1 if error occurred"""
         if os.path.isfile(path) and not self.reinstall:
             print("Using cached {}.".format(path))
         else:
             print("Downloading {}...".format(path))
-            r = getData()
+            r = dataCallbackFunction(path)
             if r == -1:
                 return None
         return path
