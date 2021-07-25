@@ -187,24 +187,7 @@ class AbstractScraper():
         # download thumbnail and make metadata file if meta file is not present
         metadataFile = os.path.join(root, ".meta")
         if not os.path.isfile(metadataFile):
-            thumbnailUrl = self.getThumbnail(assetName)
-            ext = None
-            if thumbnailUrl is None:
-                print("no thumbnail found, not downloading")
-            else:
-                thumbnailReq = requests.get(thumbnailUrl)
-                thumbnailType = thumbnailReq.headers["Content-Type"]
-                if thumbnailType == 'image/png':
-                    ext = "png"
-                elif thumbnailType == "image/jpeg":
-                    ext = "jpg"
-
-            if ext is None:
-                thumbnailName = None
-            else:
-                thumbnailName = f"thumb.{ext}"
-                with open(os.path.join(root, thumbnailName), "wb") as f:
-                    f.write(thumbnailReq.content)
+            thumbnailName = self.downloadThumbnail(root, assetName)
 
             metadata = {
                 "name": assetName,
@@ -216,6 +199,30 @@ class AbstractScraper():
             with open(metadataFile, "w") as f:
                 json.dump(metadata, f, indent=4)
         return variants
+
+    def downloadThumbnail(self, assetPath, assetName):
+        thumbnailUrl = self.getThumbnail(assetName)
+        ext = None
+        if thumbnailUrl is None:
+            print("no thumbnail found, not downloading")
+        else:
+            thumbnailReq = self._fetch(thumbnailUrl)
+            if thumbnailReq is None:
+                return None
+            thumbnailType = thumbnailReq.headers["Content-Type"]
+            if thumbnailType == 'image/png':
+                ext = "png"
+            elif thumbnailType == "image/jpeg":
+                ext = "jpg"
+            else:
+                print(f"thumbnail type '{thumbnailType}' is not a valid type")
+
+        if ext is None:
+            return None
+        thumbnailName = f"thumb.{ext}"
+        with open(os.path.join(assetPath, thumbnailName), "wb") as f:
+            f.write(thumbnailReq.content)
+        return thumbnailName
 
     def _fetchVariantList(self, url):
         """Get a list of available variants.

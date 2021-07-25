@@ -68,6 +68,7 @@ class LocalDirectoryScraper(AbstractScraper):
             'normal': 'normal',
 
             'Base Color': 'baseColor',
+            'diffuse': 'diffuse',
             'Metallic': 'metallic',
             'Height': 'height',
             'col': 'baseColor',

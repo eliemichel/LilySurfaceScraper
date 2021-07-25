@@ -62,14 +62,24 @@ class CgbookcaseScraper(AbstractScraper):
             variants = resolutions
         
         self.asset_name = data['title']
+        self._id = identifier
         self._variants = variants
         self._resolutions = resolutions
         self._data = data
         self._doublesided = data['doublesided']
         return variants
 
-    def getThumbnail(self, assetName):
-        return None #todo
+    def getThumbnail(self, _):
+        parse = self.fetchHtml(f"https://www.cgbookcase.com/textures/{self._id}")
+
+        # mute errors, this is only a thumbnail
+        if self.error is not None:
+            self.error = None
+            return None
+
+        links = parse.xpath("//div[@id='upper']/div/img/@src")
+        if links:
+            return links[0]
 
     def fetchVariant(self, variant_index, material_data):
         """Fill material_data with data from the selected variant.
@@ -107,7 +117,6 @@ class CgbookcaseScraper(AbstractScraper):
             open(zip_path, 'wb').close()
 
         # Translate cgbookcase map names into our internal map names
-        # TODO: support two sided materials again
         maps_tr = {
             'BaseColor': 'baseColor',
             'Normal': 'normal',
@@ -131,9 +140,9 @@ class CgbookcaseScraper(AbstractScraper):
                 map_side = tokens[-2]
 
                 if map_side == "front" and sideness == 2:
-                    continue # back only
+                    continue  # back only
                 elif map_side == "back" and sideness == 1:
-                    continue # front only
+                    continue  # front only
 
                 if map_side == "back":
                     map_name += "_back"
