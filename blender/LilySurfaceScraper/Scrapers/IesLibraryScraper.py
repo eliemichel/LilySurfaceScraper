@@ -40,7 +40,7 @@ class IesLibraryScraper(AbstractScraper):
         self._thumbnailURL = data["preview"]
         return [self._variant]
 
-    def getThumbnail(self, _):
+    def getThumbnail(self):
         return self._thumbnailURL
 
     def fetchVariant(self, variant_index, material_data, reinstall=False):

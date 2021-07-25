@@ -59,7 +59,7 @@ class AmbientCgScraper(AbstractScraper):
         self._thumbnail_url = data["Assets"][asset_id]["PreviewSphere"]["512-PNG"]
         return variants
 
-    def getThumbnail(self, assetName):
+    def getThumbnail(self):
         return self._thumbnail_url
 
     def fetchVariant(self, variant_index, material_data):

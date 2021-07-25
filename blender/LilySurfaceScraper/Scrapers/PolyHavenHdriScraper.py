@@ -72,8 +72,8 @@ class PolyHavenHdriScraper(AbstractScraper):
         self._variants = variants
         return variants
 
-    def getThumbnail(self, assetName):
-        return f"https://cdn.polyhaven.com/asset_img/thumbs/{assetName}.png?width=512&height=512"
+    def getThumbnail(self):
+        return f"https://cdn.polyhaven.com/asset_img/thumbs/{self.asset_name}.png?width=512&height=512"
 
     def fetchVariant(self, variant_index, material_data):
         """Fill material_data with data from the selected variant.

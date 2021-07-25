@@ -69,7 +69,7 @@ class CgbookcaseScraper(AbstractScraper):
         self._doublesided = data['doublesided']
         return variants
 
-    def getThumbnail(self, _):
+    def getThumbnail(self):
         parse = self.fetchHtml(f"https://www.cgbookcase.com/textures/{self._id}")
 
         # mute errors, this is only a thumbnail

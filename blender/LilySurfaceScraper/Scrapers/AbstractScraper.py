@@ -195,7 +195,7 @@ class AbstractScraper():
         return variants
 
     def downloadThumbnail(self, assetPath, assetName):
-        thumbnailUrl = self.getThumbnail(assetName)
+        thumbnailUrl = self.getThumbnail()
         ext = None
         if thumbnailUrl is None:
             print("no thumbnail found, not downloading")
@@ -230,10 +230,11 @@ class AbstractScraper():
         Return a boolean status, and fill self.error to add error messages."""
         raise NotImplementedError
 
-    def getThumbnail(self, assetName):
-        """Function for getting a thumnbail for the texture, preferably using only the assetName (asset_name)
-         but you can pass more arguments with self.*** as its called after getVariantList
-         returns: url
+    def getThumbnail(self):
+        """Function for getting a url for a thumbnail for the texture, preferably using only self.assetName
+         but you can pass more arguments with self._*** as its called after getVariantList.
+         you can return None if there is no thumbnail or you cant get one
+         returns: url or None
          """
         raise NotImplementedError
 
