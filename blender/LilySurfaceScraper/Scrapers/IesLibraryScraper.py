@@ -34,10 +34,14 @@ class IesLibraryScraper(AbstractScraper):
         if data is None:
             return None
 
+        variant = data["lumcat"]
+        if variant == "":
+            variant = asset_id
+
         self._download_url = data["downloadUrlIes"]
         self._blender_energy = data["energy"]
         self.asset_name = asset_id
-        self._variant = data["lumcat"]
+        self._variant = variant
         self._thumbnailURL = data["preview"]
         return [self._variant]
 
