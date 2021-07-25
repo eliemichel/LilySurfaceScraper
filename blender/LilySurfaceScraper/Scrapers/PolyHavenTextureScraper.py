@@ -35,31 +35,39 @@ class PolyHavenTextureScraper(AbstractScraper):
 
     # Translate TextureHaven map names into our internal map names
     maps_tr = {
-        'albedo': 'baseColor',
-        'col 1': 'baseColor',
-        'col 01': 'baseColor',
-        'col 2': 'baseColor_02',
-        'col 02': 'baseColor_02',
-        'col 3': 'baseColor_03',
-        'col 03': 'baseColor_03',
-        'diffuse': 'diffuse',
-        'diff png': 'diffuse',
+        'diffuse':  'diffuse',
         'diff_png': 'diffuse',
-        'normal': 'normal',
-        'nor_gl': 'normal',
-        'specular': 'specular',
-        'spec': 'specular',
-        'ref': 'specular',
-        'roughness': 'roughness',
+        'normal':    'normal',
+        'nor_gl':    'normal',
+        'normal_gl': 'normal',
         'rough': 'roughness',
-        'metallic': 'metallic',
-        'metal': 'metallic',
         'ao': 'ambientOcclusion',
-        'rough ao': 'ambientOcclusionRough',
-        'rough_ao': 'ambientOcclusionRough',
         'displacement': 'height',
+        'bump':         'height',
+        'spec':     'specular',
+        'specular': 'specular',
+        'ref':      'specular',
+        'metal':    'metallic',
+        'metallic': 'metallic',
+        'rough_ao':   'ambientOcclusionRough',
+        'rough_diff': 'roughness',  # TODO: also use Diffuse
         'translucent': 'opacity',
-        # "arm" AO/Rough/Metal todo do something with this
+        'albedo': 'baseColor',
+        'col1':   'baseColor',
+        'col_01': 'baseColor',
+        'col_1':  'baseColor',
+        'coll1':  'baseColor',
+        'col2':   'baseColor_02',
+        'col_02': 'baseColor_02',
+        'col_2':  'baseColor_02',
+        'coll2':  'baseColor_02',
+        'col_03': 'baseColor_03',
+        # 'arm': '',  # AO/Rough/Metal todo probably make use of this
+        # 'diff_polar': '',
+        # 'rough_polar': '',
+        # 'nor_polar': '',
+        # 'page': '',  # only in 1 thing (book_pattern)
+        # 'nor_dx': '',  # what is this?
     }
 
     polyHavenUrl = re.compile(r"(?:https:\/\/)?polyhaven\.com\/a\/([^\/]+)")
@@ -114,7 +122,7 @@ class PolyHavenTextureScraper(AbstractScraper):
 
     def getThumbnail(self):
         return f"https://cdn.polyhaven.com/asset_img/thumbs/{self.asset_name}.png?width=512&height=512"
-    
+
     def fetchVariant(self, variant_index, material_data):
         """Fill material_data with data from the selected variant.
         Must fill material_data.name and material_data.maps.
