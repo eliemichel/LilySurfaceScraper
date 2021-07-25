@@ -144,13 +144,7 @@ class AbstractScraper():
         root = self.getTextureDirectory(material_name)
         path = os.path.join(root, filename)
 
-        def saveFile(_):
-            data = self._fetch(url)
-            with open(path, "wb") as f:
-                f.write(data.content)
-            data.close()
-
-        return self.saveFile(path, saveFile)
+        return self.saveFile(path, self.downloadFunc(url))
 
     def fetchZip(self, url, material_name, zip_name):
         """Utility helper for download textures"""
