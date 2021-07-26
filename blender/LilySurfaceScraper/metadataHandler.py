@@ -19,8 +19,18 @@ class Metadata:
         self.variants = variants_list
         self.custom = dict()
 
+    def load(self, metadata_file):
+        obj = self.open(metadata_file)
+        self.name = obj.name
+        self.id = obj.id
+        self.scraper = obj.scraper if self.scraper == "" else self.scraper
+        self.fetchUrl = obj.fetchUrl
+        self.thumbnail = obj.thumbnail
+        self.variants = obj.variants
+        self.custom = obj.custom
+
     @classmethod
-    def load(cls, metadata_file):
+    def open(cls, metadata_file):
         if not os.path.isfile(metadata_file):
             return cls.createBlank()
         with open(metadata_file, "r") as f:

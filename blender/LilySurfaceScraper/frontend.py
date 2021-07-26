@@ -12,6 +12,7 @@ from .CyclesMaterialData import CyclesMaterialData
 from .CyclesWorldData import CyclesWorldData
 from .ScrapersManager import ScrapersManager
 from .callback import get_callback
+from .metadataHandler import Metadata
 from .preferences import getPreferences
 import bpy.utils.previews
 from bpy.props import EnumProperty
@@ -626,9 +627,9 @@ def thumbnailGeneratorGenerator(scraper_cls):
 
             # get metadata
             metadata_file = os.path.join(basedir, i, scraper_cls.metadata_filename)
-            scraper.metadata.load(metadata_file)
-            thumb_name = scraper.metadata.thumbnail
-            if scraper.metadata.name == "":
+            metadata = Metadata.open(metadata_file)
+            thumb_name = metadata.thumbnail
+            if metadata.name == "":
                 # todo create a temp metadeta file
                 continue
 
@@ -673,16 +674,16 @@ def enumResponseGenerator(scraper_cls):
         item_path = os.path.join(basedir, item)
 
         metadata_file = os.path.join(item_path, scraper_cls.metadata_filename)
-        scraper.metadata.load(metadata_file)
-        if scraper.metadata.name:
+        metadata = Metadata.open(metadata_file)
+        if metadata.name:
             if "LIGHT" in scraper_cls.scraped_type:
-                bpy.ops.object.lily_light_import('EXEC_DEFAULT', url=scraper.metadata.fetchUrl) # fixme
+                bpy.ops.object.lily_light_import('EXEC_DEFAULT', url=metadata.fetchUrl)  # fixme
                 return
             elif 'MATERIAL' in scraper_cls.scraped_type:
-                bpy.ops.object.lily_surface_import('EXEC_DEFAULT', url=scraper.metadata.fetchUrl)
+                bpy.ops.object.lily_surface_import('EXEC_DEFAULT', url=metadata.fetchUrl)
                 return
             elif 'WORLD' in scraper_cls.scraped_type:
-                bpy.ops.object.lily_world_import('EXEC_DEFAULT', url=scraper.metadata.fetchUrl)
+                bpy.ops.object.lily_world_import('EXEC_DEFAULT', url=metadata.fetchUrl)
                 return
 
     return enumResult
