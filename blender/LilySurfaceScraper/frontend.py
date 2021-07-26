@@ -626,14 +626,12 @@ def thumbnailGeneratorGenerator(scraper_cls):
 
             # get metadata
             metadata_file = os.path.join(basedir, i, scraper_cls.metadata_filename)
-            thumb_name = None
-            if os.path.isfile(metadata_file):
-                with open(metadata_file, "r") as fl:
-                    metadata = json.load(fl)
-                thumb_name = metadata["thumbnail"]
-            else:
+            scraper.metadata.load(metadata_file)
+            thumb_name = scraper.metadata.thumbnail
+            if scraper.metadata.name == "":
                 # todo create a temp metadeta file
                 continue
+
             if thumb_name is None:
                 print("missing thumbnail", name)
                 registeredThumbnails.add(i)
@@ -675,18 +673,16 @@ def enumResponseGenerator(scraper_cls):
         item_path = os.path.join(basedir, item)
 
         metadata_file = os.path.join(item_path, scraper_cls.metadata_filename)
-        if os.path.isfile(metadata_file):
-            with open(metadata_file, "r") as fl:
-                data = json.load(fl)
-
+        scraper.metadata.load(metadata_file)
+        if scraper.metadata.name:
             if "LIGHT" in scraper_cls.scraped_type:
-                bpy.ops.object.lily_light_import('EXEC_DEFAULT', url=data["fetchUrl"])
+                bpy.ops.object.lily_light_import('EXEC_DEFAULT', url=scraper.metadata.fetchUrl) # fixme
                 return
             elif 'MATERIAL' in scraper_cls.scraped_type:
-                bpy.ops.object.lily_surface_import('EXEC_DEFAULT', url=data["fetchUrl"])
+                bpy.ops.object.lily_surface_import('EXEC_DEFAULT', url=scraper.metadata.fetchUrl)
                 return
             elif 'WORLD' in scraper_cls.scraped_type:
-                bpy.ops.object.lily_world_import('EXEC_DEFAULT', url=data["fetchUrl"])
+                bpy.ops.object.lily_world_import('EXEC_DEFAULT', url=scraper.metadata.fetchUrl)
                 return
 
     return enumResult

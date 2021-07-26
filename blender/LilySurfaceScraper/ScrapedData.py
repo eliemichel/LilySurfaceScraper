@@ -77,4 +77,4 @@ class ScrapedData():
         self._scraper.reinstall = value
 
     def isDownloaded(self, variant):
-        return self._scraper.isDownloaded(self._scraper.asset_name, variant)
+        return self._scraper.isDownloaded(variant)

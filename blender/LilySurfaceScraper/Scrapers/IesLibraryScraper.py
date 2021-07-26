@@ -38,30 +38,29 @@ class IesLibraryScraper(AbstractScraper):
         if variant == "":
             variant = asset_id
 
-        self._download_url = data["downloadUrlIes"]
-        self._blender_energy = data["energy"]
-        self.asset_name = asset_id
-        self._variant = variant
-        self._thumbnailURL = data["preview"]
-        return [self._variant]
+        self.metadata.setCustom("download_url", data["downloadUrlIes"])
+        self.metadata.setCustom("blender_energy", data["energy"])
+        self.metadata.name = asset_id
+        self.metadata.setCustom("thumbnailURL", data["preview"])
+        return [variant]
 
     def getThumbnail(self):
-        return self._thumbnailURL
+        return self.metadata.getCustom("thumbnailURL")
 
     def fetchVariant(self, variant_index, material_data, reinstall=False):
         """Fill material_data with data from the selected variant.
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
-        download_url = self._download_url
-        blender_energy = self._blender_energy
-        variant = self._variant
+        download_url = self.metadata.getCustom("download_url")
+        blender_energy = self.metadata.getCustom("blender_energy")
+        variant = self.metadata.variants[0]
 
         if variant_index < 0 or variant_index >= len([variant]):
             self.error = "Invalid variant index: {}".format(variant_index)
             return False
 
-        material_data.name = f"{self.home_dir}/{self.asset_name}/{variant}"
+        material_data.name = f"{self.home_dir}/{self.metadata.name}/{variant}"
 
         data_file = self.fetchFile(download_url, "/".join(material_data.name.split("/")[:2]), f"{variant}.ies")
         data_dir = os.path.dirname(data_file)
@@ -76,6 +75,6 @@ class IesLibraryScraper(AbstractScraper):
         material_data.maps["energy"] = energy_path
         return True
 
-    def isDownloaded(self, asset, target_variation):
-        root = self.getTextureDirectory(os.path.join(self.home_dir, asset))
+    def isDownloaded(self, target_variation):
+        root = self.getTextureDirectory(os.path.join(self.home_dir, self.metadata.name))
         return os.path.isfile(os.path.join(root, f"{target_variation}.ies"))

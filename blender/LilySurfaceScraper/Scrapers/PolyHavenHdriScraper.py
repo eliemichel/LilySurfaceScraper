@@ -63,6 +63,8 @@ class PolyHavenHdriScraper(AbstractScraper):
             self.error = "Not a texture"
             return None
 
+        name = data["name"]
+
         api_url = f"https://api.polyhaven.com/files/{identifier}"
         data = self.fetchJson(api_url)
         if data is None:
@@ -78,29 +80,29 @@ class PolyHavenHdriScraper(AbstractScraper):
         variant_data.sort(key=lambda x: self.sortTextWithNumbers(f"{x[1]} {x[0]}"))
         variants = [f"{res} ({fmt})" for res, fmt, _ in variant_data]
 
-        self.asset_name = identifier
-        self._variant_data = variant_data
-        self._variants = variants
+        self.metadata.name = name
+        self.metadata.id = identifier
+        self.metadata.setCustom("variant_data", variant_data)
         return variants
 
     def getThumbnail(self):
-        return f"https://cdn.polyhaven.com/asset_img/thumbs/{self.asset_name}.png?width=512&height=512"
+        return f"https://cdn.polyhaven.com/asset_img/thumbs/{self.metadata.id}.png?width=512&height=512"
 
     def fetchVariant(self, variant_index, material_data):
         """Fill material_data with data from the selected variant.
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
-        identifier = self.asset_name
-        variant_data = self._variant_data
-        variants = self._variants
+        name = self.metadata.name
+        variant_data = self.metadata.getCustom("variant_data")
+        variants = self.metadata.variants
         
         if variant_index < 0 or variant_index >= len(variants):
             self.error = "Invalid variant index: {}".format(variant_index)
             return False
         
         var_name = variants[variant_index]
-        material_data.name = f"{self.home_dir}/{identifier}/{var_name}"
+        material_data.name = f"{self.home_dir}/{name}/{var_name}"
 
         map_url = variant_data[variant_index][2]
         material_data.maps['sky'] = self.fetchImage(map_url, material_data.name, 'sky')

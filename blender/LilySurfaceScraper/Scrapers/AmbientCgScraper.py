@@ -55,22 +55,21 @@ class AmbientCgScraper(AbstractScraper):
                           key=lambda x: self.sortTextWithNumbers(" ".join(x.split("-")[::-1])))
         variants_urls = [ variants_data[v]["RawDownloadLink"] for v in variants ]
 
-        self._variants_urls = variants_urls
-        self._variants = variants
-        self.asset_name = asset_id
-        self._thumbnail_url = data["Assets"][asset_id]["PreviewSphere"]["512-PNG"]
+        self.metadata.setCustom("variants_urls", variants_urls)
+        self.metadata.name = asset_id
+        self.metadata.setCustom("thumbnail_url", data["Assets"][asset_id]["PreviewSphere"]["512-PNG"])
         return variants
 
     def getThumbnail(self):
-        return self._thumbnail_url
+        return self.metadata.getCustom("thumbnail_url")
 
     def fetchVariant(self, variant_index, material_data):
         """Fill material_data with data from the selected variant.
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
-        variants = self._variants
-        variants_urls = self._variants_urls
+        variants = self.metadata.variants
+        variants_urls = self.metadata.getCustom("variants_urls")
 
         if variant_index < 0 or variant_index >= len(variants):
             self.error = "Invalid variant index: {}".format(variant_index)
@@ -79,14 +78,13 @@ class AmbientCgScraper(AbstractScraper):
         variant = variants[variant_index]
         zip_url = variants_urls[variant_index]
 
-        material_data.name = f"{self.home_dir}/{self.asset_name}/{variant}"
+        material_data.name = f"{self.home_dir}/{self.metadata.name}/{variant}"
         zip_path = self.fetchZip(zip_url, material_data.name, "textures.zip")
         zip_dir = os.path.dirname(zip_path)
         if os.path.getsize(zip_path) == 0:
             # maps already exist
             namelist = os.listdir(zip_dir)
         else:
-            namelist = []
             with zipfile.ZipFile(zip_path,"r") as zip_ref:
                 namelist = zip_ref.namelist()
                 zip_ref.extractall(zip_dir)

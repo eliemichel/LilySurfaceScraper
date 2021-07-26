@@ -62,16 +62,15 @@ class CgbookcaseScraper(AbstractScraper):
         else:
             variants = resolutions
         
-        self.asset_name = data['title']
-        self._id = identifier
-        self._variants = variants
-        self._resolutions = resolutions
-        self._data = data
-        self._doublesided = data['doublesided']
+        self.metadata.name = data['title']
+        self.metadata.id = identifier
+        self.metadata.setCustom("resolutions", resolutions)
+        self.metadata.setCustom("files", data['files'])
+        self.metadata.setCustom("doublesided", data['doublesided'])
         return variants
 
     def getThumbnail(self):
-        parse = self.fetchHtml(f"https://www.cgbookcase.com/textures/{self._id}")
+        parse = self.fetchHtml(f"https://www.cgbookcase.com/textures/{self.metadata.id}")
 
         # mute errors, this is only a thumbnail
         if self.error is not None:
@@ -87,11 +86,11 @@ class CgbookcaseScraper(AbstractScraper):
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
-        title = self.asset_name
-        resolutions = self._resolutions
-        variants = self._variants
-        data = self._data
-        doublesided = self._doublesided
+        title = self.metadata.name
+        resolutions = self.metadata.getCustom("resolutions")
+        variants = self.metadata.variants
+        files = self.metadata.getCustom("files")
+        doublesided = self.metadata.getCustom("doublesided")
         
         if variant_index < 0 or variant_index >= len(variants):
             self.error = "Invalid variant index: {}".format(variant_index)
@@ -102,7 +101,7 @@ class CgbookcaseScraper(AbstractScraper):
 
         res = resolutions[variant_index % len(resolutions)]
         sideness = variant_index // len(resolutions)
-        zip_url = data['files'][res]
+        zip_url = files[res]
 
         zip_path = self.fetchZip(zip_url, material_data.name, "textures.zip")
         zip_dir = os.path.dirname(zip_path)
@@ -110,7 +109,6 @@ class CgbookcaseScraper(AbstractScraper):
             # maps already exist
             namelist = os.listdir(zip_dir)
         else:
-            namelist = []
             with zipfile.ZipFile(zip_path,"r") as zip_ref:
                 namelist = zip_ref.namelist()
                 zip_ref.extractall(zip_dir)

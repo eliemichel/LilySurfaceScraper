@@ -25,13 +25,15 @@ import os
 import string
 
 import sys
+
+from ..metadataHandler import Metadata
+
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "site-packages"))
 from lxml import etree
 
 import requests
 import shutil
 import re
-import json
 
 from ..settings import TEXTURE_DIR
 from ..preferences import getPreferences
@@ -62,7 +64,8 @@ class AbstractScraper():
         raise NotImplementedError
 
     def __init__(self, texture_root=""):
-        self.asset_name = None
+        self.metadata = Metadata.createBlank()
+        self.metadata.scraper = self.__class__.__name__
         self.error = None
         self.texture_root = texture_root
         self.reinstall = False
@@ -177,31 +180,27 @@ class AbstractScraper():
         return ''.join(filter(lambda x: x in printable, s))
 
     def fetchVariantList(self, url):
-        # **must have self.asset_name**
-
+        # **must have self.metadata.name filled**
+        self.metadata.fetchUrl = url
         # get asset name and variants
         variants = self.getVariantList(url)
         if self.error is not None or variants is None:
             return None
-        asset_name = self.asset_name
+        self.metadata.variants = variants
 
-        root = self.getTextureDirectory(os.path.join(self.home_dir, asset_name))
+        asset_name = self.metadata.name
 
-        # download thumbnail and make metadata file if meta file is not present
+        if self.metadata.id == "":
+            self.metadata.id = asset_name
+
+        root = self.getTextureDirectory(os.path.join(self.home_dir, asset_name))  # todo
         metadata_file = os.path.join(root, self.metadata_filename)
-        if not os.path.isfile(metadata_file):
-            thumbnail_name = self._downloadThumbnail(root)
 
-            metadata = {
-                "name": asset_name,
-                "scraper": self.__class__.__name__,
-                "fetchUrl": url,
-                "thumbnail": thumbnail_name,
-                "variants": variants,
-            }
-            with open(metadata_file, "w") as f:
-                json.dump(metadata, f, indent=4)
-        return variants
+        self._downloadThumbnail(root)
+
+        self.metadata.save(metadata_file)
+
+        return self.metadata.variants
 
     def _downloadThumbnail(self, asset_path):
         thumbnail_url = self.getThumbnail()
@@ -211,7 +210,7 @@ class AbstractScraper():
         else:
             thumbnail_req = self._fetch(thumbnail_url)
             if thumbnail_req is None:
-                return None
+                return
             thumbnail_type = thumbnail_req.headers["Content-Type"]
             if thumbnail_type == 'image/png':
                 ext = "png"
@@ -221,15 +220,15 @@ class AbstractScraper():
                 print(f"thumbnail type '{thumbnail_type}' is not a valid type")
 
         if ext is None:
-            return None
+            return
         thumbnail_name = f"thumb.{ext}"
         with open(os.path.join(asset_path, thumbnail_name), "wb") as f:
             f.write(thumbnail_req.content)
-        return thumbnail_name
+        self.metadata.thumbnail = thumbnail_name
 
     def getVariantList(self, url):
         """Get a list of available variants.
-        also fill self.asset_name for metadata, otherwise implement fetchVariantList
+        also fill self.metadata.name for metadata, otherwise implement fetchVariantList
         The list may be empty, and must be None in case of error."""
         raise NotImplementedError
 
@@ -247,7 +246,7 @@ class AbstractScraper():
          """
         raise NotImplementedError
 
-    def isDownloaded(self, asset, target_variation):
+    def isDownloaded(self, target_variation):
         """takes the asset and a variation name and checks if its installed, returns a boolean"""
-        root = self.getTextureDirectory(os.path.join(self.home_dir, asset))
+        root = self.getTextureDirectory(os.path.join(self.home_dir, self.metadata.name))
         return os.path.exists(os.path.join(root, target_variation))
