@@ -173,8 +173,8 @@ class OBJECT_OT_LilySurfacePromptVariant(ObjectPopupOperator, CallbackProps):
     )
 
     reisntall: bpy.props.BoolProperty(
-        name="Reinstall Textures",
-        description="Reinstall the textures instead of using the ones present on the system",
+        name="Reinstall Texture",
+        description="Reinstall the texture instead of using the ones present on the system",
         default=False,
         options={"SKIP_SAVE"}
     )
@@ -327,8 +327,8 @@ class OBJECT_OT_LilyWorldPromptVariant(PopupOperator, CallbackProps):
     )
 
     reisntall: bpy.props.BoolProperty(
-        name="Reinstall Textures",
-        description="Reinstall the textures instead of using the ones present on the system",
+        name="Reinstall Texture",
+        description="Reinstall the  instead of using the ones present on the system",
         default=False,
         options={"SKIP_SAVE"}
     )
