@@ -153,4 +153,4 @@ class CgbookcaseScraper(AbstractScraper):
     def getUrlFromName(self, asset_name):
         # should be enough
         name = asset_name.lower().replace(' ', '-')
-        return f"https://polyhaven.com/a/{name}"
+        return f"https://www.cgbookcase.com/textures/{name}"
