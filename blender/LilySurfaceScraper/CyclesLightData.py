@@ -19,8 +19,6 @@ class CyclesLightData(LightData):
         light = bpy.data.lights.new(self.name, "POINT")
         bpy.context.object.data = light
 
-        ies = self.maps['ies']
-        light.name = os.path.basename(ies)
         light.use_nodes = True
         light.shadow_soft_size = 0
 
@@ -29,9 +27,8 @@ class CyclesLightData(LightData):
 
         nodes.clear()
 
-        energyPath = self.maps['energy']
-        with open(energyPath, "r") as f:
-            energy = float(f.read())
+        ies = self.maps['ies']
+        energy = self.maps['energy']
 
         out = nodes.new(type="ShaderNodeOutputLight")
         emmision = nodes.new(type="ShaderNodeEmission")
@@ -40,7 +37,7 @@ class CyclesLightData(LightData):
         iesNode = nodes.new(type="ShaderNodeTexIES")
         if pref.ies_pack_files:
             bpy.ops.text.open(filepath=ies, internal=False)
-            iesNode.ies = bpy.data.texts[light.name]
+            iesNode.ies = bpy.data.texts[os.path.basename(ies)]
         else:
             iesNode.mode = "EXTERNAL"
             iesNode.filepath = ies
