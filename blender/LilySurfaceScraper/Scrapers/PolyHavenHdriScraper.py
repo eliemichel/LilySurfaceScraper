@@ -115,3 +115,10 @@ class PolyHavenHdriScraper(AbstractScraper):
         root = self.getTextureDirectory(os.path.join(self.home_dir, self.metadata.name))
         name, ext = target_variation.split(" (")
         return os.path.isfile(os.path.join(root, f"{name}.{ext[:-1]}"))
+
+    def getUrlFromName(self, asset_name):
+        # data = self.fetchJson(f"https://api.polyhaven.com/assets?s={asset_name.replace()}")
+
+        # this works well enough for most
+        name = asset_name.lower().replace(' ', '_').replace("'", "")
+        return f"https://polyhaven.com/a/{name}"

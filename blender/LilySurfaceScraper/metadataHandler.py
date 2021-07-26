@@ -20,6 +20,7 @@ class Metadata:
         self.custom = dict()
 
     def load(self, metadata_file):
+        """load metadata file into current object"""
         obj = self.open(metadata_file)
         self.name = obj.name
         self.id = obj.id
@@ -31,6 +32,7 @@ class Metadata:
 
     @classmethod
     def open(cls, metadata_file):
+        """open a metadata file and return a new object"""
         if not os.path.isfile(metadata_file):
             return cls.createBlank()
         with open(metadata_file, "r") as f:
@@ -46,6 +48,7 @@ class Metadata:
 
     @classmethod
     def createBlank(cls):
+        """create an empty metadata object"""
         return cls("", "", "", "", None, list())
 
     @staticmethod
@@ -53,6 +56,7 @@ class Metadata:
         return dictionary[key] if key in dictionary else default
 
     def save(self, metadata_filepath):
+        """save the metadata file"""
         metadata = {
             "name": self.name,
             "id": self.id,
@@ -66,7 +70,9 @@ class Metadata:
             json.dump(metadata, f, indent=4)
 
     def getCustom(self, key):
+        """get a custom variable"""
         return self.custom[key]
 
     def setCustom(self, key, value):
+        """set a custom variable"""
         self.custom[key] = value

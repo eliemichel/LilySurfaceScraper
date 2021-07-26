@@ -149,3 +149,8 @@ class CgbookcaseScraper(AbstractScraper):
             material_data.maps[map_name] = os.path.join(zip_dir, name)
         
         return True
+
+    def getUrlFromName(self, asset_name):
+        # should be enough
+        name = asset_name.lower().replace(' ', '-')
+        return f"https://polyhaven.com/a/{name}"

@@ -179,6 +179,17 @@ class AbstractScraper():
         printable = set(string.printable)
         return ''.join(filter(lambda x: x in printable, s))
 
+    def getVariantData(self, asset_name):
+        root = self.getTextureDirectory(os.path.join(self.home_dir, asset_name))
+        metadata_file = os.path.join(root, self.metadata_filename)
+        self.metadata.load(metadata_file)
+
+        if self.metadata.name == "":
+            url = self.getUrlFromName(asset_name)
+            return self.fetchVariantList(url)
+
+        return self.metadata.variants
+
     def fetchVariantList(self, url):
         # **must have self.metadata.name filled**
         self.metadata.fetchUrl = url

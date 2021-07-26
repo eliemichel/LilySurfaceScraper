@@ -51,7 +51,7 @@ class IesLibraryScraper(AbstractScraper):
         """Fill material_data with data from the selected variant.
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
-        # Get data saved in fetchVariantList
+        # Get data saved in getVariantList
         download_url = self.metadata.getCustom("download_url")
         blender_energy = self.metadata.getCustom("blender_energy")
         variant = self.metadata.variants[0]
@@ -78,3 +78,6 @@ class IesLibraryScraper(AbstractScraper):
     def isDownloaded(self, target_variation):
         root = self.getTextureDirectory(os.path.join(self.home_dir, self.metadata.name))
         return os.path.isfile(os.path.join(root, f"{target_variation}.ies"))
+
+    def getUrlFromName(self, asset_name):
+        return f"https://ieslibrary.com/en/browse#ies-{asset_name}"

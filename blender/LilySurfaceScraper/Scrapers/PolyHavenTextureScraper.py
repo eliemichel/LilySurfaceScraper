@@ -153,3 +153,8 @@ class PolyHavenTextureScraper(AbstractScraper):
                 material_data.maps[map_name] = self.fetchImage(map_url, material_data.name, map_name)
         
         return True
+
+    def getUrlFromName(self, asset_name):
+        # same as hdri one, works well enough
+        name = asset_name.lower().replace(' ', '_').replace("'", "")
+        return f"https://polyhaven.com/a/{name}"

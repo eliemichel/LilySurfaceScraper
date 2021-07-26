@@ -117,3 +117,6 @@ class AmbientCgScraper(AbstractScraper):
                 map_name = maps_tr[map_type]
                 material_data.maps[map_name] = os.path.join(zip_dir, name)
         return True
+
+    def getUrlFromName(self, asset_name):
+        return f"https://ambientcg.com/view?id={asset_name}"

@@ -37,14 +37,19 @@ class ScrapedData():
         """Implement in subclasses to (re)init specific data"""
         pass
 
-    def __init__(self, url, texture_root=""):
-        """url: Base url to scrap
+    def __init__(self, url, texture_root="", asset_name=None):
+        """url: Base url to scrape
         texture_root: root directory where to store downloaded textures
+        asset_name: the name of the asset / folder name
         """
         self.url = url
-        self.texture_root = texture_root
+        self.asset_name = asset_name
         self.error = None
-        self._variants = None
+        if url is None and asset_name is None:
+            self.error = "No source given"
+
+        self.texture_root = texture_root
+        self.metadata = None
         self._scraper = type(self).makeScraper(url)
         self.reinstall = False
         if self._scraper is None:
@@ -56,17 +61,21 @@ class ScrapedData():
     def getVariantList(self):
         if self.error is not None:
             return None
-        if self._variants is not None:
-            return self._variants
-        self._variants = self._scraper.fetchVariantList(self.url)
-        if self._variants is None:
+        if self.metadata is not None:
+            return self.metadata.variants
+        if self.asset_name is not None:
+            self._scraper.getVariantData(self.asset_name)
+        else:
+            self._scraper.fetchVariantList(self.url)
+        self.metadata = self._scraper.metadata
+        if not self.metadata.variants:
             self.error = self._scraper.error
-        return self._variants
+        return self.metadata.variants
 
     def selectVariant(self, variant_index):
         if self.error is not None:
             return False
-        if self._variants is None:
+        if self.metadata is None:
             self.getVariantList()
         if not self._scraper.fetchVariant(variant_index, self):
             return False

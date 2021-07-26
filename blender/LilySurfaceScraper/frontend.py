@@ -16,7 +16,6 @@ from .metadataHandler import Metadata
 from .preferences import getPreferences
 import bpy.utils.previews
 from bpy.props import EnumProperty
-import json
 
 
 ## Operators
@@ -31,7 +30,7 @@ registeredThumbnails = set()
 custom_icons = bpy.utils.previews.new()
 
 # spam prevention measure
-lastChecks = dict()
+metadataGetFailed = list()
 
 
 class PopupOperator(bpy.types.Operator):
@@ -89,6 +88,13 @@ class OBJECT_OT_LilySurfaceScraper(ObjectPopupOperator, CallbackProps):
         default=""
     )
 
+    name: bpy.props.StringProperty(
+        name="Name",
+        description="Get the texture using a name (for getting local files)",
+        options={'HIDDEN', 'SKIP_SAVE'},
+        default=""
+    )
+
     def execute(self, context):
         pref = getPreferences(context)
         if bpy.data.filepath == '' and not os.path.isabs(pref.texture_dir):
@@ -96,7 +102,9 @@ class OBJECT_OT_LilySurfaceScraper(ObjectPopupOperator, CallbackProps):
             return {'CANCELLED'}
 
         texdir = os.path.dirname(bpy.data.filepath)
-        data = CyclesMaterialData(self.url, texture_root=texdir)
+        if not self.name:
+            self.name = None
+        data = CyclesMaterialData(self.url, texture_root=texdir, asset_name=self.name)
         if data.error is None:
             variants = data.getVariantList()
         if data.error is not None:
@@ -234,6 +242,13 @@ class OBJECT_OT_LilyWorldScraper(PopupOperator, CallbackProps):
         default=""
     )
 
+    name: bpy.props.StringProperty(
+        name="Name",
+        description="Get the texture using a name (for getting local files)",
+        options={'HIDDEN', 'SKIP_SAVE'},
+        default=""
+    )
+
     def execute(self, context):
         pref = getPreferences(context)
         if bpy.data.filepath == '' and not os.path.isabs(pref.texture_dir):
@@ -241,7 +256,9 @@ class OBJECT_OT_LilyWorldScraper(PopupOperator, CallbackProps):
             return {'CANCELLED'}
 
         texdir = os.path.dirname(bpy.data.filepath)
-        data = CyclesWorldData(self.url, texture_root=texdir)
+        if not self.name:
+            self.name = None
+        data = CyclesWorldData(self.url, texture_root=texdir, asset_name=self.name)
         if data.error is None:
             variants = data.getVariantList()
         if data.error is not None:
@@ -380,6 +397,13 @@ class OBJECT_OT_LilyLightScraper(PopupOperator, CallbackProps):
         default=""
     )
 
+    name: bpy.props.StringProperty(
+        name="Name",
+        description="Get the texture using a name (for getting local files)",
+        options={'HIDDEN', 'SKIP_SAVE'},
+        default=""
+    )
+
     def execute(self, context):
         pref = getPreferences(context)
         if bpy.data.filepath == '' and not os.path.isabs(pref.texture_dir):
@@ -387,7 +411,9 @@ class OBJECT_OT_LilyLightScraper(PopupOperator, CallbackProps):
             return {'CANCELLED'}
 
         texdir = os.path.dirname(bpy.data.filepath)
-        data = CyclesLightData(self.url, texture_root=texdir)
+        if not self.name:
+            self.name = None
+        data = CyclesLightData(self.url, texture_root=texdir, asset_name=self.name)
         if data.error is None:
             variants = data.getVariantList()
         if data.error is not None:
@@ -618,6 +644,8 @@ def thumbnailGeneratorGenerator(scraper_cls):
 
         # iterate over assets in scrapers home dir
         for i in os.listdir(basedir):
+            if i in metadataGetFailed:
+                continue
             if not os.path.isdir(os.path.join(basedir, i)):
                 continue
             name = f"thumb_{scraper_cls.__name__}-{i.replace(' ', '_')}"
@@ -628,10 +656,18 @@ def thumbnailGeneratorGenerator(scraper_cls):
             # get metadata
             metadata_file = os.path.join(basedir, i, scraper_cls.metadata_filename)
             metadata = Metadata.open(metadata_file)
-            thumb_name = metadata.thumbnail
+            # if no metadata file was found
             if metadata.name == "":
-                # todo create a temp metadeta file
-                continue
+                # try to get info
+                print("No metadata! getting for", i)
+                scraper.getVariantData(i)
+                # if its still empty then just scip this
+                if scraper.metadata.name == "":
+                    print(f"!! failed to get metadata for {i} from {scraper.home_url} !!")
+                    metadataGetFailed.append(i)
+                    continue
+                metadata = scraper.metadata
+            thumb_name = metadata.thumbnail
 
             if thumb_name is None:
                 print("missing thumbnail", name)
@@ -677,13 +713,13 @@ def enumResponseGenerator(scraper_cls):
         metadata = Metadata.open(metadata_file)
         if metadata.name:
             if "LIGHT" in scraper_cls.scraped_type:
-                bpy.ops.object.lily_light_import('EXEC_DEFAULT', url=metadata.fetchUrl)  # fixme
+                bpy.ops.object.lily_light_import('EXEC_DEFAULT', url=metadata.fetchUrl, name=metadata.name)  # fixme
                 return
             elif 'MATERIAL' in scraper_cls.scraped_type:
-                bpy.ops.object.lily_surface_import('EXEC_DEFAULT', url=metadata.fetchUrl)
+                bpy.ops.object.lily_surface_import('EXEC_DEFAULT', url=metadata.fetchUrl, name=metadata.name)
                 return
             elif 'WORLD' in scraper_cls.scraped_type:
-                bpy.ops.object.lily_world_import('EXEC_DEFAULT', url=metadata.fetchUrl)
+                bpy.ops.object.lily_world_import('EXEC_DEFAULT', url=metadata.fetchUrl, name=metadata.name)
                 return
 
     return enumResult
