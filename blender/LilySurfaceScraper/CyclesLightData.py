@@ -22,8 +22,9 @@ class CyclesLightData(LightData):
         light.use_nodes = True
         light.shadow_soft_size = 0
 
-        nodes = light.node_tree.nodes
-        links = light.node_tree.links
+        tree = light.node_tree
+        nodes = tree.nodes
+        links = tree.links
 
         nodes.clear()
 
@@ -52,3 +53,5 @@ class CyclesLightData(LightData):
                 light.energy = energy
 
         autoAlignNodes(out)
+
+        return light
