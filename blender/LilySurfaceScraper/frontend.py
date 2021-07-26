@@ -418,53 +418,6 @@ class OBJECT_OT_LilyClipboardLightScraper(PopupOperator, CallbackProps):
         bpy.ops.object.lily_light_import('EXEC_DEFAULT', url=bpy.context.window_manager.clipboard)
         return {'FINISHED'}
 
-def list_variant_enum(self, context):
-    """Callback filling enum items for OBJECT_OT_LilySurfacePromptVariant"""
-    global internal_states
-    data = internal_states[self.internal_state]
-    items = []
-    for i, v in enumerate(data.getVariantList()):
-        icon = "CHECKMARK" if data.isDownloaded(v) else "IMPORT"
-        items.append((str(i), v, v, icon, i))
-    internal_states['dsdweykgkbit'] = items  # keep a reference to avoid a known crash of blander, says the doc
-    return items
-
-class OBJECT_OT_LilyLightPromptVariant(PopupOperator, CallbackProps):
-    """While importing a light, prompt the user for the texture variant
-    if there are several worlds provided by the URL"""
-    bl_idname = "object.lily_light_prompt_variant"
-    bl_label = "Select Variant"
-
-    variant: bpy.props.EnumProperty(
-        name="Variant",
-        description="Name of the light variant to load",
-        items=list_variant_enum,
-    )
-
-    reisntall: bpy.props.BoolProperty(
-        name="Reinstall Textures",
-        description="Reinstall the textures instead of using the ones present on the system",
-        default=False,
-        options={"SKIP_SAVE"}
-    )
-
-    internal_state: bpy.props.StringProperty(
-        name="Internal State",
-        description="System property used to transfer the state of the operator",
-        options={'HIDDEN', 'SKIP_SAVE'}
-    )
-
-
-    def execute(self, context):
-        data = internal_states[self.internal_state]
-        data.setReinstall(bool(self.reisntall))
-        data.selectVariant(int(self.variant))
-        data.createLights()
-        cb = get_callback(self.callback_handle)
-        cb(context)
-        return {'FINISHED'}
-
-
 # -------------------------------------------------------------------
 ## Panels
 
@@ -714,7 +667,6 @@ classes = (
 
     OBJECT_OT_LilyLightScraper,
     OBJECT_OT_LilyClipboardLightScraper,
-    OBJECT_OT_LilyLightPromptVariant,
 
     MATERIAL_PT_LilySurfaceScraper,
     WORLD_PT_LilySurfaceScraper,

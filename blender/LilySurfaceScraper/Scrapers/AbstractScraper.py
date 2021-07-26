@@ -211,7 +211,7 @@ class AbstractScraper():
 
         self.metadata.save(metadata_file)
 
-        return self.metadata.variants
+        return variants
 
     def _downloadThumbnail(self, asset_path):
         thumbnail_url = self.getThumbnail()
@@ -261,3 +261,7 @@ class AbstractScraper():
         """takes the asset and a variation name and checks if its installed, returns a boolean"""
         root = self.getTextureDirectory(os.path.join(self.home_dir, self.metadata.name))
         return os.path.exists(os.path.join(root, target_variation))
+
+    def getUrlFromName(self, asset_name):
+        """get a url for an asset from a name"""
+        raise NotImplementedError
