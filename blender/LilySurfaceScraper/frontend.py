@@ -102,9 +102,8 @@ class OBJECT_OT_LilySurfaceScraper(ObjectPopupOperator, CallbackProps):
             return {'CANCELLED'}
 
         texdir = os.path.dirname(bpy.data.filepath)
-        if not self.name:
-            self.name = None
-        data = CyclesMaterialData(self.url, texture_root=texdir, asset_name=self.name)
+        name = None if not self.name else self.name
+        data = CyclesMaterialData(self.url, texture_root=texdir, asset_name=name)
         if data.error is None:
             variants = data.getVariantList()
         if data.error is not None:
@@ -256,9 +255,8 @@ class OBJECT_OT_LilyWorldScraper(PopupOperator, CallbackProps):
             return {'CANCELLED'}
 
         texdir = os.path.dirname(bpy.data.filepath)
-        if not self.name:
-            self.name = None
-        data = CyclesWorldData(self.url, texture_root=texdir, asset_name=self.name)
+        name = None if not self.name else self.name
+        data = CyclesWorldData(self.url, texture_root=texdir, asset_name=name)
         if data.error is None:
             variants = data.getVariantList()
         if data.error is not None:
@@ -393,9 +391,8 @@ class OBJECT_OT_LilyLightScraper(PopupOperator, CallbackProps):
             return {'CANCELLED'}
 
         texdir = os.path.dirname(bpy.data.filepath)
-        if not self.name:
-            self.name = None
-        data = CyclesLightData(self.url, texture_root=texdir, asset_name=self.name)
+        name = None if not self.name else self.name
+        data = CyclesLightData(self.url, texture_root=texdir, asset_name=name)
         if data.error is None:
             data.getVariantList()
         if data.error is not None:
