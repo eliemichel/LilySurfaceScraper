@@ -204,7 +204,7 @@ class AbstractScraper():
         if self.metadata.id == "":
             self.metadata.id = asset_name
 
-        root = self.getTextureDirectory(os.path.join(self.home_dir, asset_name))  # todo
+        root = self.getTextureDirectory(os.path.join(self.home_dir, asset_name))
         metadata_file = os.path.join(root, self.metadata_filename)
 
         self._downloadThumbnail(root)

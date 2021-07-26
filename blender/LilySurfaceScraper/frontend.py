@@ -639,7 +639,7 @@ def enumResponseGenerator(scraper_cls):
         if metadata.name:
             running = False
             if "LIGHT" in scraper_cls.scraped_type:
-                bpy.ops.object.lily_light_import('EXEC_DEFAULT', url=metadata.fetchUrl, name=metadata.name)  # fixme
+                bpy.ops.object.lily_light_import('EXEC_DEFAULT', url=metadata.fetchUrl, name=metadata.name)
                 running = True
                 return
             elif 'MATERIAL' in scraper_cls.scraped_type:
