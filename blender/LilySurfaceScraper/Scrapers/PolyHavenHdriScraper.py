@@ -23,6 +23,7 @@
 
 from .AbstractScraper import AbstractScraper
 import re
+import os
 from collections import defaultdict
 
 
@@ -102,9 +103,15 @@ class PolyHavenHdriScraper(AbstractScraper):
             return False
         
         var_name = variants[variant_index]
+        var_data = variant_data[variant_index]
         material_data.name = f"{self.home_dir}/{name}/{var_name}"
 
-        map_url = variant_data[variant_index][2]
-        material_data.maps['sky'] = self.fetchImage(map_url, material_data.name, 'sky')
+        map_url = var_data[2]
+        material_data.maps['sky'] = self.fetchImage(map_url, f"{self.home_dir}/{name}", var_data[0])
         
         return True
+
+    def isDownloaded(self, target_variation):
+        root = self.getTextureDirectory(os.path.join(self.home_dir, self.metadata.name))
+        name, ext = target_variation.split(" (")
+        return os.path.isfile(os.path.join(root, f"{name}.{ext[:-1]}"))
