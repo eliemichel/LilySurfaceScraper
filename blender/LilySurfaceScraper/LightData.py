@@ -14,7 +14,7 @@ class LightData(ScrapedData):
     like CyclesMaterialData."""
     
     def reset(self):
-        self.name = "Lily World"
+        self.name = "Lily Light"
         self.maps = {
             'ies': None,
             'energy': None

@@ -379,24 +379,6 @@ class OBJECT_OT_LilyLightScraper(PopupOperator, CallbackProps):
         default=""
     )
 
-    create_world: bpy.props.BoolProperty(
-        name="Create World",
-        description=(
-            "Create the light material associated with downloaded maps. " +
-            "You most likely want this, but for integration into other tool " +
-            "you may want to set it to false and handle the world creation by yourself."
-        ),
-        options={'HIDDEN', 'SKIP_SAVE'},
-        default=True
-    )
-
-    variant: bpy.props.StringProperty(
-        name="Variant",
-        description="Look for the variant that has this name (for scripting access only)",
-        options={'HIDDEN', 'SKIP_SAVE'},
-        default=""
-    )
-
     name: bpy.props.StringProperty(
         name="Name",
         description="Get the texture using a name (for getting local files)",
@@ -415,31 +397,16 @@ class OBJECT_OT_LilyLightScraper(PopupOperator, CallbackProps):
             self.name = None
         data = CyclesLightData(self.url, texture_root=texdir, asset_name=self.name)
         if data.error is None:
-            variants = data.getVariantList()
+            data.getVariantList()
         if data.error is not None:
             self.report({'ERROR_INVALID_INPUT'}, data.error)
             return {'CANCELLED'}
 
-        selected_variant = -1
-        if not variants or len(variants) == 1:
-            selected_variant = 0
-        elif self.variant != "":
-            for i, v in enumerate(variants):
-                if v == self.variant:
-                    selected_variant = i
-                    break
-
-        if selected_variant == -1:
-            # More than one variant, prompt the user for which one she wants
-            internal_states['kamour'] = data
-            bpy.ops.object.lily_light_prompt_variant('INVOKE_DEFAULT',
-                internal_state='kamour',
-                callback_handle=self.callback_handle)
-        else:
-            data.selectVariant(selected_variant)
-            data.createLights()
-            cb = get_callback(self.callback_handle)
-            cb(context)
+        selected_variant = 0
+        data.selectVariant(selected_variant)
+        data.createLights()
+        cb = get_callback(self.callback_handle)
+        cb(context)
         return {'FINISHED'}
 
 class OBJECT_OT_LilyClipboardLightScraper(PopupOperator, CallbackProps):
