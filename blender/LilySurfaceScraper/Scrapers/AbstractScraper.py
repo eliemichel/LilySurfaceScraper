@@ -36,6 +36,7 @@ import json
 from ..settings import TEXTURE_DIR
 from ..preferences import getPreferences
 
+
 class AbstractScraper():
     # Can be 'MATERIAL', 'WORLD', 'LIGHT'
     scraped_type = {'MATERIAL'}
@@ -45,6 +46,12 @@ class AbstractScraper():
     home_url = None
     # directory of textures
     home_dir = None
+
+    # partaining to previews
+    show_preview = True
+    show_labels = False
+
+    metadata_filename = ".meta"
 
     @staticmethod
     def sortTextWithNumbers(text):
@@ -181,7 +188,7 @@ class AbstractScraper():
         root = self.getTextureDirectory(os.path.join(self.home_dir, asset_name))
 
         # download thumbnail and make metadata file if meta file is not present
-        metadata_file = os.path.join(root, ".meta")
+        metadata_file = os.path.join(root, self.metadata_filename)
         if not os.path.isfile(metadata_file):
             thumbnail_name = self._downloadThumbnail(root)
 

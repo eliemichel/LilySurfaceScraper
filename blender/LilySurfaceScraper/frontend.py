@@ -6,12 +6,17 @@
 
 import os
 import bpy
+
 from .CyclesLightData import CyclesLightData
 from .CyclesMaterialData import CyclesMaterialData
 from .CyclesWorldData import CyclesWorldData
 from .ScrapersManager import ScrapersManager
 from .callback import get_callback
 from .preferences import getPreferences
+import bpy.utils.previews
+from bpy.props import EnumProperty
+import json
+
 
 ## Operators
 
@@ -21,9 +26,16 @@ from .preferences import getPreferences
 # sharable through regular properties. SO it is shared through this global
 internal_states = {}
 
+registeredThumbnails = set()
+custom_icons = bpy.utils.previews.new()
+
+# spam prevention measure
+lastChecks = dict()
+
+
 class PopupOperator(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
-    
+
     def invoke(self, context, event):
         wm = context.window_manager
         return wm.invoke_props_dialog(self)
@@ -51,7 +63,7 @@ class OBJECT_OT_LilySurfaceScraper(ObjectPopupOperator, CallbackProps):
     """Import a material just by typing its URL. See documentation for a list of supported material providers."""
     bl_idname = "object.lily_surface_import"
     bl_label = "Import Surface"
-    
+
     url: bpy.props.StringProperty(
         name="URL",
         description="Address from which importing the material",
@@ -98,7 +110,7 @@ class OBJECT_OT_LilySurfaceScraper(ObjectPopupOperator, CallbackProps):
                 if v == self.variant:
                     selected_variant = i
                     break
-        
+
         if selected_variant == -1:
             # More than one variant, prompt the user for which one she wants
             internal_states['skjhnvjkbg'] = data
@@ -121,7 +133,7 @@ class OBJECT_OT_LilyClipboardSurfaceScraper(ObjectPopupOperator, CallbackProps):
     """Same as lily_surface_import except that it gets the URL from clipboard."""
     bl_idname = "object.lily_surface_import_from_clipboard"
     bl_label = "Import from clipboard"
-    
+
     def invoke(self, context, event):
         return self.execute(context)
 
@@ -145,7 +157,7 @@ class OBJECT_OT_LilySurfacePromptVariant(ObjectPopupOperator, CallbackProps):
     if there are several materials provided by the URL"""
     bl_idname = "object.lily_surface_prompt_variant"
     bl_label = "Select Variant"
-    
+
     variant: bpy.props.EnumProperty(
         name="Variant",
         description="Name of the material variant to load",
@@ -196,7 +208,7 @@ class OBJECT_OT_LilyWorldScraper(PopupOperator, CallbackProps):
     """Import a world just by typing its URL. See documentation for a list of supported world providers."""
     bl_idname = "object.lily_world_import"
     bl_label = "Import World"
-    
+
     url: bpy.props.StringProperty(
         name="URL",
         description="Address from which importing the world",
@@ -243,7 +255,7 @@ class OBJECT_OT_LilyWorldScraper(PopupOperator, CallbackProps):
                 if v == self.variant:
                     selected_variant = i
                     break
-        
+
         if selected_variant == -1:
             # More than one variant, prompt the user for which one she wants
             internal_states['zeilult'] = data
@@ -261,12 +273,13 @@ class OBJECT_OT_LilyWorldScraper(PopupOperator, CallbackProps):
             cb = get_callback(self.callback_handle)
             cb(context)
         return {'FINISHED'}
-        
+
+
 class OBJECT_OT_LilyClipboardWorldScraper(PopupOperator, CallbackProps):
     """Same as lily_world_import except that it gets the URL from clipboard."""
     bl_idname = "object.lily_world_import_from_clipboard"
     bl_label = "Import from clipboard"
-    
+
     def invoke(self, context, event):
         return self.execute(context)
 
@@ -290,7 +303,7 @@ class OBJECT_OT_LilyWorldPromptVariant(PopupOperator, CallbackProps):
     if there are several worlds provided by the URL"""
     bl_idname = "object.lily_world_prompt_variant"
     bl_label = "Select Variant"
-    
+
     variant: bpy.props.EnumProperty(
         name="Variant",
         description="Name of the world variant to load",
@@ -485,7 +498,19 @@ class MATERIAL_PT_LilySurfaceScraper(bpy.types.Panel):
             urls = {None}  # avoid doubles
             for S in ScrapersManager.getScrapersList():
                 if 'MATERIAL' in S.scraped_type and S.home_url not in urls:
-                    layout.operator("wm.url_open", text=S.source_name).url = S.home_url
+                    split = False
+                    factor = 1.
+                    if not hasattr(custom_icons, S.__name__) or \
+                            (hasattr(custom_icons, S.__name__) and len(getattr(custom_icons, S.__name__)) == 0):
+                        thumbnailGeneratorGenerator(S)(0, 0)
+                    if len(getattr(custom_icons, S.__name__)) > 0:
+                        split = True
+                        factor = .85
+                    row = layout.row().split(factor=factor, align=True)
+                    row.operator("wm.url_open", text=S.source_name).url = S.home_url
+                    if split:
+                        row.template_icon_view(context.active_object, S.__name__, scale=1, scale_popup=7.0,
+                                               show_labels=S.show_labels)
                     urls.add(S.home_url)
 
 class WORLD_PT_LilySurfaceScraper(bpy.types.Panel):
@@ -509,8 +534,21 @@ class WORLD_PT_LilySurfaceScraper(bpy.types.Panel):
             urls = {None}  # avoid doubles
             for S in ScrapersManager.getScrapersList():
                 if 'WORLD' in S.scraped_type and S.home_url not in urls:
-                    layout.operator("wm.url_open", text=S.source_name).url = S.home_url
+                    split = False
+                    factor = 1.
+                    if not hasattr(custom_icons, S.__name__) or \
+                            (hasattr(custom_icons, S.__name__) and len(getattr(custom_icons, S.__name__)) == 0):
+                        thumbnailGeneratorGenerator(S)(0, 0)
+                    if len(getattr(custom_icons, S.__name__)) > 0:
+                        split = True
+                        factor = .85
+                    row = layout.split(factor=factor, align=True)
+                    row.operator("wm.url_open", text=S.source_name).url = S.home_url
+                    if split:
+                        row.template_icon_view(context.active_object, S.__name__, scale=1, scale_popup=7.0,
+                                               show_labels=S.show_labels)
                     urls.add(S.home_url)
+
 
 class LIGHT_PT_LilySurfaceScraper(bpy.types.Panel):
     """Panel with the Lily Scraper button"""
@@ -537,8 +575,122 @@ class LIGHT_PT_LilySurfaceScraper(bpy.types.Panel):
             urls = {None}  # avoid doubles
             for S in ScrapersManager.getScrapersList():
                 if 'LIGHT' in S.scraped_type and S.home_url not in urls:
-                    layout.operator("wm.url_open", text=S.source_name).url = S.home_url
+                    split = False
+                    factor = 1.
+                    if not hasattr(custom_icons, S.__name__) or \
+                            (hasattr(custom_icons, S.__name__) and len(getattr(custom_icons, S.__name__)) == 0):
+                        thumbnailGeneratorGenerator(S)(0, 0)
+                    if len(getattr(custom_icons, S.__name__)) > 0:
+                        split = True
+                        factor = .85
+                    row = layout.split(factor=factor, align=True)
+                    row.operator("wm.url_open", text=S.source_name).url = S.home_url
+                    if split:
+                        row.template_icon_view(context.active_object, S.__name__, scale=1, scale_popup=7.0,
+                                               show_labels=S.show_labels)
                     urls.add(S.home_url)
+
+## Utils
+
+
+def thumbnailGeneratorGenerator(scraper_cls):
+    def generateThumbnailIcon(self, context):
+        global custom_icons
+
+        if not scraper_cls.home_dir or not scraper_cls.show_preview:
+            setattr(custom_icons, scraper_cls.__name__, ())
+            return ()
+
+        items = dict()
+
+        texdir = os.path.dirname(bpy.data.filepath)
+        scraper = scraper_cls(texture_root=texdir)
+
+        if "missingThumbnail" not in registeredThumbnails:
+            registeredThumbnails.add("missingThumbnail")
+            missingThumb = scraper.fetchImage(
+                "https://icon-library.com/images/image-missing-icon/image-missing-icon-14.jpg",
+                "", "missing_thumbnail")
+            custom_icons.load("missing_thumbnail", missingThumb, 'IMAGE')
+
+        basedir = scraper.getTextureDirectory(scraper_cls.home_dir)
+
+        # iterate over assets in scrapers home dir
+        for i in os.listdir(basedir):
+            if not os.path.isdir(os.path.join(basedir, i)):
+                continue
+            name = f"thumb_{scraper_cls.__name__}-{i.replace(' ', '_')}"
+            if i in registeredThumbnails:
+                items[i] = name
+                continue
+
+            # get metadata
+            metadata_file = os.path.join(basedir, i, scraper_cls.metadata_filename)
+            thumb_name = None
+            if os.path.isfile(metadata_file):
+                with open(metadata_file, "r") as fl:
+                    metadata = json.load(fl)
+                thumb_name = metadata["thumbnail"]
+            else:
+                # todo create a temp metadeta file
+                continue
+            if thumb_name is None:
+                print("missing thumbnail", name)
+                registeredThumbnails.add(i)
+                items[i] = "missing_thumbnail"
+                continue
+            thumbnail = os.path.join(basedir, i, thumb_name)
+
+            registeredThumbnails.add(i)
+            custom_icons.load(name, thumbnail, 'IMAGE')
+            items[i] = name
+
+        # create icons
+        icons = list()
+        for i, k in enumerate(items.keys()):
+            icon = custom_icons[items[k]].icon_id if items[k] in custom_icons \
+                else custom_icons["missing_thumbnail"].icon_id
+            icons.append((str(k), str(k), f"{k} from {scraper_cls.source_name}", icon, i))
+
+        setattr(custom_icons, scraper_cls.__name__, tuple(icons))
+
+        return getattr(custom_icons, scraper_cls.__name__)
+
+    return generateThumbnailIcon
+
+
+def enumResponseGenerator(scraper_cls):
+    def enumResult(self, context):
+        scraper_name = scraper_cls.__name__
+        item = getattr(self, scraper_name)
+
+        texdir = os.path.dirname(bpy.data.filepath)
+        scraper = scraper_cls(texture_root=texdir)
+
+        print(f"choose texture {scraper_cls.home_dir} / {item}")
+
+        scraper.getTextureDirectory(scraper_cls.home_dir)
+        basedir = scraper.getTextureDirectory(scraper_cls.home_dir)
+
+        item_path = os.path.join(basedir, item)
+
+        metadata_file = os.path.join(item_path, scraper_cls.metadata_filename)
+        if os.path.isfile(metadata_file):
+            with open(metadata_file, "r") as fl:
+                data = json.load(fl)
+
+            if "LIGHT" in scraper_cls.scraped_type:
+                bpy.ops.object.lily_light_import('EXEC_DEFAULT', url=data["fetchUrl"])
+                return
+            elif 'MATERIAL' in scraper_cls.scraped_type:
+                bpy.ops.object.lily_surface_import('EXEC_DEFAULT', url=data["fetchUrl"])
+                return
+            elif 'WORLD' in scraper_cls.scraped_type:
+                bpy.ops.object.lily_world_import('EXEC_DEFAULT', url=data["fetchUrl"])
+                return
+
+    return enumResult
+
 
 ## Registration
 
@@ -560,4 +712,13 @@ classes = (
     LIGHT_PT_LilySurfaceScraper,
 )
 
-register, unregister = bpy.utils.register_classes_factory(classes)
+rregister, unregister = bpy.utils.register_classes_factory(classes)
+
+def register():
+    global custom_icons
+    rregister()
+    for S in ScrapersManager.getScrapersList():
+        # need to keep this list or the text breaks in menus
+        setattr(custom_icons, S.__name__, ())
+        setattr(bpy.types.Object, S.__name__, EnumProperty(options={"SKIP_SAVE"}, items=thumbnailGeneratorGenerator(S),
+                                                           update=enumResponseGenerator(S)))

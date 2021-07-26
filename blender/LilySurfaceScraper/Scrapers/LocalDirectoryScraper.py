@@ -33,6 +33,7 @@ class LocalDirectoryScraper(AbstractScraper):
     """
     source_name = "Local Directory"
     home_url = None
+    show_preview = False
 
     _texture_cache = None
 

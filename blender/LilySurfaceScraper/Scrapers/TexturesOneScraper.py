@@ -26,6 +26,7 @@ class TexturesOneMaterialScraper(AbstractScraper):
     source_name = "3DAssets.one"
     home_url = "https://www.3dassets.one"
     scraped_type = "MATERIAL"
+    show_preview = False
 
     url_cache = {}
 
