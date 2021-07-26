@@ -658,8 +658,16 @@ def thumbnailGeneratorGenerator(scraper_cls):
     return generateThumbnailIcon
 
 
+# to prevent it from spamming lights or other things with only 1 variant
+running = True
+
+
 def enumResponseGenerator(scraper_cls):
     def enumResult(self, context):
+        global running
+        if not running:
+            return
+
         scraper_name = scraper_cls.__name__
         item = getattr(self, scraper_name)
 
@@ -676,14 +684,18 @@ def enumResponseGenerator(scraper_cls):
         metadata_file = os.path.join(item_path, scraper_cls.metadata_filename)
         metadata = Metadata.open(metadata_file)
         if metadata.name:
+            running = False
             if "LIGHT" in scraper_cls.scraped_type:
                 bpy.ops.object.lily_light_import('EXEC_DEFAULT', url=metadata.fetchUrl, name=metadata.name)  # fixme
+                running = True
                 return
             elif 'MATERIAL' in scraper_cls.scraped_type:
                 bpy.ops.object.lily_surface_import('EXEC_DEFAULT', url=metadata.fetchUrl, name=metadata.name)
+                running = True
                 return
             elif 'WORLD' in scraper_cls.scraped_type:
                 bpy.ops.object.lily_world_import('EXEC_DEFAULT', url=metadata.fetchUrl, name=metadata.name)
+                running = True
                 return
 
     return enumResult
