@@ -251,11 +251,11 @@ class AbstractScraper():
 
     def getThumbnail(self):
         """Function for getting a url for a thumbnail for the texture, preferably using only self.assetName
-         but you can pass more arguments with self._*** as its called after getVariantList.
+         but you can pass more arguments with self.metadata.custom as its called after getVariantList.
          you can return None if there is no thumbnail or you cant get one
          returns: url or None
          """
-        raise NotImplementedError
+        return None
 
     def isDownloaded(self, target_variation):
         """takes the asset and a variation name and checks if its installed, returns a boolean"""
