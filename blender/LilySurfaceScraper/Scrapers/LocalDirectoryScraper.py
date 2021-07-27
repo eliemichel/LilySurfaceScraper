@@ -48,32 +48,35 @@ class LocalDirectoryScraper(AbstractScraper):
         # if asked not to check for subfolders then just return the path given
         if not self.metadata.deep_check:
             variants = [path]
-            self.metadata.variants = variants
+            var_data = variants
 
         # check for sub items
         elif self.metadata.scrape_type == "WORLD":
             dirs = [os.path.splitext(os.path.join(path, i)) for i in os.listdir(path)]
-            self.metadata.variants = ["".join(i) for i in dirs if i[1].lower() in [".hdr", ".exr", ".hdri"]]
-            variants = [os.path.basename(i) for i in self.metadata.variants]
+            var_data = ["".join(i) for i in dirs if i[1].lower() in [".hdr", ".exr", ".hdri"]]
+            variants = [os.path.basename(i) for i in var_data]
 
         elif self.metadata.scrape_type == "MATERIAL":
             files = [os.path.join(path, i) for i in os.listdir(path)]
-            self.metadata.variants = [i for i in files if os.path.isdir(i)]
-            variants = [os.path.basename(i) for i in self.metadata.variants]
-
+            var_data = [i for i in files if os.path.isdir(i)]
+            variants = [os.path.basename(i) for i in var_data]
+            print(variants)
         elif self.metadata.scrape_type == "LIGHT":
             files = [os.path.splitext(os.path.join(path, i)) for i in os.listdir(path)]
-            self.metadata.variants = ["".join(i) for i in files if i[1].lower() in [".ies"]]
-            variants = [os.path.basename(i) for i in self.metadata.variants]
+            var_data = ["".join(i) for i in files if i[1].lower() in [".ies"]]
+            variants = [os.path.basename(i) for i in var_data]
 
         else:
             variants = []
+            var_data = []
 
+        self.metadata.setCustom("varData", var_data)
+        self.metadata.variants = variants
         return variants
 
     def fetchVariant(self, variant_index, material_data):
         scrape_type = self.metadata.scrape_type
-        variant = self.metadata.variants[variant_index]
+        variant = self.metadata.getCustom("varData")[variant_index]
         basedir = os.path.dirname(variant)
         material_data.name = f"{os.path.basename(basedir)}/{os.path.basename(variant)}"
         if self.metadata.deep_check:
@@ -133,3 +136,6 @@ class LocalDirectoryScraper(AbstractScraper):
             material_data.maps["ies"] = variant
             material_data.maps["energy"] = 1
             return True
+
+    def isDownloaded(self, variation):
+        return True
