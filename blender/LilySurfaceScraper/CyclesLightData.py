@@ -15,21 +15,21 @@ import os
 class CyclesLightData(LightData):
     def createLights(self):
         pref = getPreferences()
-        light = bpy.context.object.data
+
+        light = bpy.data.lights.new(self.name, "POINT")
+        bpy.context.object.data = light
 
         light.use_nodes = True
-        light.type = "POINT"
         light.shadow_soft_size = 0
 
-        nodes = light.node_tree.nodes
-        links = light.node_tree.links
+        tree = light.node_tree
+        nodes = tree.nodes
+        links = tree.links
 
         nodes.clear()
 
         ies = self.maps['ies']
-        energyPath = self.maps['energy']
-        with open(energyPath, "r") as f:
-            energy = float(f.read())
+        energy = self.maps['energy']
 
         out = nodes.new(type="ShaderNodeOutputLight")
         emmision = nodes.new(type="ShaderNodeEmission")
@@ -38,9 +38,7 @@ class CyclesLightData(LightData):
         iesNode = nodes.new(type="ShaderNodeTexIES")
         if pref.ies_pack_files:
             bpy.ops.text.open(filepath=ies, internal=False)
-            name = f"{os.path.basename(os.path.dirname(ies))}.ies"
-            bpy.data.texts["lightData.ies"].name = name
-            iesNode.ies = bpy.data.texts[name]
+            iesNode.ies = bpy.data.texts[os.path.basename(ies)]
         else:
             iesNode.mode = "EXTERNAL"
             iesNode.filepath = ies
@@ -55,3 +53,5 @@ class CyclesLightData(LightData):
                 light.energy = energy
 
         autoAlignNodes(out)
+
+        return light

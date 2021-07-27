@@ -26,6 +26,7 @@ class TexturesOneMaterialScraper(AbstractScraper):
     source_name = "3DAssets.one"
     home_url = "https://www.3dassets.one"
     scraped_type = "MATERIAL"
+    show_preview = False
 
     url_cache = {}
 
@@ -69,6 +70,7 @@ class TexturesOneMaterialScraper(AbstractScraper):
 
     def fetchVariant(self, variant_index, material_data):
         return self.source_scraper.fetchVariant(variant_index, material_data)
+
 
 class TexturesOneWorldScraper(TexturesOneMaterialScraper):
     scraped_type = "WORLD"

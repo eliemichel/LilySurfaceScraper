@@ -7,14 +7,17 @@
 from .ScrapersManager import ScrapersManager
 from .ScrapedData import ScrapedData
 
+
 class LightData(ScrapedData):
     """Internal representation of world, responsible on one side for
     scrapping texture providers and on the other side to build blender materials.
     This class must not use the Blender API. Put Blender related stuff in subclasses
     like CyclesMaterialData."""
-    
-    def reset(self):
-        self.name = "Lily World"
+
+    def __init__(self, url, texture_root="", asset_name=None):
+        super().__init__(url, texture_root=texture_root, asset_name=asset_name, scraping_type="LIGHT")
+
+        self.name = "Lily Light"
         self.maps = {
             'ies': None,
             'energy': None
