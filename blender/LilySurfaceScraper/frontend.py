@@ -133,6 +133,8 @@ class OBJECT_OT_LilySurfaceScraper(ObjectPopupOperator, CallbackProps):
                     context.object.active_material = mat
                 else:
                     data.loadImages()
+            else:
+                print("scraping failed :/")
             cb = get_callback(self.callback_handle)
             cb(context)
         return {'FINISHED'}
@@ -205,6 +207,8 @@ class OBJECT_OT_LilySurfacePromptVariant(ObjectPopupOperator, CallbackProps):
                 context.object.active_material = mat
             else:
                 data.loadImages()
+        else:
+            print("scraping failed :/")
         cb = get_callback(self.callback_handle)
         cb(context)
         return {'FINISHED'}
@@ -286,6 +290,8 @@ class OBJECT_OT_LilyWorldScraper(PopupOperator, CallbackProps):
                     context.scene.world = world
                 else:
                     data.loadImages()
+            else:
+                print("scraping failed :/")
             cb = get_callback(self.callback_handle)
             cb(context)
         return {'FINISHED'}
@@ -359,6 +365,8 @@ class OBJECT_OT_LilyWorldPromptVariant(PopupOperator, CallbackProps):
                 context.scene.world = world
             else:
                 data.loadImages()
+        else:
+            print("scraping failed :/")
         cb = get_callback(self.callback_handle)
         cb(context)
         return {'FINISHED'}
@@ -402,6 +410,8 @@ class OBJECT_OT_LilyLightScraper(PopupOperator, CallbackProps):
         selected_variant = 0
         if data.selectVariant(selected_variant):
             data.createLights()
+        else:
+            print("scraping failed :/")
         cb = get_callback(self.callback_handle)
         cb(context)
         return {'FINISHED'}
