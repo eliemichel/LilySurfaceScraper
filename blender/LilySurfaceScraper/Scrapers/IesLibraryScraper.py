@@ -34,7 +34,7 @@ class IesLibraryScraper(AbstractScraper):
         if data is None:
             return None
 
-        variant = data["lumcat"]
+        variant = data["lumcat"]  # data["manufacturString"]
         if variant == "":
             variant = asset_id
 
