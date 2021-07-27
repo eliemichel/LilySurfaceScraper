@@ -127,12 +127,12 @@ class OBJECT_OT_LilySurfaceScraper(ObjectPopupOperator, CallbackProps):
                 create_material=self.create_material,
                 callback_handle=self.callback_handle)
         else:
-            data.selectVariant(selected_variant)
-            if self.create_material:
-                mat = data.createMaterial()
-                context.object.active_material = mat
-            else:
-                data.loadImages()
+            if data.selectVariant(selected_variant):
+                if self.create_material:
+                    mat = data.createMaterial()
+                    context.object.active_material = mat
+                else:
+                    data.loadImages()
             cb = get_callback(self.callback_handle)
             cb(context)
         return {'FINISHED'}
@@ -199,12 +199,12 @@ class OBJECT_OT_LilySurfacePromptVariant(ObjectPopupOperator, CallbackProps):
     def execute(self, context):
         data = internal_states[self.internal_state]
         data.setReinstall(bool(self.reisntall))
-        data.selectVariant(int(self.variant))
-        if self.create_material:
-            mat = data.createMaterial()
-            context.object.active_material = mat
-        else:
-            data.loadImages()
+        if data.selectVariant(int(self.variant)):
+            if self.create_material:
+                mat = data.createMaterial()
+                context.object.active_material = mat
+            else:
+                data.loadImages()
         cb = get_callback(self.callback_handle)
         cb(context)
         return {'FINISHED'}
@@ -280,12 +280,12 @@ class OBJECT_OT_LilyWorldScraper(PopupOperator, CallbackProps):
                 create_world=self.create_world,
                 callback_handle=self.callback_handle)
         else:
-            data.selectVariant(selected_variant)
-            if self.create_world:
-                world = data.createWorld()
-                context.scene.world = world
-            else:
-                data.loadImages()
+            if data.selectVariant(selected_variant):
+                if self.create_world:
+                    world = data.createWorld()
+                    context.scene.world = world
+                else:
+                    data.loadImages()
             cb = get_callback(self.callback_handle)
             cb(context)
         return {'FINISHED'}
@@ -353,12 +353,12 @@ class OBJECT_OT_LilyWorldPromptVariant(PopupOperator, CallbackProps):
     def execute(self, context):
         data = internal_states[self.internal_state]
         data.setReinstall(bool(self.reisntall))
-        data.selectVariant(int(self.variant))
-        if self.create_world:
-            world = data.createWorld()
-            context.scene.world = world
-        else:
-            data.loadImages()
+        if data.selectVariant(int(self.variant)):
+            if self.create_world:
+                world = data.createWorld()
+                context.scene.world = world
+            else:
+                data.loadImages()
         cb = get_callback(self.callback_handle)
         cb(context)
         return {'FINISHED'}
@@ -400,8 +400,8 @@ class OBJECT_OT_LilyLightScraper(PopupOperator, CallbackProps):
             return {'CANCELLED'}
 
         selected_variant = 0
-        data.selectVariant(selected_variant)
-        data.createLights()
+        if data.selectVariant(selected_variant):
+            data.createLights()
         cb = get_callback(self.callback_handle)
         cb(context)
         return {'FINISHED'}
@@ -561,8 +561,13 @@ def thumbnailGeneratorGenerator(scraper_cls):
 
         # iterate over assets in scrapers home dir
         for i in os.listdir(basedir):
+            # these ones dont have a metadata file, so they will be fetched using the local scraper
             if i in metadataGetFailed:
+                registeredThumbnails.add(i)
+                # it has a different name in case I give it a different thumbnail later, it will just default to missing
+                items[i] = "local_thumbnail"  # todo check for local thumbs
                 continue
+
             if not os.path.isdir(os.path.join(basedir, i)):
                 continue
             name = f"thumb_{scraper_cls.__name__}-{i.replace(' ', '_')}"
@@ -620,36 +625,37 @@ def enumResponseGenerator(scraper_cls):
         global running
         if not running:
             return
+        running = False
 
         scraper_name = scraper_cls.__name__
-        item = getattr(self, scraper_name)
+        asset = getattr(self, scraper_name)
 
         texdir = os.path.dirname(bpy.data.filepath)
         scraper = scraper_cls(texture_root=texdir)
 
-        print(f"choose texture {scraper_cls.home_dir} / {item}")
+        print(f"choose texture {scraper_cls.home_dir} / {asset}")
 
-        scraper.getTextureDirectory(scraper_cls.home_dir)
         basedir = scraper.getTextureDirectory(scraper_cls.home_dir)
 
-        item_path = os.path.join(basedir, item)
+        item_path = os.path.join(basedir, asset)
 
         metadata_file = os.path.join(item_path, scraper_cls.metadata_filename)
         metadata = Metadata.open(metadata_file)
-        if metadata.name:
-            running = False
-            if "LIGHT" in scraper_cls.scraped_type:
-                bpy.ops.object.lily_light_import('EXEC_DEFAULT', url=metadata.fetchUrl, name=metadata.name)
-                running = True
-                return
-            elif 'MATERIAL' in scraper_cls.scraped_type:
-                bpy.ops.object.lily_surface_import('EXEC_DEFAULT', url=metadata.fetchUrl, name=metadata.name)
-                running = True
-                return
-            elif 'WORLD' in scraper_cls.scraped_type:
-                bpy.ops.object.lily_world_import('EXEC_DEFAULT', url=metadata.fetchUrl, name=metadata.name)
-                running = True
-                return
+
+        # use the local scraper
+        if not metadata.name:
+            metadata.fetchUrl = item_path
+            metadata.name = "LOCAL_FILE_SCRAPER-SUBDIR"
+
+        # get material
+        if "LIGHT" in scraper_cls.scraped_type:
+            bpy.ops.object.lily_light_import('EXEC_DEFAULT', url=metadata.fetchUrl, name=metadata.name)
+        elif 'MATERIAL' in scraper_cls.scraped_type:
+            bpy.ops.object.lily_surface_import('EXEC_DEFAULT', url=metadata.fetchUrl, name=metadata.name)
+        elif 'WORLD' in scraper_cls.scraped_type:
+            bpy.ops.object.lily_world_import('EXEC_DEFAULT', url=metadata.fetchUrl, name=metadata.name)
+
+        running = True
 
     return enumResult
 
