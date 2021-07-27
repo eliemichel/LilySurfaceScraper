@@ -23,6 +23,7 @@
 
 from .settings import UNSUPPORTED_PROVIDER_ERR
 
+
 class ScrapedData():
     """Internal representation of materials and worlds, responsible on one side for
     scrapping texture providers and on the other side to build blender materials.
@@ -33,16 +34,16 @@ class ScrapedData():
     def makeScraper(cls, url):
         raise NotImplementedError
 
-    def reset(self):
-        """Implement in subclasses to (re)init specific data"""
-        pass
-
-    def __init__(self, url, texture_root="", asset_name=None):
+    def __init__(self, url, texture_root="", asset_name=None, scraping_type=None):
         """url: Base url to scrape
         texture_root: root directory where to store downloaded textures
         asset_name: the name of the asset / folder name
         """
-        self.url = url
+        self.url = url.strip('"')
+        deep_check = False
+        if asset_name == "LOCAL_FILE_SCRAPER-SUBDIR":
+            asset_name = None
+            deep_check = True
         self.asset_name = asset_name
         self.error = None
         if url is None and asset_name is None:
@@ -50,13 +51,15 @@ class ScrapedData():
 
         self.texture_root = texture_root
         self.metadata = None
-        self._scraper = type(self).makeScraper(url)
+        self._scraper = type(self).makeScraper(self.url)
         self.reinstall = False
+
         if self._scraper is None:
             self.error = UNSUPPORTED_PROVIDER_ERR
         else:
             self._scraper.texture_root = texture_root
-        self.reset()
+            self._scraper.metadata.scrape_type = scraping_type
+            self._scraper.metadata.deep_check = deep_check
 
     def getVariantList(self):
         if self.error is not None:

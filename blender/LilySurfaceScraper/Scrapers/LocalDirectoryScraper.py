@@ -22,7 +22,6 @@
 # from a single URL
 
 import os
-from os import path
 from .AbstractScraper import AbstractScraper
 
 
@@ -32,6 +31,7 @@ class LocalDirectoryScraper(AbstractScraper):
     local directory, trying to guess the meaning of textures from their names.
     """
     source_name = "Local Directory"
+    scraped_type = {'MATERIAL', "WORLD", "LIGHT"}
     home_url = None
     show_preview = False
 
@@ -40,55 +40,96 @@ class LocalDirectoryScraper(AbstractScraper):
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scraped by this scraper."""
-        return path.isdir(url)
+        return os.path.isdir(url) or os.path.isfile(url)
 
-    def fetchVariantList(self, url):
+    def fetchVariantList(self, path):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
-        self._directory = url
-        return [url]
+        # if asked not to check for subfolders then just return the path given
+        if not self.metadata.deep_check:
+            variants = [path]
+            self.metadata.variants = variants
+
+        # check for sub items
+        elif self.metadata.scrape_type == "WORLD":
+            dirs = [os.path.splitext(os.path.join(path, i)) for i in os.listdir(path)]
+            self.metadata.variants = ["".join(i) for i in dirs if i[1].lower() in [".hdr", ".exr", ".hdri"]]
+            variants = [os.path.basename(i) for i in self.metadata.variants]
+
+        elif self.metadata.scrape_type == "MATERIAL":
+            files = [os.path.join(path, i) for i in os.listdir(path)]
+            self.metadata.variants = [i for i in files if os.path.isdir(i)]
+            variants = [os.path.basename(i) for i in self.metadata.variants]
+
+        elif self.metadata.scrape_type == "LIGHT":
+            files = [os.path.splitext(os.path.join(path, i)) for i in os.listdir(path)]
+            self.metadata.variants = ["".join(i) for i in files if i[1].lower() in [".ies"]]
+            variants = [os.path.basename(i) for i in self.metadata.variants]
+
+        else:
+            variants = []
+
+        return variants
 
     def fetchVariant(self, variant_index, material_data):
-        d = self._directory
+        scrape_type = self.metadata.scrape_type
+        variant = self.metadata.variants[variant_index]
+        basedir = os.path.dirname(variant)
+        material_data.name = f"{os.path.basename(basedir)}/{os.path.basename(variant)}"
+        if self.metadata.deep_check:
+            material_data.name = f"{os.path.basename(os.path.dirname(basedir))}/{material_data.name}"
 
-        material_data.name = path.basename(path.dirname(d)) + "/" + path.basename(d)
+        if scrape_type == "MATERIAL":
+            namelist = [f for f in os.listdir(variant) if os.path.isfile(os.path.join(variant, f))]
 
-        namelist = [f for f in os.listdir(d) if path.isfile(path.join(d, f))]
-        
-        # TODO: Find a more exhaustive list of perfix/suffix
-        maps_tr = {
-            'baseColor': 'baseColor',
-            'metallic': 'metallic',
-            'height': 'height',
-            'normalInvertedY': 'normalInvertedY',
-            'opacity': 'opacity',
-            'roughness': 'roughness',
-            'ambientOcclusion': 'ambientOcclusion',
-            'normal': 'normal',
+            # TODO: Find a more exhaustive list of perfix/suffix
+            maps_tr = {
+                'baseColor': 'baseColor',
+                'metallic': 'metallic',
+                'height': 'height',
+                'normalInvertedY': 'normalInvertedY',
+                'opacity': 'opacity',
+                'roughness': 'roughness',
+                'ambientOcclusion': 'ambientOcclusion',
+                'normal': 'normal',
 
-            'Base Color': 'baseColor',
-            'diffuse': 'diffuse',
-            'Metallic': 'metallic',
-            'Height': 'height',
-            'col': 'baseColor',
-            'nrm': 'normalInvertedY',
-            'mask': 'opacity',
-            'rgh': 'roughness',
-            'met': 'metallic',
-            'AO': 'ambientOcclusion',
-            'disp': 'height',
-            'Color': 'baseColor',
-            'Normal': 'normalInvertedY',
-            'Opacity': 'opacity',
-            'Roughness': 'roughness',
-            'Metalness': 'metallic',
-            'AmbientOcclusion': 'ambientOcclusion',
-            'Displacement': 'height'
-        }
-        for name in namelist:
-            base = os.path.splitext(name)[0]
-            for k, map_name in maps_tr.items():
-                if k in base:
-                    map_name = maps_tr[k]
-                    material_data.maps[map_name] = path.join(d, name)
-        return True
+                'Base Color': 'baseColor',
+                'diffuse': 'diffuse',
+                'Metallic': 'metallic',
+                'Height': 'height',
+                'col': 'baseColor',
+                'nrm': 'normalInvertedY',
+                'mask': 'opacity',
+                'rgh': 'roughness',
+                'met': 'metallic',
+                'AO': 'ambientOcclusion',
+                'disp': 'height',
+                'Color': 'baseColor',
+                'Normal': 'normalInvertedY',
+                'Opacity': 'opacity',
+                'Roughness': 'roughness',
+                'Metalness': 'metallic',
+                'AmbientOcclusion': 'ambientOcclusion',
+                'Displacement': 'height'
+            }
+            for name in namelist:
+                base = os.path.splitext(name)[0]
+                for k, map_name in maps_tr.items():
+                    if k in base:
+                        map_name = maps_tr[k]
+                        material_data.maps[map_name] = os.path.join(variant, name)
+            return True
+        elif scrape_type == "WORLD":
+            if not os.path.isfile(variant):
+                print("Not a world file")
+                return False
+            print(variant)
+            material_data.maps['sky'] = variant
+            return True
+        else:
+            if not os.path.isfile(variant):
+                print("Not an IES file")
+                return False
+            material_data.maps["ies"] = variant
+            material_data.maps["energy"] = 1
+            return True
