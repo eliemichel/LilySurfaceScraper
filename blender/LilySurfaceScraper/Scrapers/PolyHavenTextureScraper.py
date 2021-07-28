@@ -146,12 +146,16 @@ class PolyHavenTextureScraper(AbstractScraper):
         
         maps = variant_data[variant_index][2]
 
+        fetchImage_args = list()
         for map_name, map_url in maps.items():
             map_name = map_name.lower()
             if map_name in self.maps_tr:
                 map_name = self.maps_tr[map_name]
-                material_data.maps[map_name] = self.fetchImage(map_url, material_data.name, map_name)
-        
+                fetchImage_args.append((map_url, material_data.name, map_name))
+
+        for name, path in self.fetchImages(fetchImage_args):
+            material_data.maps[name] = path
+
         return True
 
     def getUrlFromName(self, asset_name):
