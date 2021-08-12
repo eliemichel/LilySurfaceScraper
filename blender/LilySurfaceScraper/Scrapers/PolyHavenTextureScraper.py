@@ -61,7 +61,7 @@ class PolyHavenTextureScraper(AbstractScraper):
         'col_2':  'baseColor_02',
         'coll2':  'baseColor_02',
         'col_03': 'baseColor_03',
-        # 'arm': '',  # AO/Rough/Metal todo probably make use of this
+        'arm': 'ARM',  # AO/Rough/Metal
         # 'diff_polar': '',
         # 'rough_polar': '',
         # 'nor_polar': '',
