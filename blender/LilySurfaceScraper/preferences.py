@@ -49,6 +49,11 @@ class LilySurfaceScraperPreferences(bpy.types.AddonPreferences):
         default=False,
     )
 
+    use_arm: bpy.props.BoolProperty(
+        name="Use ARM map instead of separate maps",
+        default=True,
+    )
+
     use_ground_hdri: bpy.props.BoolProperty(
         name="Use Ground HDRI",
         default=False,
