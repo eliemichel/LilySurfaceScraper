@@ -105,7 +105,7 @@ class LilySurfaceScraperPreferences(bpy.types.AddonPreferences):
         hdri.prop(self, "use_ground_hdri")
 
         textures = split2.box()
-        textures.label(text="Textures settings")
+        textures.label(text="Light settings")
         textures.separator()
 
         textures.label(text="Use the energy value from the IES library to determine the strength of the lamp")
