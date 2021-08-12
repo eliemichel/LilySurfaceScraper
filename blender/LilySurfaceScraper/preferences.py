@@ -50,7 +50,7 @@ class LilySurfaceScraperPreferences(bpy.types.AddonPreferences):
     )
 
     use_arm: bpy.props.BoolProperty(
-        name="Use ARM map instead of separate maps",
+        name="Use ARM map instead of separate maps for AO/Roughness/Metalness",
         default=True,
     )
 
@@ -76,28 +76,46 @@ class LilySurfaceScraperPreferences(bpy.types.AddonPreferences):
 
     def draw(self, context):
         layout = self.layout
+
         layout.label(text="The texture directory where the textures are downloaded.")
         layout.label(text="It can either be relative to the blend file, or global to all files.")
         layout.label(text="If it is relative, you must always save the blend file before importing materials and worlds.")
         layout.prop(self, "texture_dir")
 
-        layout.separator()
-        layout.label(text="The AO map provided with some material must not be used")
-        layout.label(text="in a standard surface shader. Nevertheless, you can enable")
-        layout.label(text="using it as a multiplicator over base color.")
-        layout.prop(self, "use_ao")
+        split1 = layout.split(factor=1/3)
 
-        layout.separator()
-        layout.label(text="Ground HDRI projects the environment maps so that it creates a proper ground.")
-        layout.prop(self, "use_ground_hdri")
+        material = split1.box()
+        material.label(text="Material settings")
+        material.separator()
 
-        layout.separator()
-        layout.label(text="Use the energy value from the IES library to determine the strength of the lamp")
-        layout.prop(self, "ies_use_strength")
+        material.label(text="The AO map provided with some material must not be used")
+        material.label(text="in a standard surface shader. Nevertheless, you can enable")
+        material.label(text="using it as a multiplicator over base color.")
+        material.prop(self, "use_ao")
+        material.separator()
+        material.prop(self, "use_arm")
+
+        split2 = split1.split()
+
+        hdri = split2.box()
+        hdri.label(text="HRDI settings")
+        hdri.separator()
+
+        hdri.label(text="Ground HDRI projects the environment maps so that it creates a proper ground.")
+        hdri.prop(self, "use_ground_hdri")
+
+        textures = split2.box()
+        textures.label(text="Textures settings")
+        textures.separator()
+
+        textures.label(text="Use the energy value from the IES library to determine the strength of the lamp")
+        textures.prop(self, "ies_use_strength")
         if bool(self.ies_use_strength):
-            layout.label(text="Put the energy value in the strength socket of the IES map instead of the lamp energy")
-            layout.prop(self, "ies_light_strength")
-        layout.prop(self, "ies_pack_files")
+            strength = textures.box()
+            strength.label(text="Put the energy value in the strength socket of the IES map instead of the lamp energy")
+            strength.prop(self, "ies_light_strength")
+        # textures.separator()
+        textures.prop(self, "ies_pack_files")
 
 # -----------------------------------------------------------------------------
 
