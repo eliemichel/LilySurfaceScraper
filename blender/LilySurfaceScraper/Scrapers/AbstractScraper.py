@@ -20,7 +20,7 @@
 #
 # This file is part of LilySurfaceScraper, a Blender add-on to import materials
 # from a single URL
-
+import concurrent.futures
 import os
 import string
 
@@ -149,6 +149,18 @@ class AbstractScraper():
             map_name = map_name + ext
         path = os.path.join(root, map_name)
         return self.saveFile(path, self._downloadFunc(url))
+
+    def fetchImages(self, arg_tuples):
+        futures = dict()
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for args in arg_tuples:
+                future = executor.submit(self.fetchImage, *args)
+                futures[future] = args[2]
+
+            for future in concurrent.futures.as_completed(futures):
+                name = futures[future]
+                path = future.result()
+                yield name, path
 
     def fetchFile(self, url, material_name, filename):
         root = self.getTextureDirectory(material_name)

@@ -22,6 +22,7 @@
 # from a single URL
 
 from .AbstractScraper import AbstractScraper
+from ..preferences import getPreferences
 
 import re
 from collections import defaultdict
@@ -61,7 +62,7 @@ class PolyHavenTextureScraper(AbstractScraper):
         'col_2':  'baseColor_02',
         'coll2':  'baseColor_02',
         'col_03': 'baseColor_03',
-        # 'arm': '',  # AO/Rough/Metal todo probably make use of this
+        'arm': 'ARM',  # AO/Rough/Metal
         # 'diff_polar': '',
         # 'rough_polar': '',
         # 'nor_polar': '',
@@ -136,6 +137,7 @@ class PolyHavenTextureScraper(AbstractScraper):
         name = self.metadata.name
         variant_data = self.metadata.getCustom("variant_data")
         variants = self.metadata.variants
+        pref = getPreferences()
         
         if variant_index < 0 or variant_index >= len(variants):
             self.error = "Invalid variant index: {}".format(variant_index)
@@ -146,12 +148,23 @@ class PolyHavenTextureScraper(AbstractScraper):
         
         maps = variant_data[variant_index][2]
 
+        fetchImage_args = list()
         for map_name, map_url in maps.items():
             map_name = map_name.lower()
             if map_name in self.maps_tr:
                 map_name = self.maps_tr[map_name]
-                material_data.maps[map_name] = self.fetchImage(map_url, material_data.name, map_name)
-        
+
+                skip = ("ARM",)
+                if pref.use_arm:
+                    skip = ("ambientOcclusion", "roughness", "metallic")
+                if map_name in skip:
+                    continue
+
+                fetchImage_args.append((map_url, material_data.name, map_name))
+
+        for name, path in self.fetchImages(fetchImage_args):
+            material_data.maps[name] = path
+
         return True
 
     def getUrlFromName(self, asset_name):
