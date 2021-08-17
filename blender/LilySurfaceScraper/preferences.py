@@ -64,6 +64,11 @@ class LilySurfaceScraperPreferences(bpy.types.AddonPreferences):
         default=True,
     )
 
+    ies_add_blackbody: bpy.props.BoolProperty(
+        name="Add Blackbody node",
+        default=True,
+    )
+
     ies_light_strength: bpy.props.BoolProperty(
         name="Use in strength node",
         default=False,
@@ -108,8 +113,12 @@ class LilySurfaceScraperPreferences(bpy.types.AddonPreferences):
         textures.label(text="Light settings")
         textures.separator()
 
+        layout.label(text="Add a Backbody node as color input when importing IES textures")
+        layout.prop(self, "ies_add_blackbody")
+
         textures.label(text="Use the energy value from the IES library to determine the strength of the lamp")
         textures.prop(self, "ies_use_strength")
+
         if bool(self.ies_use_strength):
             strength = textures.box()
             strength.label(text="Put the energy value in the strength socket of the IES map instead of the lamp energy")
