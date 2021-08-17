@@ -32,8 +32,9 @@ class CyclesLightData(LightData):
         energy = self.maps['energy']
 
         out = nodes.new(type="ShaderNodeOutputLight")
-        emmision = nodes.new(type="ShaderNodeEmission")
-        links.new(out.inputs['Surface'], emmision.outputs['Emission'])
+        emission = nodes.new(type="ShaderNodeEmission")
+        
+        links.new(out.inputs['Surface'], emission.outputs['Emission'])
 
         iesNode = nodes.new(type="ShaderNodeTexIES")
         if pref.ies_pack_files:
@@ -42,7 +43,7 @@ class CyclesLightData(LightData):
         else:
             iesNode.mode = "EXTERNAL"
             iesNode.filepath = ies
-        links.new(iesNode.outputs['Fac'], emmision.inputs["Strength"])
+        links.new(iesNode.outputs['Fac'], emission.inputs["Strength"])
 
         if pref.ies_use_strength:
             if pref.ies_light_strength:
@@ -51,6 +52,11 @@ class CyclesLightData(LightData):
                 links.new(value.outputs["Value"], iesNode.inputs["Strength"])
             else:
                 light.energy = energy
+        
+        if pref.ies_add_blackbody:
+            blacbody = nodes.new(type="ShaderNodeBlackbody")
+            blacbody.inputs["Temperature"].default_value = 7000
+            links.new(blacbody.outputs["Color"], emission.inputs["Color"])
 
         autoAlignNodes(out)
 
