@@ -25,7 +25,9 @@ import os
 import string
 
 import sys
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "site-packages"))
+import platform
+arch = "arm" if platform.machine().startswith("arm") else "x86"
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "site-packages", arch))
 from lxml import etree
 
 import requests
