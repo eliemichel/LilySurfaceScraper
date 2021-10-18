@@ -70,9 +70,6 @@ class CyclesWorldData(WorldData):
             texcoord_node = nodes.new(type="ShaderNodeTexCoord")
             links.new(texcoord_node.outputs[0], mapping_node.inputs[0])
 
-
-
-        
         autoAlignNodes(world_output)
 
         return world

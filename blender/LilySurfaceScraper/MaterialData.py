@@ -24,13 +24,16 @@
 from .ScrapersManager import ScrapersManager
 from .ScrapedData import ScrapedData
 
+
 class MaterialData(ScrapedData):
     """Internal representation of materials, responsible on one side for
     scrapping texture providers and on the other side to build blender materials.
     This class must not use the Blender API. Put Blender related stuff in subclasses
     like CyclesMaterialData."""
-    
-    def reset(self):
+
+    def __init__(self, url, texture_root="", asset_name=None):
+        super().__init__(url, texture_root=texture_root, asset_name=asset_name, scraping_type="MATERIAL")
+
         self.name = "Lily Material"
         # FIXME Maybe we can use Python enums instead?
         self.maps = {

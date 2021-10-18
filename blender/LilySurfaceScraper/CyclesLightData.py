@@ -15,36 +15,35 @@ import os
 class CyclesLightData(LightData):
     def createLights(self):
         pref = getPreferences()
-        light = bpy.context.object.data
+
+        light = bpy.data.lights.new(self.name, "POINT")
+        bpy.context.object.data = light
 
         light.use_nodes = True
-        light.type = "POINT"
         light.shadow_soft_size = 0
 
-        nodes = light.node_tree.nodes
-        links = light.node_tree.links
+        tree = light.node_tree
+        nodes = tree.nodes
+        links = tree.links
 
         nodes.clear()
 
         ies = self.maps['ies']
-        energyPath = self.maps['energy']
-        with open(energyPath, "r") as f:
-            energy = float(f.read())
+        energy = self.maps['energy']
 
         out = nodes.new(type="ShaderNodeOutputLight")
-        emmision = nodes.new(type="ShaderNodeEmission")
-        links.new(out.inputs['Surface'], emmision.outputs['Emission'])
+        emission = nodes.new(type="ShaderNodeEmission")
+        
+        links.new(out.inputs['Surface'], emission.outputs['Emission'])
 
         iesNode = nodes.new(type="ShaderNodeTexIES")
         if pref.ies_pack_files:
             bpy.ops.text.open(filepath=ies, internal=False)
-            name = f"{os.path.basename(os.path.dirname(ies))}.ies"
-            bpy.data.texts["lightData.ies"].name = name
-            iesNode.ies = bpy.data.texts[name]
+            iesNode.ies = bpy.data.texts[os.path.basename(ies)]
         else:
             iesNode.mode = "EXTERNAL"
             iesNode.filepath = ies
-        links.new(iesNode.outputs['Fac'], emmision.inputs["Strength"])
+        links.new(iesNode.outputs['Fac'], emission.inputs["Strength"])
 
         if pref.ies_use_strength:
             if pref.ies_light_strength:
@@ -53,5 +52,12 @@ class CyclesLightData(LightData):
                 links.new(value.outputs["Value"], iesNode.inputs["Strength"])
             else:
                 light.energy = energy
+        
+        if pref.ies_add_blackbody:
+            blacbody = nodes.new(type="ShaderNodeBlackbody")
+            blacbody.inputs["Temperature"].default_value = 7000
+            links.new(blacbody.outputs["Color"], emission.inputs["Color"])
 
         autoAlignNodes(out)
+
+        return light

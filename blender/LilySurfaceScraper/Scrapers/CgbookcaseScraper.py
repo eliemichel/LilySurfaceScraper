@@ -27,16 +27,18 @@ import zipfile
 import os
 from urllib.parse import urlparse
 
+
 class CgbookcaseScraper(AbstractScraper):
     source_name = "cgbookcase.com"
     home_url = "https://www.cgbookcase.com/textures/"
+    home_dir = "cgbookcase"
 
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scraped by this scraper."""
         return "cgbookcase.com/textures/" in url
     
-    def fetchVariantList(self, url):
+    def getVariantList(self, url):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
         html = self.fetchHtml(url)
@@ -47,9 +49,7 @@ class CgbookcaseScraper(AbstractScraper):
         identifier = parsed_url.path.strip('/').split('/')[-1]
         api_url = f"https://www.cgbookcase.com/textures/{identifier}/LilySurfaceScraper.json"
 
-        print(api_url)
         data = self.fetchJson(api_url)
-        print(data)
 
         resolutions = sorted(data['files'].keys(), key=lambda x: x.zfill(3))
 
@@ -62,42 +62,53 @@ class CgbookcaseScraper(AbstractScraper):
         else:
             variants = resolutions
         
-        self._title = data['title']
-        self._variants = variants
-        self._resolutions = resolutions
-        self._data = data
-        self._doublesided = data['doublesided']
+        self.metadata.name = data['title']
+        self.metadata.id = identifier
+        self.metadata.setCustom("resolutions", resolutions)
+        self.metadata.setCustom("files", data['files'])
+        self.metadata.setCustom("doublesided", data['doublesided'])
         return variants
-    
+
+    def getThumbnail(self):
+        parse = self.fetchHtml(f"https://www.cgbookcase.com/textures/{self.metadata.id}")
+
+        # mute errors, this is only a thumbnail
+        if self.error is not None:
+            self.error = None
+            return None
+
+        links = parse.xpath("//div[@id='upper']/div/img/@src")
+        if links:
+            return links[0]
+
     def fetchVariant(self, variant_index, material_data):
         """Fill material_data with data from the selected variant.
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
-        title = self._title
-        resolutions = self._resolutions
-        variants = self._variants
-        data = self._data
-        doublesided = self._doublesided
+        title = self.metadata.name
+        resolutions = self.metadata.getCustom("resolutions")
+        variants = self.metadata.variants
+        files = self.metadata.getCustom("files")
+        doublesided = self.metadata.getCustom("doublesided")
         
         if variant_index < 0 or variant_index >= len(variants):
             self.error = "Invalid variant index: {}".format(variant_index)
             return False
 
         variant_name = variants[variant_index]
-        material_data.name = "cgbookcase/" + title + "/" + variant_name
+        material_data.name = f"{self.home_dir}/{title}/{variant_name}"
 
         res = resolutions[variant_index % len(resolutions)]
         sideness = variant_index // len(resolutions)
-        zip_url = data['files'][res]
+        zip_url = files[res]
 
-        zip_path = self.fetchZip(zip_url, title, "textures.zip")
+        zip_path = self.fetchZip(zip_url, material_data.name, "textures.zip")
         zip_dir = os.path.dirname(zip_path)
         if os.path.getsize(zip_path) == 0:
             # maps already exist
             namelist = os.listdir(zip_dir)
         else:
-            namelist = []
             with zipfile.ZipFile(zip_path,"r") as zip_ref:
                 namelist = zip_ref.namelist()
                 zip_ref.extractall(zip_dir)
@@ -105,7 +116,6 @@ class CgbookcaseScraper(AbstractScraper):
             open(zip_path, 'wb').close()
 
         # Translate cgbookcase map names into our internal map names
-        # TODO: support two sided materials again
         maps_tr = {
             'BaseColor': 'baseColor',
             'Normal': 'normal',
@@ -129,9 +139,9 @@ class CgbookcaseScraper(AbstractScraper):
                 map_side = tokens[-2]
 
                 if map_side == "front" and sideness == 2:
-                    continue # back only
+                    continue  # back only
                 elif map_side == "back" and sideness == 1:
-                    continue # front only
+                    continue  # front only
 
                 if map_side == "back":
                     map_name += "_back"
@@ -139,3 +149,8 @@ class CgbookcaseScraper(AbstractScraper):
             material_data.maps[map_name] = os.path.join(zip_dir, name)
         
         return True
+
+    def getUrlFromName(self, asset_name):
+        # should be enough
+        name = asset_name.lower().replace(' ', '-')
+        return f"https://www.cgbookcase.com/textures/{name}"

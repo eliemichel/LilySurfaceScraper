@@ -44,7 +44,8 @@ class CyclesMaterialData(MaterialData):
         'ambientOcclusion': '', # FIXME Handle this better https://github.com/KhronosGroup/glTF-Blender-IO/issues/123
         'ambientOcclusionRough': '', # TODO Do something with this
         'glossiness': '',
-    }    
+        'ARM': '',
+    }
 
     def loadImages(self):
         """This is not needed by createMaterial, but is called when
@@ -132,7 +133,43 @@ class CyclesMaterialData(MaterialData):
                     mixed[name] = node
         return mixed
 
+    def armGroup(self):
+        name = "Separate ARM"
+        index = bpy.data.node_groups.find(name)
+        if index != -1:
+            return bpy.data.node_groups[index]
+
+        group = bpy.data.node_groups.new(name, "ShaderNodeTree")
+
+        # input
+        group_inputs = group.nodes.new("NodeGroupInput")
+        group_inputs.location = (-200, 0)
+        group.inputs.new("NodeSocketColor", "ARM map")
+
+        # output
+        group_outputs = group.nodes.new("NodeGroupOutput")
+        group_outputs.location = (200, 0)
+        group.outputs.new("NodeSocketFloat", "AO")
+        group.outputs.new("NodeSocketFloat", "Metalness")
+        group.outputs.new("NodeSocketFloat", "Roughness")
+
+        separate = group.nodes.new("ShaderNodeSeparateRGB")
+
+        # link
+        group.links.new(group_inputs.outputs['ARM map'], separate.inputs[0])
+
+        # Blue channel is metalness map
+        # Red channel is ambient occlusion
+        # Green is roughness
+        group.links.new(separate.outputs["R"], group_outputs.inputs['AO'])
+        group.links.new(separate.outputs["G"], group_outputs.inputs['Roughness'])
+        group.links.new(separate.outputs["B"], group_outputs.inputs['Metalness'])
+
+        return group
+
     def createMaterial(self):
+        pref = getPreferences()
+
         self.initMaterial()
         self.front = {}
         self.back = {}
@@ -144,10 +181,12 @@ class CyclesMaterialData(MaterialData):
         for map_name, img in self.maps.items():
             if img is None or map_name.split("_")[0] not in __class__.input_tr:
                 continue
-            
+
             self.makeTextureNode(img, map_name)
 
         mixed = self.mixFrontBackDicts()
+
+        aoOutput = None
 
         for name, node in mixed.items():
             if __class__.input_tr.get(name):
@@ -157,6 +196,7 @@ class CyclesMaterialData(MaterialData):
                     invert_node = nodes.new(type="ShaderNodeInvert")
                     links.new(node.outputs["Color"], invert_node.inputs["Color"])
                     links.new(invert_node.outputs["Color"], self.principled_node.inputs["Roughness"])
+
                 if name == "diffuse":
                     if not self.principled_node.inputs["Base Color"].is_linked:
                         links.new(node.outputs["Color"], self.principled_node.inputs["Base Color"])
@@ -187,20 +227,30 @@ class CyclesMaterialData(MaterialData):
                     links.new(combine_node.outputs["Image"], normal_node.inputs["Color"])
                     links.new(normal_node.outputs["Normal"], self.principled_node.inputs["Normal"])
 
-        # Second pass, inserting AO requires that everything else (base color) is wired
-        pref = getPreferences()
-        if pref.use_ao:
-            for name, node in mixed.items():
+                if name == "ARM":
+                    armSplitter = nodes.new(type="ShaderNodeGroup")
+                    armSplitter.node_tree = self.armGroup()
+                    links.new(node.outputs["Color"], armSplitter.inputs[0])
+
+                    links.new(armSplitter.outputs["Roughness"], self.principled_node.inputs["Roughness"])
+                    links.new(armSplitter.outputs["Metalness"], self.principled_node.inputs["Metallic"])
+                    aoOutput = armSplitter.outputs["AO"]
+
                 if name == "ambientOcclusion":
-                    basecolor_links = self.principled_node.inputs["Base Color"].links
-                    if len(basecolor_links) == 0:
-                        continue
-                    base_color_output = basecolor_links[0].from_socket
-                    mix_node = nodes.new(type="ShaderNodeMixRGB")
-                    mix_node.blend_type = 'MULTIPLY'
-                    links.new(base_color_output, mix_node.inputs[1])
-                    links.new(node.outputs["Color"], mix_node.inputs[2])
-                    links.new(mix_node.outputs["Color"], self.principled_node.inputs["Base Color"])
+                    aoOutput = node.outputs["Color"]
+
+            #  inserting AO requires that everything else (base color) is wired
+            if pref.use_ao and aoOutput is not None:
+                basecolor_links = self.principled_node.inputs["Base Color"].links
+                if len(basecolor_links) == 0:
+                    continue
+                base_color_output = basecolor_links[0].from_socket
+                mix_node = nodes.new(type="ShaderNodeMixRGB")
+                mix_node.blend_type = 'MULTIPLY'
+                mix_node.default_value = 1.
+                links.new(base_color_output, mix_node.inputs[1])
+                links.new(aoOutput, mix_node.inputs[2])
+                links.new(mix_node.outputs["Color"], self.principled_node.inputs["Base Color"])
 
         autoAlignNodes(self.mat_output)
 

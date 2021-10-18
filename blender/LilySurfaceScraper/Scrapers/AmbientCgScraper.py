@@ -24,24 +24,21 @@
 import zipfile
 import os
 import re
-from urllib.parse import urlparse, parse_qs, urlencode, urljoin
+from urllib.parse import urlparse, parse_qs
 from .AbstractScraper import AbstractScraper
+
 
 class AmbientCgScraper(AbstractScraper):
     source_name = "ambientCG"
     home_url = "https://ambientcg.com"
+    home_dir = "ambientCG"
 
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scraped by this scraper."""
-        return (
-            url.startswith("https://ambientcg.com/view.php?tex=")
-            or url.startswith("https://ambientcg.com/view?tex=")
-            or url.startswith("https://www.ambientcg.com/view?id=")
-            or url.startswith("https://ambientcg.com/view?id=")
-        )
+        return re.match(r"https:\/\/(?:www\.)?ambientcg\.com\/view(?:\.php)?\?(?:tex|id)=(.+)", url) is not None
 
-    def fetchVariantList(self, url):
+    def getVariantList(self, url):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
 
@@ -54,21 +51,25 @@ class AmbientCgScraper(AbstractScraper):
             return None
         
         variants_data = data["Assets"][asset_id]["Downloads"]
-        variants = list(variants_data.keys())
+        variants = sorted(list(variants_data.keys()),
+                          key=lambda x: self.sortTextWithNumbers(" ".join(x.split("-")[::-1])))
         variants_urls = [ variants_data[v]["RawDownloadLink"] for v in variants ]
 
-        self._variants_urls = variants_urls
-        self._variants = variants
-        self._base_name = asset_id
+        self.metadata.setCustom("variants_urls", variants_urls)
+        self.metadata.name = asset_id
+        self.metadata.setCustom("thumbnail_url", data["Assets"][asset_id]["PreviewSphere"]["512-PNG"])
         return variants
+
+    def getThumbnail(self):
+        return self.metadata.getCustom("thumbnail_url")
 
     def fetchVariant(self, variant_index, material_data):
         """Fill material_data with data from the selected variant.
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
-        variants = self._variants
-        variants_urls = self._variants_urls
+        variants = self.metadata.variants
+        variants_urls = self.metadata.getCustom("variants_urls")
 
         if variant_index < 0 or variant_index >= len(variants):
             self.error = "Invalid variant index: {}".format(variant_index)
@@ -77,14 +78,13 @@ class AmbientCgScraper(AbstractScraper):
         variant = variants[variant_index]
         zip_url = variants_urls[variant_index]
 
-        material_data.name = "ambientCG/" + self._base_name + "/" + variant
+        material_data.name = f"{self.home_dir}/{self.metadata.name}/{variant}"
         zip_path = self.fetchZip(zip_url, material_data.name, "textures.zip")
         zip_dir = os.path.dirname(zip_path)
         if os.path.getsize(zip_path) == 0:
             # maps already exist
             namelist = os.listdir(zip_dir)
         else:
-            namelist = []
             with zipfile.ZipFile(zip_path,"r") as zip_ref:
                 namelist = zip_ref.namelist()
                 zip_ref.extractall(zip_dir)
@@ -117,3 +117,6 @@ class AmbientCgScraper(AbstractScraper):
                 map_name = maps_tr[map_type]
                 material_data.maps[map_name] = os.path.join(zip_dir, name)
         return True
+
+    def getUrlFromName(self, asset_name):
+        return f"https://ambientcg.com/view?id={asset_name}"

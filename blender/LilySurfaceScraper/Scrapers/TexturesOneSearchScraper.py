@@ -19,10 +19,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from .TexturesOneScraper import TexturesOneMaterialScraper, TexturesOneWorldScraper
+from .TexturesOneScraper import TexturesOneMaterialScraper
 from .AbstractScraper import AbstractScraper
 from random import choice
 import requests
+
 
 class TexturesOneSearchScraper(TexturesOneMaterialScraper):
     scraped_type = "NONE"
@@ -34,7 +35,7 @@ class TexturesOneSearchScraper(TexturesOneMaterialScraper):
     def findSource(cls, search_term: str) -> str:
         """Search and pick a random result from the results site"""
         creator_filter = "&".join(["creator[]=" + x for x in cls.supported_creators])
-        url = "https://textures.one/search/?query=" + search_term + "&" + cls.scraped_type_name + "&" + creator_filter
+        url = "https://3dassets.one/search/?query=" + search_term + "&" + cls.scraped_type_name + "&" + creator_filter
         html = AbstractScraper.fetchHtml(None, url)
         print("url: {}".format(url))
         if html is None: raise ConnectionError
@@ -65,10 +66,12 @@ class TexturesOneSearchScraper(TexturesOneMaterialScraper):
             return False
         return cls.cacheSourceUrl(url)
 
+
 class TexturesOneSearchMaterialScraper(TexturesOneSearchScraper):
     scraped_type = "MATERIAL"
     scraped_type_name = "tex-pbr"
     supported_creators = ['cc0textures', 'cgbookcase', 'texturehaven'] # IDs of the websites on Textures.one that we support
+
 
 class TexturesOneSearchWorldScraper(TexturesOneSearchScraper):
     scraped_type = "WORLD"

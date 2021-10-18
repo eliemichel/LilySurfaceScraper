@@ -22,13 +22,16 @@
 # from a single URL
 
 from .AbstractScraper import AbstractScraper
+from ..preferences import getPreferences
 
-from urllib.parse import urlparse
+import re
 from collections import defaultdict
+
 
 class PolyHavenTextureScraper(AbstractScraper):
     source_name = "Poly Haven Texture"
     home_url = "https://polyhaven.com/textures"
+    home_dir = "texturehaven"
 
     # Translate TextureHaven map names into our internal map names
     maps_tr = {
@@ -59,7 +62,7 @@ class PolyHavenTextureScraper(AbstractScraper):
         'col_2':  'baseColor_02',
         'coll2':  'baseColor_02',
         'col_03': 'baseColor_03',
-        # 'arm': '',  # AO/Rough/Metal todo probably make use of this
+        'arm': 'ARM',  # AO/Rough/Metal
         # 'diff_polar': '',
         # 'rough_polar': '',
         # 'nor_polar': '',
@@ -67,20 +70,38 @@ class PolyHavenTextureScraper(AbstractScraper):
         # 'nor_dx': '',  # what is this?
     }
 
+    polyHavenUrl = re.compile(r"(?:https:\/\/)?polyhaven\.com\/a\/([^\/]+)")
+
+    @classmethod
+    def getUid(cls, url):
+        match = cls.polyHavenUrl.match(url)
+        if match is not None:
+            return match.group(1)
+        return None
+
     @classmethod
     def canHandleUrl(cls, url):
         """Return true if the URL can be scraped by this scraper."""
-        return url.startswith("https://polyhaven.com/a")
+        return url.startswith("https://polyhaven.com/a/")
     
-    def fetchVariantList(self, url):
+    def getVariantList(self, url):
         """Get a list of available variants.
         The list may be empty, and must be None in case of error."""
-        html = self.fetchHtml(url)
-        if html is None:
+        identifier = self.getUid(url)
+
+        if identifier is None:
+            self.error = "Bad Url"
             return None
 
-        parsed_url = urlparse(url)
-        identifier = parsed_url.path.strip('/').split('/')[-1]
+        data = self.fetchJson(f"https://api.polyhaven.com/info/{identifier}")
+        if data is None:
+            self.error = "API error"
+            return None
+        elif data["type"] != 1:  # 1 for textures
+            self.error = "Not a texture"
+            return None
+
+        name = data["name"]
 
         api_url = f"https://api.polyhaven.com/files/{identifier}"
         data = self.fetchJson(api_url)
@@ -96,37 +117,57 @@ class PolyHavenTextureScraper(AbstractScraper):
                 for fmt, map_data in formats.items():
                     variant_data[(res, fmt)][map_type] = map_data['url']
 
-        variant_data = [ (*k, v) for k, v in variant_data.items() ]
-        variant_data.sort(key=lambda x: (x[1].zfill(3), x[0]))
-        variants = [ f"{res} ({fmt})" for res, fmt, _ in variant_data ]
+        variant_data = [(*k, v) for k, v in variant_data.items()]
+        variant_data.sort(key=lambda x: self.sortTextWithNumbers(f"{x[1]} {x[0]}"))
+        variants = [f"{res} ({fmt})" for res, fmt, _ in variant_data]
 
-        self._identifier = identifier
-        self._variant_data = variant_data
-        self._variants = variants
+        self.metadata.name = name
+        self.metadata.id = identifier
+        self.metadata.setCustom("variant_data", variant_data)
         return variants
-    
+
+    def getThumbnail(self):
+        return f"https://cdn.polyhaven.com/asset_img/thumbs/{self.metadata.id}.png?width=512&height=512"
+
     def fetchVariant(self, variant_index, material_data):
         """Fill material_data with data from the selected variant.
         Must fill material_data.name and material_data.maps.
         Return a boolean status, and fill self.error to add error messages."""
         # Get data saved in fetchVariantList
-        identifier = self._identifier
-        variant_data = self._variant_data
-        variants = self._variants
+        name = self.metadata.name
+        variant_data = self.metadata.getCustom("variant_data")
+        variants = self.metadata.variants
+        pref = getPreferences()
         
         if variant_index < 0 or variant_index >= len(variants):
             self.error = "Invalid variant index: {}".format(variant_index)
             return False
         
         var_name = variants[variant_index]
-        material_data.name = "polyhaven/" + identifier + '/' + var_name
+        material_data.name = f"{self.home_dir}/{name}/{var_name}"
         
         maps = variant_data[variant_index][2]
 
+        fetchImage_args = list()
         for map_name, map_url in maps.items():
             map_name = map_name.lower()
             if map_name in self.maps_tr:
                 map_name = self.maps_tr[map_name]
-                material_data.maps[map_name] = self.fetchImage(map_url, material_data.name, map_name)
-        
+
+                skip = ("ARM",)
+                if pref.use_arm:
+                    skip = ("ambientOcclusion", "roughness", "metallic")
+                if map_name in skip:
+                    continue
+
+                fetchImage_args.append((map_url, material_data.name, map_name))
+
+        for name, path in self.fetchImages(fetchImage_args):
+            material_data.maps[name] = path
+
         return True
+
+    def getUrlFromName(self, asset_name):
+        # same as hdri one, works well enough
+        name = asset_name.lower().replace(' ', '_').replace("'", "")
+        return f"https://polyhaven.com/a/{name}"
