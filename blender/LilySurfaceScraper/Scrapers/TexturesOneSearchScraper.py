@@ -20,7 +20,6 @@
 # SOFTWARE.
 
 from .TexturesOneScraper import TexturesOneMaterialScraper
-from .AbstractScraper import AbstractScraper
 from random import choice
 import requests
 
@@ -36,7 +35,7 @@ class TexturesOneSearchScraper(TexturesOneMaterialScraper):
         """Search and pick a random result from the results site"""
         creator_filter = "&".join(["creator[]=" + x for x in cls.supported_creators])
         url = "https://3dassets.one/search/?query=" + search_term + "&" + cls.scraped_type_name + "&" + creator_filter
-        html = AbstractScraper.fetchHtml(None, url)
+        html = self.fetchHtml(url)
         print("url: {}".format(url))
         if html is None: raise ConnectionError
         print("html: {}".format(html))
