@@ -90,9 +90,9 @@ If you are using a VPN, try to disable it.
 **Cannot import name 'etree' from 'lxml'**
 We tried to bundle lxml into the add-on to avoid issues, but there are still some people having trouble with it. If you get such an error when activating the add-on, install lxml manually by running the following command line in admin mode (adapt the path to your version and installation location of Blender):
 
-    "C:\Program Files\Blender Foundation\Blender 2.93\2.93\python\bin\python.exe" -m pip install lxml -r "C:\Program Files\Blender Foundation\Blender 2.93\2.93\scripts\modules"
+    "C:\Program Files\Blender Foundation\Blender 3.1\3.1\python\bin\python.exe" -m pip install lxml -t "C:\Program Files\Blender Foundation\Blender 3.1\3.1\scripts\modules"
     
-Ideally, you could share the folder `C:\Program Files\Blender Foundation\Blender 2.93\2.93\scripts\modules\lxml` that this creates in an issue here so that I can add it to the repo.
+Ideally, you could share the folder `C:\Program Files\Blender Foundation\Blender 3.1\3.1\scripts\modules\lxml` that this creates in an issue here so that I can add it to the repo.
 
 **Other**  
 If you run into any sort of trouble running this add-on, please fill an [issue](https://github.com/eliemichel/LilySurfaceScraper/issues/new) on this repository.
