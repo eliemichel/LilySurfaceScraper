@@ -50,14 +50,16 @@ class AmbientCgScraper(AbstractScraper):
         if data is None:
             return None
         
-        variants_data = data["Assets"][asset_id]["Downloads"]
+        found_asset_id = next(iter(data["Assets"].keys()))
+        asset_data = data["Assets"][found_asset_id]
+        variants_data = asset_data["Downloads"]
         variants = sorted(list(variants_data.keys()),
                           key=lambda x: self.sortTextWithNumbers(" ".join(x.split("-")[::-1])))
         variants_urls = [ variants_data[v]["RawDownloadLink"] for v in variants ]
 
         self.metadata.setCustom("variants_urls", variants_urls)
         self.metadata.name = asset_id
-        self.metadata.setCustom("thumbnail_url", data["Assets"][asset_id]["PreviewSphere"]["512-PNG"])
+        self.metadata.setCustom("thumbnail_url", asset_data["PreviewSphere"]["512-PNG"])
         return variants
 
     def getThumbnail(self):

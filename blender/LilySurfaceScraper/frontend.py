@@ -548,6 +548,9 @@ class LIGHT_PT_LilySurfaceScraper(bpy.types.Panel):
 
 
 def thumbnailGeneratorGenerator(scraper_cls):
+    """
+    TODO: It is bad design to have Blender halt for downloading metadata while drawing the UI
+    """
     def generateThumbnailIcon(self, context):
         global custom_icons
 
@@ -562,9 +565,7 @@ def thumbnailGeneratorGenerator(scraper_cls):
 
         if "missingThumbnail" not in registeredThumbnails:
             registeredThumbnails.add("missingThumbnail")
-            missingThumb = scraper.fetchImage(
-                "https://icon-library.com/images/image-missing-icon/image-missing-icon-14.jpg",
-                "", "missing_thumbnail")
+            missingThumb = os.path.join(__file__, "Data", "missing_thumbnail.jpg")
             custom_icons.load("missing_thumbnail", missingThumb, 'IMAGE')
 
         basedir = scraper.getTextureDirectory(scraper_cls.home_dir)
@@ -591,9 +592,9 @@ def thumbnailGeneratorGenerator(scraper_cls):
             # if no metadata file was found
             if metadata.name == "":
                 # try to get info
-                print("No metadata! getting for", i)
+                print(f"No metadata ('{metadata_file}' not found)! getting for {i}")
                 scraper.getVariantData(i)
-                # if its still empty then just scip this
+                # if its still empty then just skip this
                 if scraper.metadata.name == "":
                     print(f"!! failed to get metadata for {i} from {scraper.home_url} !!")
                     metadataGetFailed.append(i)
