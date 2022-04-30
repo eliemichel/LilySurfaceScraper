@@ -106,6 +106,8 @@ class AmbientCgScraper(AbstractScraper):
             # New names
             'Color': 'baseColor',
             'Normal': 'normalInvertedY',
+            # newer normal name
+            'NormalDX': 'normalInvertedY',
             'Opacity': 'opacity',
             'Roughness': 'roughness',
             'Metalness': 'metallic',
