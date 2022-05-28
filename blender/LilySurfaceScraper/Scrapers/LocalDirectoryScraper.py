@@ -96,6 +96,17 @@ class LocalDirectoryScraper(AbstractScraper):
                 'ambientOcclusion': 'ambientOcclusion',
                 'normal': 'normal',
 
+                # poliigon
+                '_COL': 'baseColor',
+                '_DISP': 'height',
+                '_NRM': 'normal',
+                '_GLOSS': 'roughness',
+                '_ROUGHNESS': 'roughness',
+                '_AO': 'ambientOcclusion',
+                '_BUMP': 'normalInvertedY',
+                '_METALNESS': 'metallic',
+                '_ALPHAMASKED': 'opacity',
+
                 'Base Color': 'baseColor',
                 'diffuse': 'diffuse',
                 'Metallic': 'metallic',
