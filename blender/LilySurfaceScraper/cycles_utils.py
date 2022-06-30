@@ -126,16 +126,34 @@ class PrincipledWorldWrapper:
             elif self.node_out is None and n.type == "OUTPUT_WORLD":
                 self.node_out = n
 
-def guessColorSpaceFromExtension(img):
+def listAvailableColorSpaces(image):
+    # Warning: hack ahead
+    try:
+        image.colorspace_settings.name = ''
+    except TypeError as e:
+        s = str(e)
+    return eval(s[s.find('('):])
+
+def findColorSpace(image, key):
+    """This is important for custom OCIO config"""
+    availableColorSpaces = listAvailableColorSpaces(image)
+    if key in availableColorSpaces:
+        return key
+    for cs in availableColorSpaces:
+        if key in cs:
+            return cs
+    return availableColorSpaces[0]
+
+def guessColorSpaceFromExtension(image, image_filename):
     """Guess the most appropriate color space from filename extension"""
-    img = img.lower()
-    if img.endswith(".jpg") or img.endswith(".jpeg") or img.endswith(".png"):
+    name = image_filename.lower()
+    if name.endswith(".jpg") or name.endswith(".jpeg") or name.endswith(".png"):
         return {
-            "name": "sRGB",
+            "name": findColorSpace(image, 'sRGB'),
             "old_name": "COLOR", # mostly for backward compatibility
         }
     else:
         return {
-            "name": "Linear",
+            "name": findColorSpace(image, 'Non-Color'),
             "old_name": "NONE",
         }

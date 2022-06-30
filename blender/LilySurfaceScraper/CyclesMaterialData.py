@@ -7,26 +7,8 @@
 import bpy
 from bpy_extras.node_shader_utils import PrincipledBSDFWrapper
 from .MaterialData import MaterialData
-from .cycles_utils import getCyclesImage, autoAlignNodes
+from .cycles_utils import getCyclesImage, autoAlignNodes, findColorSpace
 from .preferences import getPreferences
-
-def listAvailableColorSpaces(image):
-    # Warning: hack ahead
-    try:
-        image.colorspace_settings.name = ''
-    except TypeError as e:
-        s = str(e)
-    return eval(s[s.find('('):])
-
-def findColorSpace(image, key):
-    """This is important for custom OCIO config"""
-    availableColorSpaces = listAvailableColorSpaces(image)
-    if key in availableColorSpaces:
-        return key
-    for cs in availableColorSpaces:
-        if key in cs:
-            return cs
-    return availableColorSpaces[0]
 
 class CyclesMaterialData(MaterialData):
     # Translate our internal map names into cycles principled inputs

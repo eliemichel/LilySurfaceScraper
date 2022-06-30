@@ -50,7 +50,7 @@ class CyclesWorldData(WorldData):
         if img is not None:
             texture_node = nodes.new(type="ShaderNodeTexEnvironment")
             texture_node.image = getCyclesImage(img)
-            color_space = guessColorSpaceFromExtension(img)
+            color_space = guessColorSpaceFromExtension(texture_node.image, img)
             texture_node.image.colorspace_settings.name = color_space["name"]
             if hasattr(texture_node, "color_space"):
                 texture_node.color_space = color_space["old_name"]
