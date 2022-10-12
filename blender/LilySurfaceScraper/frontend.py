@@ -148,7 +148,16 @@ class OBJECT_OT_LilyClipboardSurfaceScraper(ObjectPopupOperator, CallbackProps):
         return self.execute(context)
 
     def execute(self, context):
-        bpy.ops.object.lily_surface_import('EXEC_DEFAULT', url=bpy.context.window_manager.clipboard)
+        try:
+            bpy.ops.object.lily_surface_import('EXEC_DEFAULT', url=bpy.context.window_manager.clipboard)
+        except RuntimeError as err:
+            msg = err.args[0]
+            if msg.startswith("Invalid Input Error: "):
+                error = msg[len("Invalid Input Error: "):]
+                self.report({'ERROR_INVALID_INPUT'}, error)
+                return {'CANCELLED'}
+            else:
+                raise err
         return {'FINISHED'}
 
 def list_variant_enum(self, context):
@@ -306,7 +315,16 @@ class OBJECT_OT_LilyClipboardWorldScraper(PopupOperator, CallbackProps):
         return self.execute(context)
 
     def execute(self, context):
-        bpy.ops.object.lily_world_import('EXEC_DEFAULT', url=bpy.context.window_manager.clipboard)
+        try:
+            bpy.ops.object.lily_world_import('EXEC_DEFAULT', url=bpy.context.window_manager.clipboard)
+        except RuntimeError as err:
+            msg = err.args[0]
+            if msg.startswith("Invalid Input Error: "):
+                error = msg[len("Invalid Input Error: "):]
+                self.report({'ERROR_INVALID_INPUT'}, error)
+                return {'CANCELLED'}
+            else:
+                raise err
         return {'FINISHED'}
 
 def list_variant_enum(self, context):
@@ -425,7 +443,16 @@ class OBJECT_OT_LilyClipboardLightScraper(PopupOperator, CallbackProps):
         return self.execute(context)
 
     def execute(self, context):
-        bpy.ops.object.lily_light_import('EXEC_DEFAULT', url=bpy.context.window_manager.clipboard)
+        try:
+            bpy.ops.object.lily_light_import('EXEC_DEFAULT', url=bpy.context.window_manager.clipboard)
+        except RuntimeError as err:
+            msg = err.args[0]
+            if msg.startswith("Invalid Input Error: "):
+                error = msg[len("Invalid Input Error: "):]
+                self.report({'ERROR_INVALID_INPUT'}, error)
+                return {'CANCELLED'}
+            else:
+                raise err
         return {'FINISHED'}
 
 # -------------------------------------------------------------------

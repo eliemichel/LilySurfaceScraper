@@ -24,4 +24,4 @@
 ## Constants
 
 TEXTURE_DIR = "LilySurface"
-UNSUPPORTED_PROVIDER_ERR = "Material provider not supported. See the documentation for a list of supported material providers."
+UNSUPPORTED_PROVIDER_ERR = "provider not supported. See the documentation for a list of supported providers."

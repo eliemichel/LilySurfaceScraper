@@ -22,6 +22,7 @@
 # from a single URL
 
 from .settings import UNSUPPORTED_PROVIDER_ERR
+from .ScrapersManager import ScrapersManager
 
 
 class ScrapedData():
@@ -55,7 +56,10 @@ class ScrapedData():
         self.reinstall = False
 
         if self._scraper is None:
-            self.error = UNSUPPORTED_PROVIDER_ERR
+            self.error = scraping_type.capitalize() + " " + UNSUPPORTED_PROVIDER_ERR
+            for S in ScrapersManager.getScrapersList():
+                if S.canHandleUrl(self.url) and S.scraped_type:
+                    self.error = f"This URL corresponds to a {next(iter(S.scraped_type)).lower()} but you are trying to import it as a {scraping_type.lower()}"
         else:
             self._scraper.texture_root = texture_root
             self._scraper.metadata.scrape_type = scraping_type
