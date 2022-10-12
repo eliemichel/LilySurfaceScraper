@@ -463,7 +463,7 @@ class MATERIAL_PT_LilySurfaceScraper(bpy.types.Panel):
                     row = layout.row().split(factor=factor, align=True)
                     row.operator("wm.url_open", text=S.source_name).url = S.home_url
                     if split:
-                        row.template_icon_view(context.active_object, S.__name__, scale=1, scale_popup=7.0,
+                        row.template_icon_view(context.scene, S.__name__, scale=1, scale_popup=7.0,
                                                show_labels=S.show_labels)
                     urls.add(S.home_url)
 
@@ -499,7 +499,7 @@ class WORLD_PT_LilySurfaceScraper(bpy.types.Panel):
                     row = layout.split(factor=factor, align=True)
                     row.operator("wm.url_open", text=S.source_name).url = S.home_url
                     if split:
-                        row.template_icon_view(context.active_object, S.__name__, scale=1, scale_popup=7.0,
+                        row.template_icon_view(context.scene, S.__name__, scale=1, scale_popup=7.0,
                                                show_labels=S.show_labels)
                     urls.add(S.home_url)
 
@@ -540,7 +540,7 @@ class LIGHT_PT_LilySurfaceScraper(bpy.types.Panel):
                     row = layout.split(factor=factor, align=True)
                     row.operator("wm.url_open", text=S.source_name).url = S.home_url
                     if split:
-                        row.template_icon_view(context.active_object, S.__name__, scale=1, scale_popup=7.0,
+                        row.template_icon_view(context.scene, S.__name__, scale=1, scale_popup=7.0,
                                                show_labels=S.show_labels)
                     urls.add(S.home_url)
 
@@ -698,5 +698,5 @@ def register():
     for S in ScrapersManager.getScrapersList():
         # need to keep this list or the text breaks in menus
         setattr(custom_icons, S.__name__, ())
-        setattr(bpy.types.Object, S.__name__, EnumProperty(options={"SKIP_SAVE"}, items=thumbnailGeneratorGenerator(S),
+        setattr(bpy.types.Scene, S.__name__, EnumProperty(options={"SKIP_SAVE"}, items=thumbnailGeneratorGenerator(S),
                                                            update=enumResponseGenerator(S)))
