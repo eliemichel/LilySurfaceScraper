@@ -124,8 +124,7 @@ class AbstractScraper():
             texture_dir = os.path.realpath(os.path.join(self.texture_root, texture_dir))
         name_path = material_name.replace('/', os.path.sep)
         dirpath = os.path.join(texture_dir, name_path)
-        if not os.path.isdir(dirpath):
-            os.makedirs(dirpath)
+        os.makedirs(dirpath, exist_ok=True)
         return dirpath
 
     def _downloadFunc(self, url):

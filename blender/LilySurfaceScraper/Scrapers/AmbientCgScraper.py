@@ -30,7 +30,7 @@ from .AbstractScraper import AbstractScraper
 
 class AmbientCgScraper(AbstractScraper):
     source_name = "ambientCG"
-    home_url = "https://ambientcg.com"
+    home_url = "https://ambientcg.com/list"
     home_dir = "ambientCG"
 
     @classmethod

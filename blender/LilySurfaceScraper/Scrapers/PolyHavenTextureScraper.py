@@ -34,6 +34,7 @@ class PolyHavenTextureScraper(AbstractScraper):
     home_dir = "texturehaven"
 
     # Translate TextureHaven map names into our internal map names
+    # (sorted by priority)
     maps_tr = {
         'diffuse':  'diffuse',
         'diff_png': 'diffuse',
@@ -111,7 +112,8 @@ class PolyHavenTextureScraper(AbstractScraper):
 
         variant_data = defaultdict(dict)
         for map_type, maps in data.items():
-            if map_type.lower() not in self.maps_tr.keys():
+            map_type = map_type.lower()
+            if map_type not in self.maps_tr.keys():
                 continue
             for res, formats in maps.items():
                 for fmt, map_data in formats.items():
@@ -147,6 +149,8 @@ class PolyHavenTextureScraper(AbstractScraper):
         material_data.name = f"{self.home_dir}/{name}/{var_name}"
         
         maps = variant_data[variant_index][2]
+        if "displacement" in maps and "bump" in maps:
+            del maps["bump"]
 
         fetchImage_args = list()
         for map_name, map_url in maps.items():

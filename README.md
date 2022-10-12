@@ -1,5 +1,7 @@
 *If this helps you save time or money for your job, please consider supporting the work involved in here ;)* [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=DNEEF8GDX2EV6&currency_code=EUR&source=url)
 
+![Cover](doc/cover.jpg)
+
 Lily Surface Scraper
 ====================
 
