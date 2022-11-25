@@ -96,6 +96,11 @@ We tried to bundle lxml into the add-on to avoid issues, but there are still som
     
 Ideally, you could share the folder `C:\Program Files\Blender Foundation\Blender 3.1\3.1\scripts\modules\lxml` that this creates in an issue here so that I can add it to the repo.
 
+**For linux users**
+Just try to use blender version from official blender website https://www.blender.org/download/ 
+this add-on is not working with flatpak version I don't know why, but I think It's related to permissions
+just install it from official blender website, that's it 
+
 **Other**  
 If you run into any sort of trouble running this add-on, please fill an [issue](https://github.com/eliemichel/LilySurfaceScraper/issues/new) on this repository.
 Please, do not attempt to report problems with the addon to the material and sky sources' websites as they are not involved in this project and I don't want them to receive undue "spam" because of me.
