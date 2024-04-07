@@ -21,7 +21,6 @@
 #include <libxml/xmlstring.h>
 #include <libxslt/xslt.h>
 #include "xsltexports.h"
-#include "xsltlocale.h"
 #include "numbersInternals.h"
 
 #ifdef __cplusplus
@@ -291,6 +290,9 @@ struct _xsltTemplate {
     int              templMax;		/* Size of the templtes stack */
     xsltTemplatePtr *templCalledTab;	/* templates called */
     int             *templCountTab;  /* .. and how often */
+
+    /* Conflict resolution */
+    int position;
 };
 
 /**
@@ -1044,7 +1046,6 @@ struct _xsltStyleItemSort {
     int      descending;	/* sort */
     const xmlChar *lang;	/* sort */
     int      has_lang;		/* sort */
-    xsltLocale locale;		/* sort */
     const xmlChar *case_order;	/* sort */
     int      lower_first;	/* sort */
 
@@ -1374,7 +1375,6 @@ struct _xsltStylePreComp {
     int      descending;	/* sort */
     const xmlChar *lang;	/* sort */
     int      has_lang;		/* sort */
-    xsltLocale locale;		/* sort */
     const xmlChar *case_order;	/* sort */
     int      lower_first;	/* sort */
 
@@ -1500,17 +1500,18 @@ struct _xsltStylesheet {
     /*
      * Template descriptions.
      */
-    xsltTemplatePtr templates;	/* the ordered list of templates */
-    void *templatesHash;	/* hash table or wherever compiled templates
-				   information is stored */
-    void *rootMatch;		/* template based on / */
-    void *keyMatch;		/* template based on key() */
-    void *elemMatch;		/* template based on * */
-    void *attrMatch;		/* template based on @* */
-    void *parentMatch;		/* template based on .. */
-    void *textMatch;		/* template based on text() */
-    void *piMatch;		/* template based on processing-instruction() */
-    void *commentMatch;		/* template based on comment() */
+    xsltTemplatePtr templates;           /* the ordered list of templates */
+    xmlHashTablePtr templatesHash;       /* hash table or wherever compiled
+                                            templates information is stored */
+    struct _xsltCompMatch *rootMatch;    /* template based on / */
+    struct _xsltCompMatch *keyMatch;     /* template based on key() */
+    struct _xsltCompMatch *elemMatch;    /* template based on * */
+    struct _xsltCompMatch *attrMatch;    /* template based on @* */
+    struct _xsltCompMatch *parentMatch;  /* template based on .. */
+    struct _xsltCompMatch *textMatch;    /* template based on text() */
+    struct _xsltCompMatch *piMatch;      /* template based on
+                                            processing-instruction() */
+    struct _xsltCompMatch *commentMatch; /* template based on comment() */
 
     /*
      * Namespace aliases.
@@ -1659,6 +1660,13 @@ typedef enum {
     XSLT_OUTPUT_TEXT
 } xsltOutputType;
 
+typedef void *
+(*xsltNewLocaleFunc)(const xmlChar *lang, int lowerFirst);
+typedef void
+(*xsltFreeLocaleFunc)(void *locale);
+typedef xmlChar *
+(*xsltGenSortKeyFunc)(void *locale, const xmlChar *lang);
+
 typedef enum {
     XSLT_STATE_OK = 0,
     XSLT_STATE_ERROR,
@@ -1782,6 +1790,12 @@ struct _xsltTransformContext {
     int maxTemplateVars;
     unsigned long opLimit;
     unsigned long opCount;
+    int sourceDocDirty;
+    unsigned long currentId; /* For generate-id() */
+
+    xsltNewLocaleFunc newLocale;
+    xsltFreeLocaleFunc freeLocale;
+    xsltGenSortKeyFunc genSortKey;
 };
 
 /**
@@ -1911,7 +1925,7 @@ XSLTPUBFUN int XSLTCALL
 			xsltFlagRVTs(
 						 xsltTransformContextPtr ctxt,
 						 xmlXPathObjectPtr obj,
-						 void *val);
+						 int val);
 XSLTPUBFUN void XSLTCALL
 			xsltFreeRVTs		(xsltTransformContextPtr ctxt);
 XSLTPUBFUN void XSLTCALL
