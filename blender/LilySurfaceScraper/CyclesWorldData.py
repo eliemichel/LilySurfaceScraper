@@ -27,6 +27,9 @@ def getGroundHdriNodeGroup():
             filename=filename,
             directory=directory)
     return bpy.data.node_groups["GroundHdri"]
+    
+def find_closest_version(input_version, versions):
+    return max((v for v in versions if v <= input_version), default=None)
 
 class CyclesWorldData(WorldData):
     def loadImages(self):
@@ -51,9 +54,10 @@ class CyclesWorldData(WorldData):
             texture_node = nodes.new(type="ShaderNodeTexEnvironment")
             texture_node.image = getCyclesImage(img)
             color_space = guessColorSpaceFromExtension(img)
-            texture_node.image.colorspace_settings.name = color_space["name"]
-            if hasattr(texture_node, "color_space"):
-                texture_node.color_space = color_space["old_name"]
+
+            closest_version = find_closest_version(bpy.app.version, color_space.keys())
+
+            texture_node.image.colorspace_settings.name = color_space[closest_version]
             links.new(texture_node.outputs["Color"], background.inputs["Color"])
 
             mapping_node = nodes.new(type="ShaderNodeMapping")

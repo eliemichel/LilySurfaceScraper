@@ -131,11 +131,14 @@ def guessColorSpaceFromExtension(img):
     img = img.lower()
     if img.endswith(".jpg") or img.endswith(".jpeg") or img.endswith(".png"):
         return {
-            "name": "sRGB",
-            "old_name": "COLOR", # mostly for backward compatibility
+            (3, 0, 0): "sRGB", 
+            # TODO what version was that "backward compatibility" needed for?
+            (0, 0, 0): "COLOR", # mostly for backward compatibility
         }
     else:
         return {
-            "name": "Linear",
-            "old_name": "NONE",
+            (4, 0, 0): "Linear Rec.709",
+            (3, 0, 0): "Linear",
+            # TODO what version was that "backward compatibility" needed for?
+            (0, 0, 0): "NONE",
         }
