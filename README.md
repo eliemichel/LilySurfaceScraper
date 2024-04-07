@@ -2,6 +2,8 @@
 
 ![Cover](doc/cover.jpg)
 
+**News** (2024-04-07) From version 1.9.0 on, versions of Blender strictly older than 4.1 are no longer supported. Please use version v1.8.1 of this add-on for versions of Blender from 2.83 to 4.0.
+
 Lily Surface Scraper
 ====================
 
