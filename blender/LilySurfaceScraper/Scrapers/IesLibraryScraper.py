@@ -7,6 +7,7 @@
 import os
 import re
 from .AbstractScraper import AbstractScraper
+from ..preferences import getPreferences
 
 
 class IesLibraryScraper(AbstractScraper):
@@ -27,14 +28,22 @@ class IesLibraryScraper(AbstractScraper):
         The list may be empty, and must be None in case of error."""
 
         asset_id = re.match(self.pattern, url).group(1)
+        api_key = getPreferences().ieslibrary_apikey
 
-        api_url = f"https://ieslibrary.com/en/browse/data.json?ies={asset_id}"
+        api_url = f"https://ieslibrary.com/data/{asset_id}/{api_key}/data.json"
 
         data = self.fetchJson(api_url)
         if data is None:
             return None
 
+        if "error" in data.keys():
+            error = data["error"]
+            self.error = f"Error from ieslibrary-API: {error}"
+            return None
+
         variant = data["lumcat"]  # data["manufacturString"]
+        if variant == "":
+            variant = data["luminaire"]
         if variant == "":
             variant = asset_id
 
@@ -74,4 +83,4 @@ class IesLibraryScraper(AbstractScraper):
         return os.path.isfile(os.path.join(root, f"{target_variation}.ies"))
 
     def getUrlFromName(self, asset_name):
-        return f"https://ieslibrary.com/en/browse#ies-{asset_name}"
+        return f"https://ieslibrary.com/browse#ies-{asset_name}"
