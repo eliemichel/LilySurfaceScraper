@@ -247,7 +247,7 @@ class CyclesMaterialData(MaterialData):
                 base_color_output = basecolor_links[0].from_socket
                 mix_node = nodes.new(type="ShaderNodeMixRGB")
                 mix_node.blend_type = 'MULTIPLY'
-                mix_node.default_value = 1.
+                mix_node.inputs[0].default_value = 1
                 links.new(base_color_output, mix_node.inputs[1])
                 links.new(aoOutput, mix_node.inputs[2])
                 links.new(mix_node.outputs["Color"], self.principled_node.inputs["Base Color"])
