@@ -98,7 +98,13 @@ class CyclesMaterialData(MaterialData):
         if map_name == "opacity":
             self.material.blend_method = 'BLEND'
         if map_name == "height":
-            self.material.cycles.displacement_method = 'BOTH'
+            # Blender 4.0+ removed displacement_method from CyclesMaterialSettings
+            # Displacement is now handled purely through shader nodes
+            try:
+                if hasattr(self.material, 'cycles') and hasattr(self.material.cycles, 'displacement_method'):
+                    self.material.cycles.displacement_method = 'BOTH'
+            except (AttributeError, TypeError):
+                pass  # Property doesn't exist in this Blender version
         
         # Save the texture in either the front or back texture dict
         if map_name.endswith("_back"):
