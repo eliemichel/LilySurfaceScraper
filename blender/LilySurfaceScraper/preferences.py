@@ -44,6 +44,12 @@ class LilySurfaceScraperPreferences(bpy.types.AddonPreferences):
         default="LilySurface",
     )
 
+    ieslibrary_apikey: bpy.props.StringProperty(
+        name="ieslibrary API-Key",
+        subtype='NONE',
+        default="",
+    )
+
     use_ao: bpy.props.BoolProperty(
         name="Use AO map",
         default=False,
@@ -86,6 +92,10 @@ class LilySurfaceScraperPreferences(bpy.types.AddonPreferences):
         layout.label(text="It can either be relative to the blend file, or global to all files.")
         layout.label(text="If it is relative, you must always save the blend file before importing materials and worlds.")
         layout.prop(self, "texture_dir")
+
+        layout.label(text="For the import of lights from ieslibrary a valid API-Key is needed.")
+        layout.label(text="Get the API-Key from ieslibrary.com (login needed)")
+        layout.prop(self, "ieslibrary_apikey")
 
         split1 = layout.split(factor=1/3)
 
